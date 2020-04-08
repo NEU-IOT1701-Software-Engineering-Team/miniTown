@@ -271,16 +271,18 @@ class Child
 public:
 	int id;
 	int age;
-	int sex;
+	int Sex;
 	bool isDead = false;
 	House* belongHouse = NULL;
 	Object* DrawObject;
 	int wantFoodLevel;
-	void GrowUp();
 	void Walk(); //随机在地图里散步
 	void Sleep();
 	void Eat();
 	void AI();
+	void WalkTo(Object* object);
+
+	int LastDaySum = 0; //用来计算食欲的临时变量
 };
 
 
@@ -348,7 +350,7 @@ void AddUnFinishHouse(int x, int y);
 void AddFinishHouse(int x, int y,int type=0);
 void AddFarmer(int x,int y,int sex);
 void AddBuilder(int x,int y,int sex);
-void AddChild(int x, int y, int sex,FamilyTree *familyTree);
+void AddChild( int sex,FamilyTree *familyTree);
 void AddTree(int x,int y);
 void AddField(int x, int y);
 void AddKing(int x, int y,int sex=0);
