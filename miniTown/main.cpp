@@ -126,7 +126,7 @@ void initObject()
 	objSun.pic = &picSun;
 	objSun.x = 0;
 	objSun.y = 0;
-	//AddDrawObject(&objSun);
+	AddDrawObject(&objSun);
 
 	objMoon.pic = &picMoon;
 	objMoon.x = -objMoon.pic->getWidth();
@@ -143,7 +143,7 @@ void initObject()
 int main()
 {
 	Player player;
-	player.playSoundLoop("sound/01 Bloom.wav");
+	player.playSoundLoop("sound/01 Bloom.wav",500);
 
 
 

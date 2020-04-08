@@ -10,124 +10,216 @@ HBITMAP hBitmapDevice = NULL;
 BYTE* buffer = NULL;
 BYTE screen_keys[512] = { 0 };
 
-
 Object* drawList[MaxDrawObjectSum];
-//std::vector<Object> listObject;
 
-std::vector<_Sound> _listPlay;
+//std::vector<Player::_Sound> _listPlay;
+std::list<Player::_Sound> _listPlay;
+const int timeout = 300;//播放间隔 对音频外设操作需要时间间隔
 Player::Player() {
 	;
 }
 
 Player::~Player() {
-	_free();
+	Player::stopPlayAll();
 }
 
-int Player::playSound(const char* szFileNameTemp) {
-	//不需要保存到链表中
-	PROCESS_INFORMATION processInfo;
-	STARTUPINFO startUpInfo;
-	memset(&processInfo, 0, sizeof(processInfo));
-	memset(&startUpInfo, 0, sizeof(startUpInfo));
+int Player::playSound(const char* szFileNameTemp, unsigned short volume) {
+	Player::_Sound sound;//用于保存该次播放的相关信息
+	sound.szFileName = (char*)szFileNameTemp;
+	sound.MciOpen.lpstrElementName = szFileNameTemp;
+	sound.volume = volume;
+	sound.isStop = false;
 
-	char cmd[512] = { 0 };
-	sprintf(cmd, "player.exe -P %s", szFileNameTemp);
-	if (!CreateProcess(NULL, cmd, NULL, NULL, false,
-		0, NULL, NULL, &startUpInfo, &processInfo)) {
-		//DWORD ret = GetLastError();
+	sound.hThread = CreateThread(NULL, 0, Player::_Play, (LPVOID)szFileNameTemp, 0, NULL);//创建线程异步播放
+	if (sound.hThread == NULL) {
+		//GetLastError();
 		return -1;
 	}
-	//WaitForSingleObject(processInfo.hProcess, INFINITE);
-
-	CloseHandle(processInfo.hProcess);
-	CloseHandle(processInfo.hThread);
-	return 0;
+	_listPlay.push_back(sound);//保存信息
+	CloseHandle(sound.hThread);
+	Sleep(timeout);
+	return (int)sound.hThread;//返回一个被强转的线程句柄
 }
 
-int Player::playSound(char* szFileNameTemp) {
-	//不需要保存到链表中
-	PROCESS_INFORMATION processInfo;
-	STARTUPINFO startUpInfo;
-	memset(&processInfo, 0, sizeof(processInfo));
-	memset(&startUpInfo, 0, sizeof(startUpInfo));
-
-	char cmd[512] = { 0 };
-	sprintf(cmd, "player.exe -P %s", szFileNameTemp);
-	if (!CreateProcess(NULL, cmd, NULL, NULL, false,
-		0, NULL, NULL, &startUpInfo, &processInfo)) {
-		//DWORD ret = GetLastError();
-		return -1;
-	}
-	//WaitForSingleObject(processInfo.hProcess, INFINITE);
-
-	CloseHandle(processInfo.hProcess);
-	CloseHandle(processInfo.hThread);
-	return 0;
-}
-
-int Player::playSoundLoop(const char* szFileNameTemp) {
-	_Sound sound;
-	memset(&sound, 0, sizeof(sound));
-	char cmd[512] = { 0 };
-	sprintf(cmd, "player.exe -L %s", szFileNameTemp);
-	if (!CreateProcess(NULL, cmd, NULL, NULL, false,
-		0, NULL, NULL, &sound.startUpInfo, &sound.processInfo)) {
-		//DWORD ret = GetLastError();
-		return -1;
-	}
-	sound.szFileName = (char *)szFileNameTemp;
-	_listPlay.push_back(sound);
-
-	return sound.processInfo.dwProcessId;
-}
-
-int Player::playSoundLoop(char* szFileNameTemp) {
-	_Sound sound;
-	memset(&sound, 0, sizeof(sound));
-	char cmd[512] = { 0 };
-	sprintf(cmd, "player.exe -L %s", szFileNameTemp);
-	if (!CreateProcess(NULL, cmd, NULL, NULL, false,
-		0, NULL, NULL, &sound.startUpInfo, &sound.processInfo)) {
-		//DWORD ret = GetLastError();
-		return -1;
-	}
+int Player::playSound(char* szFileNameTemp, unsigned short volume) {
+	Player::_Sound sound;//用于保存该次播放的相关信息
 	sound.szFileName = szFileNameTemp;
-	_listPlay.push_back(sound);
-	return sound.processInfo.dwProcessId;
+	sound.MciOpen.lpstrElementName = szFileNameTemp;
+	sound.volume = volume;
+	sound.isStop = false;
+
+	sound.hThread = CreateThread(NULL, 0, Player::_Play, (LPVOID)szFileNameTemp, 0, NULL);//创建线程异步播放
+	if (sound.hThread == NULL) {
+		//GetLastError();
+		return -1;
+	}
+	_listPlay.push_back(sound);//保存信息
+	CloseHandle(sound.hThread);
+	Sleep(timeout);
+	return (int)sound.hThread;//返回一个被强转的线程句柄
 }
 
+int Player::playSoundLoop(const char* szFileNameTemp, unsigned short volume) {
+	Player::_Sound sound;//用于保存该次播放的相关信息
+	sound.szFileName = (char*)szFileNameTemp;
+	sound.MciOpen.lpstrElementName = szFileNameTemp;
+	sound.volume = volume;
+	sound.isStop = false;
+
+	sound.hThread = CreateThread(NULL, 0, Player::_PlayLoop, (LPVOID)szFileNameTemp, 0, NULL);//创建线程异步播放
+	if (sound.hThread == NULL) {
+		//GetLastError();
+		return -1;
+	}
+	_listPlay.push_back(sound);//保存信息
+	CloseHandle(sound.hThread);
+	Sleep(timeout);
+	return (int)sound.hThread;//返回一个被强转的线程句柄
+}
+
+int Player::playSoundLoop(char* szFileNameTemp, unsigned short volume) {
+	Player::_Sound sound;//用于保存该次播放的相关信息
+	sound.szFileName = szFileNameTemp;
+	sound.MciOpen.lpstrElementName = szFileNameTemp;
+	sound.volume = volume;
+	sound.isStop = false;
+
+	sound.hThread = CreateThread(NULL, 0, Player::_PlayLoop, (LPVOID)szFileNameTemp, 0, NULL);//创建线程异步播放
+	if (sound.hThread == NULL) {
+		//GetLastError();
+		return -1;
+	}
+	_listPlay.push_back(sound);//保存信息
+	CloseHandle(sound.hThread);
+	Sleep(timeout);
+	return (int)sound.hThread;//返回一个被强转的线程句柄
+}
+void Player::stopPlay(const char* szTargetFileName) {
+	std::list<_Sound>::iterator it = _listPlay.begin();
+	for (; it != _listPlay.end(); ++it) {
+		if ((*it) == (char*)szTargetFileName) {
+			(*it).stop();
+			break;
+		}
+	}
+}
 void Player::stopPlay(char* szTargetFileName) {
-	Player::_freeProcess(szTargetFileName);
+	std::list<_Sound>::iterator it = _listPlay.begin();
+	for (; it != _listPlay.end(); ++it) {
+		if ((*it) == szTargetFileName) {
+			(*it).stop();
+			break;
+		}
+	}
 }
-void Player::stopPlay(DWORD dwProcessId) {
-	Player::_freeProcess(dwProcessId);
+void Player::stopPlay(int hThread) {
+	std::list<_Sound>::iterator it = _listPlay.begin();
+	for (; it != _listPlay.end(); ++it) {
+		if ((*it) == hThread) {
+			(*it).stop();
+			break;
+		}
+	}
+}
+void Player::stopPlayAll() {
+	std::list<Player::_Sound>::iterator it = _listPlay.begin();
+	for (; it != _listPlay.end(); ++it) {
+		(*it).stop();
+	}
 }
 
-void Player::_freeProcess(char* szFileNameTemp) {
-	std::vector<_Sound>::iterator it = _listPlay.begin();
+DWORD WINAPI Player::_Play(LPVOID lpParameter) {
+	//遍历链表寻找 因由当前线程所维护的播放信息
+	std::list<Player::_Sound>::iterator it = _listPlay.begin();
 	for (; it != _listPlay.end(); ++it) {
-		if ((*it) == szFileNameTemp) {
-			(*it).stop();
-			_listPlay.erase(it);
+		if ((*it) == (char*)lpParameter) {
+			//打开操作要和其他操作在同一线程.
+			DWORD ret = mciSendCommand(0, MCI_OPEN,
+				MCI_OPEN_ELEMENT, (DWORD_PTR)(LPVOID) & (*it).MciOpen);//打开一个设备 准备播放该音效
+			if (ret != 0) {
+				//std::cout << (*it).szFileName << " MCI_OPEN ret:" << ret << std::endl;
+				return ret;
+			}
+			//std::cout << (*it).szFileName << " id:" << (*it).MciOpen.wDeviceID << std::endl;
+
+			ret = mciSendCommand((*it).MciOpen.wDeviceID, MCI_PLAY,
+				MCI_NOTIFY, (DWORD_PTR)(LPVOID) & (*it).MciPlay);//开始播放
+			//std::cout << (*it).szFileName << " MCI_PLAY ret" <<ret << std::endl;
+
+			(*it).MciStatus.dwItem = MCI_STATUS_LENGTH;//要获取的项 获取长度
+			ret = mciSendCommand((*it).MciOpen.wDeviceID, MCI_STATUS,
+				MCI_STATUS_ITEM, (DWORD_PTR)(LPVOID) & (*it).MciStatus);//获取音效时长  单位毫秒
+			(*it).nLength = (*it).MciStatus.dwReturn;
+			//std::cout << (*it).szFileName << " MCI_STATUS ret" << ret << std::endl;
+			//std::cout << (*it).szFileName << " Length:" << (*it).nLength << std::endl;
+
+
+			(*it).MciSetAudio.dwItem = MCI_DGV_SETAUDIO_VOLUME;
+			(*it).MciSetAudio.dwValue = (*it).volume;
+			ret = mciSendCommand((*it).MciOpen.wDeviceID, MCI_SETAUDIO,
+				MCI_DGV_SETAUDIO_VALUE | MCI_DGV_SETAUDIO_ITEM, (DWORD_PTR) & (*it).MciSetAudio);//设置音量
+			//std::cout << (*it).szFileName << " MCI_SET ret" << ret << std::endl;
+
+			int step = 500;//响应时间
+			for (int i = 0; (!(*it).isStop) && (i < (*it).nLength); i += step) {//等待播放完毕
+				Sleep(step);
+			}
+			//Sleep((*it).nLength);//等待播放完毕
+			ret = mciSendCommand((*it).MciOpen.wDeviceID, MCI_CLOSE, NULL, NULL);//关闭设备
+			//std::cout << (*it).szFileName << " MCI_CLOSE ret" << ret << std::endl;
+			_listPlay.erase(it);//从链表中删除
 			break;
 		}
 	}
+	return 0L;
 }
-void Player::_freeProcess(DWORD dwProcessId) {
-	std::vector<_Sound>::iterator it = _listPlay.begin();
+
+DWORD WINAPI Player::_PlayLoop(LPVOID lpParameter) {
+	//遍历链表寻找 因由当前线程所维护的播放信息
+	std::list<Player::_Sound>::iterator it = _listPlay.begin();
 	for (; it != _listPlay.end(); ++it) {
-		if ((*it) == dwProcessId) {
-			(*it).stop();
-			_listPlay.erase(it);
+		if ((*it) == (char*)lpParameter) {
+			DWORD ret;
+			//循环播放
+			while (!(*it).isStop) {
+				ret = mciSendCommand(0, MCI_OPEN,
+					MCI_OPEN_ELEMENT, (DWORD_PTR)(LPVOID) & (*it).MciOpen);//打开一个设备 准备播放该音效
+				if (ret != 0) {
+					return ret;
+				}
+				//std::cout << (*it).szFileName << " id:" << (*it).MciOpen.wDeviceID << std::endl;
+
+				ret = mciSendCommand((*it).MciOpen.wDeviceID, MCI_PLAY,
+					MCI_NOTIFY, (DWORD_PTR)(LPVOID) & (*it).MciPlay);//开始播放
+				//std::cout << (*it).szFileName << " MCI_PLAY ret" << ret << std::endl;
+
+				(*it).MciStatus.dwItem = MCI_STATUS_LENGTH;//要获取的项 获取长度
+				ret = mciSendCommand((*it).MciOpen.wDeviceID, MCI_STATUS,
+					MCI_STATUS_ITEM, (DWORD_PTR)(LPVOID) & (*it).MciStatus);//获取音效时长  单位毫秒
+				(*it).nLength = (*it).MciStatus.dwReturn;
+				//std::cout << (*it).szFileName << " MCI_STATUS ret" << ret << std::endl;
+				//std::cout << (*it).szFileName << " Length:" << (*it).MciStatus.dwReturn << std::endl;
+
+				(*it).MciSetAudio.dwItem = MCI_DGV_SETAUDIO_VOLUME;
+				(*it).MciSetAudio.dwValue = (*it).volume;
+				ret = mciSendCommand((*it).MciOpen.wDeviceID, MCI_SETAUDIO,
+					MCI_DGV_SETAUDIO_VALUE | MCI_DGV_SETAUDIO_ITEM, (DWORD_PTR) & (*it).MciSetAudio);//设置音量
+				//std::cout << (*it).szFileName << " MCI_SET ret" << ret << std::endl;
+
+				int step = 500;//响应时长
+				for (int i = 0; (!(*it).isStop) && (i < (*it).nLength); i += step) {
+					Sleep(step);
+				}
+
+				ret = mciSendCommand((*it).MciOpen.wDeviceID, MCI_CLOSE, NULL, NULL);//关闭设备
+				//std::cout << (*it).szFileName << " MCI_CLOSE ret" << ret << std::endl;
+			}
+			_listPlay.erase(it);//从链表中删除
 			break;
 		}
 	}
-}
-void Player::_free() {
-	while (!_listPlay.empty()) {
-		_listPlay[0].stop();
-		_listPlay.erase(_listPlay.begin());
-	}
+
+	return 0L;
 }
 
 int drawSum = 0;
@@ -177,7 +269,7 @@ inline void DrawPoint(int nPos, Color c) {
 	}
 }
 
-inline void DrawPoint(int nPos, BYTE r, BYTE g, BYTE b,BYTE a=0) {
+inline void DrawPoint(int nPos, BYTE r, BYTE g, BYTE b, BYTE a = 0) {
 	if (!(r == 255 && g == 255 && b == 255)) {
 		buffer[nPos++] = b;
 		buffer[nPos++] = g;
@@ -195,7 +287,7 @@ inline void DrawPoint(int x, int y, Color c) {
 }
 
 inline void DrawPoint(int x, int y, BYTE r, BYTE g, BYTE b) {
-	if (!(r ==255 && g ==255 && b == 255)) {
+	if (!(r == 255 && g == 255 && b == 255)) {
 		int nPos = (y * nScreenWidth + x) * 4;
 		buffer[nPos++] = b;
 		buffer[nPos++] = g;
@@ -212,39 +304,91 @@ inline void DrawRect(int x, int y, int width, int height, BYTE r, BYTE g, BYTE b
 	}
 }
 
-inline void DrawPic(int x, int y, Picture* pic) {
-	int nWidth = pic->getWidth();
-	int nHeight = pic->getHeight();
-	if (x < 0)
-	{
-		std::cout << 233 << std::endl;
-	}
+//uncheck
+inline void DrawPic(int x, int y, Picture* pic, RECT rect) {
+	int xBuffer = 0, yBuffer = 0;
+	int xPic, yPic;
 
-	int posPic = 0;
-	for (int i = 0; i < nHeight; ++i) {
-		//检查行边界 的上边界
-		if (y < 0) {
-			continue;
-		}
-		//检查行边界 的下边界
-		if (y >= nScreenHeight) {
-			break;//该对象剩下部分不需要画了
-		}
-		int posBuffer = (nScreenWidth * (y + i) + x) * 4;//计算每行的起点
-		for (int j = 0; j < nWidth; ++j) {
-			//检查列边界 左边界
-			if (posBuffer < 0) {
-				continue;
-			}
-			//检查列边界 右边界
-			if ((posBuffer%(nScreenWidth * 4)) >= nScreenWidth*4) {
-				break;//该行剩下部分不需要画了
-			}
+	for (yPic = rect.top; yPic < rect.bottom; ++yPic) {
+		int posBuffer = (nScreenWidth * (y + yBuffer++) + x) * 4;
+		for (xPic = rect.left; xPic < rect.right; ++xPic) {
+			int posPic = pic->getWidth() * yPic + xPic;
 			DrawPoint(posBuffer, pic->pChannelR[posPic], pic->pChannelG[posPic], pic->pChannelB[posPic]);
-			posBuffer+=4;
+			posBuffer += 4;
 			++posPic;
 		}
 	}
+}
+inline void DrawPic(int x, int y, Picture* pic) {
+	RECT rect;
+	int _x, _y;
+	//纵向检查
+	if ((y + pic->getHeight()) < 0) {
+		//完全超出上边界
+		//不绘制
+		return;
+	}
+	else if (y < 0) {
+		//部分超出上边界
+		rect.top = -y;
+		rect.bottom = pic->getHeight();
+		//_x = x;
+		_y = 0;
+	}
+	else if ((y + pic->getHeight()) < nScreenHeight) {
+		//完全在窗口内
+		rect.top = 0;
+		rect.bottom = pic->getHeight();
+		//_x = x;
+		_y = y;
+	}
+	else if (y < nScreenHeight) {
+		//部分超出下边界
+		rect.top = 0;
+		rect.bottom = nScreenHeight - y;
+		//_x = x;
+		_y = y;
+	}
+	else {
+		//完全超出下边界
+		//不绘制
+		return;
+	}
+
+	//横向检查
+	if ((x + pic->getWidth()) < 0) {
+		//完全超出左边界
+		//不绘制
+		return;
+	}
+	else if (x < 0) {
+		//部分超出左边界
+		rect.left = -x;
+		rect.right = pic->getWidth();
+		_x = 0;
+		//_y = y;
+	}
+	else if ((x + pic->getWidth()) < nScreenWidth) {
+		//完全在窗口内
+		rect.left = 0;
+		rect.right = pic->getWidth();
+		_x = x;
+		//_y = y;
+	}
+	else if (x < nScreenWidth) {
+		//部分超出右边界
+		rect.left = 0;
+		rect.right = nScreenWidth - x;
+		_x = x;
+		//_y = y;
+	}
+	else {
+		//完全超出下边界
+		//不绘制
+		return;
+	}
+
+	DrawPic(_x, _y, pic, rect);
 }
 
 //Description:
@@ -260,14 +404,14 @@ inline void spin(Point p, Point p0, float angle, Point& p_) {
 	float sinAngle = sin(angle);
 	float cosAngle = cos(angle);
 
-	
+
 	p_.x = p.x * cosAngle + p.y * sinAngle + p0.x * (1 - cosAngle) - p0.y * sinAngle;
 
-	
+
 	p_.y = -p.x * sinAngle + p.y * cosAngle + p0.y * (1 - cosAngle) + p0.x * sinAngle;
 }
 
-inline void DrawObject( Object* obj) {
+inline void DrawObject(Object* obj) {
 	//后期考虑 作为object的成员函数
 	float angle = obj->getAngle(1);
 
@@ -285,7 +429,7 @@ inline void DrawObject( Object* obj) {
 			for (int j = 0; j < nWidth; ++j) {
 				//计算旋转后坐标
 				Point p_;
-				
+
 				//这样计算得到的p_是以当前对象左上角为原点的坐标系 需要映射到窗口坐标系中
 				spin({ j,i }, obj->pic->centerPoint, obj->getAngle(1), p_);
 
@@ -295,7 +439,10 @@ inline void DrawObject( Object* obj) {
 				if (p_.x < 0 || p_.y < 0) {
 					continue;//将旋转到窗体外的点抛弃
 				}
-				int posBuffer = (p_.y * nScreenWidth + p_.x)*4;
+				else if (p_.x > nScreenWidth || p_.y > nScreenHeight) {
+					continue;//将旋转到窗体外的点抛弃
+				}
+				int posBuffer = (p_.y * nScreenWidth + p_.x) * 4;
 				int posPic = i * nWidth + j;
 
 				DrawPoint(posBuffer, obj->pic->pChannelR[posPic], obj->pic->pChannelG[posPic], obj->pic->pChannelB[posPic]);
@@ -304,7 +451,7 @@ inline void DrawObject( Object* obj) {
 			}
 		}
 	}
-	
+
 }
 
 //Description:
@@ -316,16 +463,26 @@ inline void DrawObject( Object* obj) {
 //	
 void Draw() {
 	void getMessage();
-	
+
 	DrawRect(0, 0, nScreenWidth, nScreenHeight, 192, 224, 0);
-	
-	
+
+	/*
 	Object obj;
-	obj.point.x = 60;
-	obj.point.y = 30;
+	obj.point.x = -30;
+	obj.point.y = -30;
 	obj.setAngle(45);
 	obj.pic = &picField;
 	DrawObject(&obj);//测试
+
+
+	Object obj2;
+	obj2.point.x = nScreenWidth - 30;
+	obj2.point.y = nScreenHeight - 30;
+	obj2.setAngle(45);
+	obj2.pic = &picField;
+	DrawObject(&obj2);//测试*/
+
+
 	for (int i = 0; i < drawSum; i++)
 	{
 		//DebugPrint("第%d个objetc 开始绘制\t",i);
@@ -368,6 +525,8 @@ void freeSomethingForEngine() {
 		CloseWindow(hWnd);
 		hWnd = NULL;
 	}
+
+	Player::stopPlayAll();
 }
 //处理消息
 static LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
@@ -437,7 +596,7 @@ int _CreateWindow(const char* title, int nWidth, int nHeight) {
 
 	//Create a new window
 	hWnd = CreateWindow(
-	(char*)title,//class name
+		(char*)title,//class name
 		(char*)title,//title
 		WS_OVERLAPPEDWINDOW,//style
 		CW_USEDEFAULT, CW_USEDEFAULT,//position
@@ -446,7 +605,7 @@ int _CreateWindow(const char* title, int nWidth, int nHeight) {
 		NULL,//menu
 		hInstance,//application instance
 		NULL//prarameters
-		);
+	);
 	if (hWnd == 0) {
 		return GetLastError();
 	}
@@ -469,8 +628,8 @@ int _CreateWindow(const char* title, int nWidth, int nHeight) {
 	return 0;
 }
 
-void playMusic(char *fileName) {
-	bool ret=PlaySound(fileName, NULL, SND_FILENAME | SND_ASYNC);
+void playMusic(char* fileName) {
+	bool ret = PlaySound(fileName, NULL, SND_FILENAME | SND_ASYNC);
 	//DebugPrintln("%d %d", ret, GetLastError());
 }
 void playMusic(const char* fileName) {

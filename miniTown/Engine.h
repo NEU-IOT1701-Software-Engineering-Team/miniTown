@@ -6,6 +6,9 @@
 #include <cstdlib>
 #include <mmsystem.h>
 #include <vector>
+#include <list>
+#include <mutex>
+#include <Digitalv.h>
 #include "Debug.h"
 #pragma comment(lib, "WINMM.LIB")
 
@@ -26,59 +29,88 @@ extern int drawSum;
 
 constexpr auto PI = 3.1415926;
 
-struct _Sound {
-	PROCESS_INFORMATION processInfo;
-	STARTUPINFO startUpInfo;
-	char* szFileName;
-	//不推荐使用
-	bool operator==(char* szTargetFileName) {
-		return (strcmp(szFileName, szTargetFileName) == 0);
-	}
-	//推荐使用
-	bool operator==(DWORD dwProcessId) {
-		return processInfo.dwProcessId == dwProcessId;
-	}
-	void stop() {
-		TerminateProcess(processInfo.hProcess, 1);
-		
-		//TerminateThread(processInfo.hThread, 1);
-
-		//char cmd[64] = { 0 };
-		//sprintf(cmd, "taskkill -f -pid %d", processInfo.dwProcessId);
-		//system(cmd);
-
-		//PostThreadMessage(processInfo.dwThreadId, WM_QUIT, 0, 0);
-		CloseHandle(processInfo.hProcess);
-		CloseHandle(processInfo.hThread);
-	}
-};
-typedef struct _Sound _Sound;
 
 class Player {
 public:
 	Player();
 	~Player();
 
+	struct _Sound {
+		HANDLE hThread;
+		MCI_OPEN_PARMS MciOpen;
+		MCI_PLAY_PARMS MciPlay;
+		MCI_STATUS_PARMS MciStatus;
+		//MCI_SET_PARMS MciSet;
+		MCI_DGV_SETAUDIO_PARMS MciSetAudio;
+		DWORD nLength;//音效长度 单位ms
+		bool isStop;//是否停止播放
+		unsigned short volume;//音量0-1000
+		char* szFileName;
+		_Sound() {
+			memset(this, 0, sizeof(struct _Sound));
+		}
+		//不推荐使用
+		bool operator==(char* szTargetFileName) {
+			return (strcmp(szFileName, szTargetFileName) == 0);
+		}
+		//推荐使用
+		bool operator==(int hThread) {
+			return this->hThread == (HANDLE)hThread;
+		}
+		void stop() {
+			isStop = true;
+		}
+	};
+	typedef struct _Sound _Sound;
+
+	//Description:
+	//	播放音效,仅播放一次.
+	//Paramter: 
+	//	const char* szFileNameTemp 要播放的文件名，文件名中不能有空格，如果有空格必须使用双引号
+	//	unsigned short volume=800 音量数值[0,1000]，wav格式不支持设置音量
+	//Return Value:
+	//	-1		创建线程失败
+	//	非负数	线程int类型的线程句柄，使用时请强转为HANDLE
+	static int playSound(const char* szFileNameTemp, unsigned short volume = 800);
+
 	//Description:
 	//	播放音效,仅播放一次
 	//Paramter: 
 	//	char * szFileNameTemp 要播放的文件名，文件名中不能有空格，如果有空格必须使用双引号
+	//	unsigned short volume=800 音量数值[0,1000]，wav格式不支持设置音量
 	//Return Value:
-	//	-1	创建进程失败
-	//	0	正常
-	static int playSound(const char* szFileNameTemp);
-	static int playSound(char* szFileNameTemp);
+	//	-1		创建线程失败
+	//	非负数	线程int类型的线程句柄，使用时请强转为HANDLE
+	static int playSound(char* szFileNameTemp, unsigned short volume = 800);
 
 	//Description:
 	//	播放音效,循环播放
 	//Paramter: 
-	//	char * szFileNameTemp 要播放的文件名，文件名中不能有空格，如果有空格必须使用双引号
+	//	const char* szFileNameTemp 要播放的文件名，文件名中不能有空格，如果有空格必须使用双引号
+	//	unsigned short volume=800 音量数值[0,1000]，wav格式不支持设置音量
 	//Return Value:
-	//	-1		创建进程失败
-	//	非负数	进程id,将来可以用来停止播放.
-	static int playSoundLoop(const char* szFileNameTemp);
-	static int playSoundLoop(char* szFileNameTemp);
-	
+	//	-1		创建线程失败
+	//	非负数	线程int类型的线程句柄，使用时请强转为HANDLE.
+	static int playSoundLoop(const char* szFileNameTemp, unsigned short volume = 800);
+
+	//Description:
+	//	播放音效,循环播放
+	//Paramter: 
+	//	char* szFileNameTemp 要播放的文件名，文件名中不能有空格，如果有空格必须使用双引号
+	//	unsigned short volume=800 音量数值[0,1000]，wav格式不支持设置音量
+	//Return Value:
+	//	-1		创建线程失败
+	//	非负数	线程int类型的线程句柄，使用时请强转为HANDLE.
+	static int playSoundLoop(char* szFileNameTemp, unsigned short volume = 800);
+
+	//Description:
+	//	通过文件名终止循环播放(不推荐)
+	//Paramter: 
+	//	const char* szTargetFileName 要停播的音效文件名，文件名中不能有空格，如果有空格必须使用双引号
+	//Return Value:
+	//	NONE
+	static void stopPlay(const char* szTargetFileName);
+
 	//Description:
 	//	通过文件名终止循环播放(不推荐)
 	//Paramter: 
@@ -86,28 +118,34 @@ public:
 	//Return Value:
 	//	NONE
 	static void stopPlay(char* szTargetFileName);
-	
+
 	//Description:
-	//	通过进程id终止循环播放(推荐),在循环播放时会返回一个进程id
+	//	通过线程句柄终止循环播放(推荐),在循环播放时会返回一个线程句柄
 	//Paramter: 
-	//	DWORD dwProcessId 要停播的进程id
+	//	int hThread 要停播的线程句柄
 	//Return Value:
 	//	NONE
-	static void stopPlay(DWORD dwProcessId);
+	static void stopPlay(int hThread);
+
+	//Description:
+	//	停止播放所有音效
+	//Paramter: 
+	//	NONE
+	//Return Value:
+	//	NONE
+	static void stopPlayAll();
 private:
-	
-	
 	//static std::vector<_Sound> _listPlay;
 
-	static void _freeProcess(char* szFileNameTemp);
-	static void _freeProcess(DWORD dwProcessId);
-	static void _free();
+	static DWORD WINAPI _Play(LPVOID lpParameter);
+	static DWORD WINAPI _PlayLoop(LPVOID lpParameter);
+
 };
 
 struct Point {
 	int x;
 	int y;
-	Point(int tx=0, int ty=0) {
+	Point(int tx = 0, int ty = 0) {
 		x = tx;
 		y = ty;
 	}
@@ -131,7 +169,7 @@ typedef struct Point Point;
 
 
 
-class Object{
+class Object {
 public:
 	float x;//为了兼容之前的版本 不推荐使用23333
 	float y;//为了兼容之前的版本 不推荐使用23333
@@ -148,7 +186,7 @@ public:
 	//Return Value:
 	//	NONE
 	void setAngle(int angle) {
-		
+
 		if (abs(angle) >= 360) {
 			angle %= 360;
 		}
@@ -198,7 +236,7 @@ public:
 		point.x = x;
 		point.y = y;
 	}
-	void setPoint(int tx,int ty) {
+	void setPoint(int tx, int ty) {
 		x = tx;
 		point.x = tx;
 		y = ty;
@@ -217,7 +255,7 @@ public:
 	Color() {
 		r = 0, g = 0, b = 0, a = 0;
 	}
-	Color(int R, int G, int B,int A=0) {
+	Color(int R, int G, int B, int A = 0) {
 		r = R, g = G, b = B, a = A;
 	}
 	bool isTransparent() {
@@ -236,7 +274,7 @@ public:
 	int nBitsPixel = 0;//每个像素所占位数
 	bool isBackward = true;
 	Point centerPoint;
-	
+
 	/*
 	按照 BGRA的顺序排列
 	*/
@@ -300,7 +338,7 @@ public:
 	//	-5 读取数据错误
 	//	-6  读取文件头错误!
 	int loadImage(const char* szPath) {
-		return _loadImage((char *)szPath);
+		return _loadImage((char*)szPath);
 	}
 
 	int getWidth() {
@@ -323,8 +361,8 @@ public:
 #define Ch_G 1
 #define Ch_B 2
 #define Ch_A 3
-	BYTE& operator()(int nPos,int Channel) {
-		switch (Channel){
+	BYTE& operator()(int nPos, int Channel) {
+		switch (Channel) {
 		case Ch_R: {
 			return pChannelR[nPos];
 		}
@@ -341,7 +379,7 @@ public:
 			return pChannelA[0];//不应该出现
 		}
 	}
-	BYTE& operator()(int row,int column, int Channel) {
+	BYTE& operator()(int row, int column, int Channel) {
 		switch (Channel) {
 		case Ch_R: {
 			return pChannelR[row * nWidth + column];
@@ -414,7 +452,7 @@ private:
 			pChannelG = new BYTE[nImgSize];
 			pChannelB = new BYTE[nImgSize];
 			//pChannelA = new BYTE[nImgSize];
-			if (pChannelR == NULL || pChannelG==NULL || pChannelB==NULL /*|| pChannelA==NULL*/) {
+			if (pChannelR == NULL || pChannelG == NULL || pChannelB == NULL /*|| pChannelA==NULL*/) {
 				fclose(fp);
 				nErrorCode = -4;
 				return nErrorCode;
