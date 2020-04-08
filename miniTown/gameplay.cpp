@@ -209,7 +209,7 @@ void AddBuilder(int x, int y,int sex)
 	NowBuilderSum++;
 }
 
-void AddChild(int x, int y, int sex, FamilyTree* familyTree)
+void AddChild(int sex, FamilyTree* familyTree)
 {
 	objChild[NowChildSum].pic = &picChild;
 
@@ -230,7 +230,7 @@ void AddChild(int x, int y, int sex, FamilyTree* familyTree)
 	objChild[NowChildSum].y = child[NowChildSum].belongHouse->DrawObject->y;
 	child[NowChildSum].wantFoodLevel = 0;
 	child[NowChildSum].id = NowChildSum;
-	child[NowChildSum].sex = sex;
+	child[NowChildSum].Sex = sex;
 	AddDrawObject(child[NowChildSum].DrawObject);
 	NowChildSum++;
 }
@@ -415,5 +415,6 @@ bool IsPointUsed(Point Coord)
 
 void MakeBaby(FamilyTree* familyTree)
 {
-	
+	int sex = rand() % 2;
+	AddChild(sex, familyTree);
 }
