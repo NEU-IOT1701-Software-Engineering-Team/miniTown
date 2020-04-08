@@ -67,6 +67,9 @@ int LastFPS = 0;
 float FrameTime = 0; //当前帧间隔时间
 int frame = 0; //帧率
 
+int BackgroundMusicVolume=300;
+int SoundVolume=600;
+
 void initLoadPic()
 {
 	picLand.loadImage("pic/land.bmp");
@@ -142,8 +145,8 @@ void initObject()
 
 int main()
 {
-	Player player;
-	player.playSoundLoop("sound/01 Bloom.wav",500);
+	
+	player.playSoundLoop("sound/01 Bloom.mp3", BackgroundMusicVolume);
 
 
 

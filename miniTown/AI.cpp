@@ -64,7 +64,8 @@ void Farmer::GrowRice()
 	}
 	else if (belongField->growingTime < 30)
 	{
-		playMusic("sound/getRice.wav");
+
+		player.playSound("sound/getRice.mp3", SoundVolume);
 		for (int i = 0; i < FieldProduceRiceSum; i++)
 		{
 			belongField->AddRice();		
@@ -213,7 +214,8 @@ void Builder::CutTree()
 		AimTree->cutTime = 0;
 		this->TakeOnThing[this->TakeOnThingSum] = &objWood[NowWoodSum - 1];
 		this->TakeOnThingSum++;
-		playMusic("sound/getWood.wav");
+
+		player.playSound("sound/getWood.mp3", SoundVolume);
 		std::cout << "Builder No." << this->id << " take wood!" << std:: endl;
 		
 	}

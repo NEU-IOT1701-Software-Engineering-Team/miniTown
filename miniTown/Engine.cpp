@@ -9,6 +9,7 @@ HBITMAP hBitmapBuffer = NULL;
 HBITMAP hBitmapDevice = NULL;
 BYTE* buffer = NULL;
 BYTE screen_keys[512] = { 0 };
+Player player;
 
 Object* drawList[MaxDrawObjectSum];
 

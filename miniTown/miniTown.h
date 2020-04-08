@@ -33,6 +33,9 @@ const int SCREEN_WIDTH = 600;
 const int SCREEN_HEIGHT = 600;
 const int bits = 24;
 //extern BYTE buffer[SCREEN_WIDTH * SCREEN_HEIGHT * bits / 8];
+extern int BackgroundMusicVolume;
+extern int SoundVolume;
+
 
 class coord //以60*60为单位标记坐标
 {
@@ -43,12 +46,11 @@ public:
 };
 
 
-
-void CleanScreen();
 void Draw();
 const int MaxDrawObjectSum = 100000;
 extern Object* drawList[MaxDrawObjectSum];
 extern int drawSum;
+extern Player player;
 
 void AddDrawObject(Object* object);
 void RemoveDrawObecjt(Object* object);
