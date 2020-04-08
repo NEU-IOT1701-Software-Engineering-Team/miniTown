@@ -35,6 +35,25 @@ const int bits = 24;
 //extern BYTE buffer[SCREEN_WIDTH * SCREEN_HEIGHT * bits / 8];
 extern int BackgroundMusicVolume;
 extern int SoundVolume;
+extern Picture picLand;
+extern Picture picHouse;
+extern Picture picHouse1;
+extern Picture picFarmer;
+extern Picture picBuilder;
+extern Picture picField;
+extern Picture picField1;
+extern Picture picField2;
+extern Picture picTree;
+extern Picture picKing;
+extern Picture picRice;
+extern Picture picWood;
+extern Picture picSun;
+extern Picture picBackground;
+extern Picture picBackground1;
+extern Picture picMoon;
+extern Picture picKingHouse;
+extern Picture picLove;
+extern Picture picChild;
 
 
 class coord //以60*60为单位标记坐标
@@ -281,42 +300,6 @@ public:
 
 const int DayTime = 30;
 
-//extern Picture picLand;
-//extern Picture picHouse;
-//extern Picture picHouse1;
-//extern Picture picFarmer;
-//extern Picture picBuilder;
-//extern Picture picField;
-//extern Picture picField1;
-//extern Picture picField2;
-//extern Picture picTree;
-//extern Picture picKing;
-//extern Picture picRice;
-//extern Picture picWood;
-//extern Picture picSun;
-//extern Picture picBackground;
-//extern Picture picBackground1;
-//extern Picture picMoon;
-//extern Picture picKingHouse;
-
-extern Picture picLand;
-extern Picture picHouse;
-extern Picture picHouse1;
-extern Picture picFarmer;
-extern Picture picBuilder;
-extern Picture picField;
-extern Picture picField1;
-extern Picture picField2;
-extern Picture picTree;
-extern Picture picKing;
-extern Picture picRice;
-extern Picture picWood;
-extern Picture picSun;
-extern Picture picBackground;
-extern Picture picBackground1;
-extern Picture picMoon;
-extern Picture picKingHouse;
-extern Picture picChild;
 
 
 extern int NowHouseSum;

@@ -469,21 +469,35 @@ void Draw() {
 
 	/*
 	Object obj;
-	obj.point.x = -30;
-	obj.point.y = -30;
+	obj.point.x = 10;
+	obj.point.y = 10;
+	obj.z = 1;
 	obj.setAngle(45);
 	obj.pic = &picField;
-	DrawObject(&obj);//测试
-
 
 	Object obj2;
-	obj2.point.x = nScreenWidth - 30;
-	obj2.point.y = nScreenHeight - 30;
+	obj2.point.x = 30;
+	obj2.point.y = 30;
+	obj2.z = 2;
 	obj2.setAngle(45);
-	obj2.pic = &picField;
-	DrawObject(&obj2);//测试*/
+	obj2.pic = &picField1;
 
+	Object obj3;
+	obj3.point.x = 50;
+	obj3.point.y = 50;
+	obj3.setAngle(45);
+	obj3.z = 0;
+	obj3.pic = &picField2;
 
+	Object* _drawList[MaxDrawObjectSum];
+	_drawList[0] = &obj;
+	_drawList[1] = &obj2;
+	_drawList[2] = &obj3;
+	std::sort(*_drawList, *(_drawList + 2));
+	for (int i = 0; i < 3; ++i) {
+		DrawObject(_drawList[i]);
+	}*/
+	
 	for (int i = 0; i < drawSum; i++)
 	{
 		//DebugPrint("第%d个objetc 开始绘制\t",i);
@@ -552,26 +566,6 @@ static LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 	return 0;
 }
 
-void loadPicture() {
-	picLand.loadImage("pic\\land.bmp");
-	picHouse.loadImage("pic\\house.bmp");
-	picHouse1.loadImage("pic\\house1.bmp");
-	picFarmer.loadImage("pic\\farmer.bmp");
-	picBuilder.loadImage("pic\\builder.bmp");
-	picField.loadImage("pic\\field.bmp");
-	picTree.loadImage("pic\\tree.bmp");
-	picKing.loadImage("pic\\king.bmp");
-	picField1.loadImage("pic\\field1.bmp");
-	picField2.loadImage("pic\\field2.bmp");
-	picRice.loadImage("pic\\rice.bmp");
-	picWood.loadImage("pic\\wood.bmp");
-	picSun.loadImage("pic\\sun.bmp");
-	picBackground.loadImage("pic\\background.bmp");
-	picBackground1.loadImage("pic\\background1.bmp");
-	picMoon.loadImage("pic\\moon.bmp");
-	picKingHouse.loadImage("pic\\kinghouse.bmp");
-}
-
 //Description:
 //	创建并维护一个窗口,目前不对参数合法性进行检查.
 //	该窗口显示的内容依赖于window结构体里所指向的img
@@ -625,15 +619,5 @@ int _CreateWindow(const char* title, int nWidth, int nHeight) {
 	ShowWindow(hWnd, SW_NORMAL);
 	UpdateWindow(hWnd);
 
-	loadPicture();
 	return 0;
-}
-
-void playMusic(char* fileName) {
-	bool ret = PlaySound(fileName, NULL, SND_FILENAME | SND_ASYNC);
-	//DebugPrintln("%d %d", ret, GetLastError());
-}
-void playMusic(const char* fileName) {
-	bool ret = PlaySound(fileName, NULL, SND_FILENAME | SND_ASYNC);
-	//DebugPrintln("%d %d", ret, GetLastError());
 }

@@ -7,7 +7,7 @@
 #include <mmsystem.h>
 #include <vector>
 #include <list>
-#include <mutex>
+#include <algorithm>
 #include <Digitalv.h>
 #include "Debug.h"
 #pragma comment(lib, "WINMM.LIB")
@@ -174,6 +174,10 @@ public:
 	float x;//为了兼容之前的版本 不推荐使用23333
 	float y;//为了兼容之前的版本 不推荐使用23333
 	Point point;
+	
+	/*
+	z值越高，在画面越顶层，然后同级的在屏幕越下方的图片越顶层
+	*/
 	int z;
 	Picture* pic;//该对象的图标
 
@@ -244,6 +248,9 @@ public:
 	}
 	void setPoint(const Point& point) {
 		this->point = point;
+	}
+	bool operator<(Object obj2) {
+		return this->z < obj2.z;
 	}
 private:
 	float angle = 0.0f;//图像的旋转角度(弧度制)
