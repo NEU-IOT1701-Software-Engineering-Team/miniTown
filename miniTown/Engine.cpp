@@ -1,8 +1,8 @@
 #include "miniTown.h"
 
 const char* title = "Title_";
-const int nScreenWidth = 600;
-const int nScreenHeight = 600;
+ int nScreenWidth = SCREEN_WIDTH;
+ int nScreenHeight = SCREEN_HEIGHT;
 HWND hWnd = NULL;
 HDC hMemDC = NULL;
 HBITMAP hBitmapBuffer = NULL;
