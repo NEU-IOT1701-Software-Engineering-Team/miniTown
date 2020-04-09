@@ -264,6 +264,10 @@ public:
 	void WalkTo(Object* object);
 
 	int LastDaySum = 0; //用来计算食欲的临时变量
+	bool goToFlag = true; //用来判断是否到达散步目的地的变量
+	int AimX = 0;
+	int AimY = 0;
+	Object AimObject;
 };
 
 
@@ -318,6 +322,7 @@ extern Picture picBackground;
 extern Picture picBackground1;
 extern Picture picMoon;
 extern Picture picKingHouse;
+extern Picture picLove;
 extern Picture picChild;
 
 

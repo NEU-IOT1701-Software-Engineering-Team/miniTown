@@ -18,8 +18,8 @@ class Color;
 class Picture;
 
 extern const char* title;
-extern const int nScreenWidth;
-extern const int nScreenHeight;
+extern  int nScreenWidth;
+extern  int nScreenHeight;
 extern BYTE screen_keys[512];
 extern HWND hWnd;
 

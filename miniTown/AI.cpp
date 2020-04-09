@@ -386,6 +386,7 @@ void Builder::AI()
 								familyTree->Mother0 = this;
 							}
 							cout << "Get Marry!" << endl;
+							MakeBaby(familyTree);
 							break;
 						}
 					}
@@ -413,6 +414,7 @@ void Builder::AI()
 								familyTree->Mother0 = this;
 							}
 							cout << "Get Marry!" << endl;
+							MakeBaby(familyTree);
 							break;
 						}
 					}
@@ -423,10 +425,13 @@ void Builder::AI()
 					WalkTo(king.DrawObject);
 					if (IsMoreCloseTo(DrawObject, king.DrawObject))
 					{
-						BuyHouse();
-						cout << "Buy house!" << endl;
+						if (BuyHouse() == true)
+						{
+							cout << "Buy house!" << endl;
+						}
+						isTryBuyHouse = true;
 					}
-					isTryBuyHouse = true;
+					
 					
 				}
 
@@ -786,10 +791,14 @@ void Farmer::AI()
 					WalkTo(king.DrawObject);
 					if (IsMoreCloseTo(DrawObject, king.DrawObject))
 					{
-						BuyHouse();
-						cout << "Buy house!" << endl;
+						if (BuyHouse() == true)
+						{
+							cout << "Buy house!" << endl;
+						}
+						
+						isTryBuyHouse = true;
 					}
-					isTryBuyHouse = true;
+					
 					
 				}
 				else
@@ -994,12 +1003,21 @@ bool King::SetUnFinishHouseMark()
 
 void Child::Walk()
 {
-	int directionX = rand()%2-1;
-	int directionY = rand() % 2-1;
-	Object AimObject = *DrawObject;
-	AimObject.x += directionX;
-	AimObject.y += directionY;
+	if (goToFlag == true)
+	{
+		AimX = (rand() %SCREEN_WIDTH/60)*60;
+		AimY = ((rand() % (SCREEN_HEIGHT / 60 - 1) + 1) * 60);
+		goToFlag = false;
+	}
+
+	AimObject.pic = &picChild;
+	AimObject.x = AimX;
+	AimObject.y = AimY;
 	WalkTo(&AimObject);
+	if (IsMoreCloseTo(this->DrawObject,& AimObject))
+	{
+		goToFlag = true;
+	}
 }
 
 void Child::Sleep()

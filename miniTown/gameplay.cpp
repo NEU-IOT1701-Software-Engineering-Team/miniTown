@@ -359,18 +359,28 @@ void ShowSky()
 {
 	//白天显示太阳和background
 	//白天DayTimeNowRate(0~0.5) 
-	objSun.x = DayTimeNowRate * nScreenWidth*2;
-	objMoon.x = (DayTimeNowRate - 0.5) * nScreenWidth * 2;
-	//objSun.x = DayTimeNowRate * nScreenWidth *4-objSun.pic->getWidth();
-	//objMoon.x = DayTimeNowRate * nScreenWidth * 4 - nScreenWidth -objMoon.pic->getWidth();
-	if(((int)runtime/(DayTime/2))%2==1)
+	//白天是早上6点到晚上6点，即6/24=0.25,18/24=0.75
+	
+	
+	if (DayTimeNowRate > 0.75)
 	{
+		objMoon.x=(DayTimeNowRate-0.75) *2 * nScreenWidth;
 		objBackground.pic = &picBackground1;
+		objSun.x = -objSun.pic->getWidth();
+	}
+	else if (DayTimeNowRate < 0.25)
+	{
+		objMoon.x = (DayTimeNowRate*2 + 0.5) * nScreenWidth;
+		objBackground.pic = &picBackground1;
+		objSun.x = -objSun.pic->getWidth();
 	}
 	else
 	{
+		objSun.x = (DayTimeNowRate - 0.25)* 2 * nScreenWidth;
 		objBackground.pic = &picBackground;
+		objMoon.x = -objMoon.pic->getWidth();
 	}
+
 }
 
 House* FindKingHouse()

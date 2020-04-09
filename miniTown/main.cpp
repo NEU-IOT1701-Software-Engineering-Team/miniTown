@@ -62,7 +62,7 @@ float runtime = 0;
 float DayTimeNow = 0; //今天的进度(0~DayTime)
 float DayTimeNowRate = 0; //今天的进度(0~1)
 int DaySum = 0; //经过的日子数量
-float timeScale = 1;
+float timeScale = 5;
 int LastFPS = 0;
 float FrameTime = 0; //当前帧间隔时间
 int frame = 0; //帧率
@@ -90,6 +90,7 @@ void initLoadPic()
 	picMoon.loadImage("pic/moon.bmp");
 	picKingHouse.loadImage("pic/kinghouse.bmp");
 	picLove.loadImage("pic/love.bmp");
+
 	picChild.loadImage("pic/child.bmp");
 
 	cout << "Load Pic OK!" << endl;
@@ -159,7 +160,7 @@ int main()
 	
 	cout << "miniTown" << endl;
 
-	//initLoadPic();//_CreateWindow执行完之后会加载图片
+	initLoadPic();//_CreateWindow执行完之后会加载图片
 	initObject();
 
 	clock_t start, stop;
@@ -170,7 +171,7 @@ int main()
 	//cout << "Time scale?";
 
 	//cin >> timeScale;
-	timeScale = 2;
+
 	
 	while (1)
 	{

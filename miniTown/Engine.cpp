@@ -1,8 +1,8 @@
 #include "miniTown.h"
 
 const char* title = "Title_";
-const int nScreenWidth = 600;
-const int nScreenHeight = 600;
+int nScreenWidth = SCREEN_WIDTH;
+int nScreenHeight = SCREEN_HEIGHT;
 HWND hWnd = NULL;
 HDC hMemDC = NULL;
 HBITMAP hBitmapBuffer = NULL;
@@ -552,25 +552,6 @@ static LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 	return 0;
 }
 
-void loadPicture() {
-	picLand.loadImage("pic\\land.bmp");
-	picHouse.loadImage("pic\\house.bmp");
-	picHouse1.loadImage("pic\\house1.bmp");
-	picFarmer.loadImage("pic\\farmer.bmp");
-	picBuilder.loadImage("pic\\builder.bmp");
-	picField.loadImage("pic\\field.bmp");
-	picTree.loadImage("pic\\tree.bmp");
-	picKing.loadImage("pic\\king.bmp");
-	picField1.loadImage("pic\\field1.bmp");
-	picField2.loadImage("pic\\field2.bmp");
-	picRice.loadImage("pic\\rice.bmp");
-	picWood.loadImage("pic\\wood.bmp");
-	picSun.loadImage("pic\\sun.bmp");
-	picBackground.loadImage("pic\\background.bmp");
-	picBackground1.loadImage("pic\\background1.bmp");
-	picMoon.loadImage("pic\\moon.bmp");
-	picKingHouse.loadImage("pic\\kinghouse.bmp");
-}
 
 //Description:
 //	创建并维护一个窗口,目前不对参数合法性进行检查.
@@ -625,7 +606,6 @@ int _CreateWindow(const char* title, int nWidth, int nHeight) {
 	ShowWindow(hWnd, SW_NORMAL);
 	UpdateWindow(hWnd);
 
-	loadPicture();
 	return 0;
 }
 
