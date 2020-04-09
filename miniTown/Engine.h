@@ -7,6 +7,7 @@
 #include <mmsystem.h>
 #include <vector>
 #include <list>
+#include <mutex>
 #include <algorithm>
 #include <Digitalv.h>
 #include "Debug.h"
@@ -135,11 +136,14 @@ public:
 	//	NONE
 	static void stopPlayAll();
 private:
-	//static std::vector<_Sound> _listPlay;
+	
 
 	static DWORD WINAPI _Play(LPVOID lpParameter);
 	static DWORD WINAPI _PlayLoop(LPVOID lpParameter);
 
+	static void clearPlayList();
+	static Player::_Sound* _MyMalloc();
+	static void _MyFree(Player::_Sound* ptr);
 };
 
 struct Point {
