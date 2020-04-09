@@ -8,6 +8,7 @@
 #include <vector>
 #include <list>
 #include <mutex>
+#include <algorithm>
 #include <Digitalv.h>
 #include "Debug.h"
 #pragma comment(lib, "WINMM.LIB")
@@ -135,11 +136,14 @@ public:
 	//	NONE
 	static void stopPlayAll();
 private:
-	//static std::vector<_Sound> _listPlay;
+	
 
 	static DWORD WINAPI _Play(LPVOID lpParameter);
 	static DWORD WINAPI _PlayLoop(LPVOID lpParameter);
 
+	static void clearPlayList();
+	static Player::_Sound* _MyMalloc();
+	static void _MyFree(Player::_Sound* ptr);
 };
 
 struct Point {
@@ -174,6 +178,10 @@ public:
 	float x;//为了兼容之前的版本 不推荐使用23333
 	float y;//为了兼容之前的版本 不推荐使用23333
 	Point point;
+	
+	/*
+	z值越高，在画面越顶层，然后同级的在屏幕越下方的图片越顶层
+	*/
 	int z;
 	Picture* pic;//该对象的图标
 
@@ -244,6 +252,9 @@ public:
 	}
 	void setPoint(const Point& point) {
 		this->point = point;
+	}
+	bool operator<(Object obj2) {
+		return this->z < obj2.z;
 	}
 private:
 	float angle = 0.0f;//图像的旋转角度(弧度制)

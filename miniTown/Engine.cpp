@@ -1,8 +1,8 @@
 #include "miniTown.h"
 
 const char* title = "Title_";
-int nScreenWidth = SCREEN_WIDTH;
-int nScreenHeight = SCREEN_HEIGHT;
+const int nScreenWidth = 600;
+const int nScreenHeight = 600;
 HWND hWnd = NULL;
 HDC hMemDC = NULL;
 HBITMAP hBitmapBuffer = NULL;
@@ -14,8 +14,10 @@ Player player;
 Object* drawList[MaxDrawObjectSum];
 
 //std::vector<Player::_Sound> _listPlay;
-std::list<Player::_Sound> _listPlay;
-const int timeout = 300;//播放间隔 对音频外设操作需要时间间隔
+std::list<Player::_Sound *> _listPlay;
+const int timeout = 500;//播放间隔 对音频外设操作需要时间间隔
+const int step = 200;//响应时间
+std::mutex m;//互斥锁
 Player::Player() {
 	;
 }
@@ -25,203 +27,295 @@ Player::~Player() {
 }
 
 int Player::playSound(const char* szFileNameTemp, unsigned short volume) {
-	Player::_Sound sound;//用于保存该次播放的相关信息
-	sound.szFileName = (char*)szFileNameTemp;
-	sound.MciOpen.lpstrElementName = szFileNameTemp;
-	sound.volume = volume;
-	sound.isStop = false;
-
-	sound.hThread = CreateThread(NULL, 0, Player::_Play, (LPVOID)szFileNameTemp, 0, NULL);//创建线程异步播放
-	if (sound.hThread == NULL) {
+	Player::_Sound* pSound = _MyMalloc();//用于保存该次播放的相关信息
+	
+	pSound->szFileName= (char*)szFileNameTemp;
+	pSound->MciOpen.lpstrElementName = szFileNameTemp;
+	pSound->volume = volume;
+	pSound->isStop = false;
+	pSound->hThread = CreateThread(NULL, 0, Player::_Play, (LPVOID)szFileNameTemp, 0, NULL);//创建线程异步播放
+	if (pSound->hThread == NULL) {
 		//GetLastError();
 		return -1;
 	}
-	_listPlay.push_back(sound);//保存信息
-	CloseHandle(sound.hThread);
+	_listPlay.push_back(pSound);//保存信息
+	//CloseHandle(pSound->hThread);
 	Sleep(timeout);
-	return (int)sound.hThread;//返回一个被强转的线程句柄
+	return (int)pSound->hThread;//返回一个被强转的线程句柄
 }
 
 int Player::playSound(char* szFileNameTemp, unsigned short volume) {
-	Player::_Sound sound;//用于保存该次播放的相关信息
-	sound.szFileName = szFileNameTemp;
-	sound.MciOpen.lpstrElementName = szFileNameTemp;
-	sound.volume = volume;
-	sound.isStop = false;
+	Player::_Sound* pSound = _MyMalloc();//用于保存该次播放的相关信息
 
-	sound.hThread = CreateThread(NULL, 0, Player::_Play, (LPVOID)szFileNameTemp, 0, NULL);//创建线程异步播放
-	if (sound.hThread == NULL) {
+	pSound->szFileName = szFileNameTemp;
+	pSound->MciOpen.lpstrElementName = szFileNameTemp;
+	pSound->volume = volume;
+	pSound->isStop = false;
+	pSound->hThread = CreateThread(NULL, 0, Player::_Play, (LPVOID)szFileNameTemp, 0, NULL);//创建线程异步播放
+	if (pSound->hThread == NULL) {
 		//GetLastError();
 		return -1;
 	}
-	_listPlay.push_back(sound);//保存信息
-	CloseHandle(sound.hThread);
+	_listPlay.push_back(pSound);//保存信息
+	//CloseHandle(pSound->hThread);
 	Sleep(timeout);
-	return (int)sound.hThread;//返回一个被强转的线程句柄
+	return (int)pSound->hThread;//返回一个被强转的线程句柄
 }
 
 int Player::playSoundLoop(const char* szFileNameTemp, unsigned short volume) {
-	Player::_Sound sound;//用于保存该次播放的相关信息
-	sound.szFileName = (char*)szFileNameTemp;
-	sound.MciOpen.lpstrElementName = szFileNameTemp;
-	sound.volume = volume;
-	sound.isStop = false;
+	Player::_Sound* pSound = _MyMalloc();//用于保存该次播放的相关信息
 
-	sound.hThread = CreateThread(NULL, 0, Player::_PlayLoop, (LPVOID)szFileNameTemp, 0, NULL);//创建线程异步播放
-	if (sound.hThread == NULL) {
+	pSound->szFileName = (char*)szFileNameTemp;
+	pSound->MciOpen.lpstrElementName = szFileNameTemp;
+	pSound->volume = volume;
+	pSound->isStop = false;
+	pSound->hThread = CreateThread(NULL, 0, Player::_PlayLoop, (LPVOID)szFileNameTemp, 0, NULL);//创建线程异步播放
+	if (pSound->hThread == NULL) {
 		//GetLastError();
 		return -1;
 	}
-	_listPlay.push_back(sound);//保存信息
-	CloseHandle(sound.hThread);
+	_listPlay.push_back(pSound);//保存信息
+	//CloseHandle(pSound->hThread);
 	Sleep(timeout);
-	return (int)sound.hThread;//返回一个被强转的线程句柄
+	return (int)pSound->hThread;//返回一个被强转的线程句柄
 }
 
 int Player::playSoundLoop(char* szFileNameTemp, unsigned short volume) {
-	Player::_Sound sound;//用于保存该次播放的相关信息
-	sound.szFileName = szFileNameTemp;
-	sound.MciOpen.lpstrElementName = szFileNameTemp;
-	sound.volume = volume;
-	sound.isStop = false;
+	Player::_Sound* pSound = _MyMalloc();//用于保存该次播放的相关信息
 
-	sound.hThread = CreateThread(NULL, 0, Player::_PlayLoop, (LPVOID)szFileNameTemp, 0, NULL);//创建线程异步播放
-	if (sound.hThread == NULL) {
+	pSound->szFileName = szFileNameTemp;
+	pSound->MciOpen.lpstrElementName = szFileNameTemp;
+	pSound->volume = volume;
+	pSound->isStop = false;
+	pSound->hThread = CreateThread(NULL, 0, Player::_PlayLoop, (LPVOID)szFileNameTemp, 0, NULL);//创建线程异步播放
+	if (pSound->hThread == NULL) {
 		//GetLastError();
 		return -1;
 	}
-	_listPlay.push_back(sound);//保存信息
-	CloseHandle(sound.hThread);
+	_listPlay.push_back(pSound);//保存信息
+	//CloseHandle(pSound->hThread);
 	Sleep(timeout);
-	return (int)sound.hThread;//返回一个被强转的线程句柄
+	return (int)pSound->hThread;//返回一个被强转的线程句柄
 }
 void Player::stopPlay(const char* szTargetFileName) {
-	std::list<_Sound>::iterator it = _listPlay.begin();
+	Player::_Sound* pSound = NULL;
+	m.lock();
+	std::list<Player::_Sound*>::iterator it = _listPlay.begin();
 	for (; it != _listPlay.end(); ++it) {
-		if ((*it) == (char*)szTargetFileName) {
-			(*it).stop();
+		if ((*(*it)) == (char*)szTargetFileName) {
+			pSound = (*it);
 			break;
 		}
 	}
+	m.unlock();
+	if (pSound == NULL) {
+		return;
+	}
+
+	pSound->stop();//通知线程结束
+	WaitForSingleObject(pSound->hThread, step * 2);//等待结束
+	CloseHandle(pSound->hThread);
+	pSound->hThread = NULL;
+
+	//从列表中移除
+	clearPlayList();
+
+	_MyFree(pSound);//释放资源
 }
 void Player::stopPlay(char* szTargetFileName) {
-	std::list<_Sound>::iterator it = _listPlay.begin();
+	Player::_Sound* pSound = NULL;
+	m.lock();
+	std::list<Player::_Sound*>::iterator it = _listPlay.begin();
 	for (; it != _listPlay.end(); ++it) {
-		if ((*it) == szTargetFileName) {
-			(*it).stop();
+		if ((*(*it)) ==szTargetFileName) {
+			pSound = (*it);
 			break;
 		}
 	}
+	m.unlock();
+	if (pSound == NULL) {
+		return;
+	}
+
+	pSound->stop();//通知线程结束
+	WaitForSingleObject(pSound->hThread, step * 2);//等待结束
+	CloseHandle(pSound->hThread);
+	pSound->hThread = NULL;
+
+	//从列表中移除
+	clearPlayList();
+
+	_MyFree(pSound);//释放资源
 }
 void Player::stopPlay(int hThread) {
-	std::list<_Sound>::iterator it = _listPlay.begin();
+	Player::_Sound* pSound = NULL;
+	m.lock();
+	std::list<Player::_Sound*>::iterator it = _listPlay.begin();
 	for (; it != _listPlay.end(); ++it) {
-		if ((*it) == hThread) {
-			(*it).stop();
+		if ((*(*it)) == hThread) {
+			pSound = (*it);
 			break;
 		}
 	}
+	m.unlock();
+	if (pSound == NULL) {
+		return;
+	}
+
+	pSound->stop();//通知线程结束
+	WaitForSingleObject(pSound->hThread, step * 2);//等待结束
+	CloseHandle(pSound->hThread);
+	pSound->hThread = NULL;
+
+	//从列表中移除
+	clearPlayList();
+
+	_MyFree(pSound);//释放资源
 }
 void Player::stopPlayAll() {
-	std::list<Player::_Sound>::iterator it = _listPlay.begin();
-	for (; it != _listPlay.end(); ++it) {
-		(*it).stop();
+	Player::_Sound* pSound = NULL;
+	m.lock();
+	while (!_listPlay.empty()) {
+		pSound = _listPlay.front();
+		m.unlock();
+		stopPlay((int)pSound->hThread);
+		m.lock();
 	}
+	m.unlock();
 }
 
+
 DWORD WINAPI Player::_Play(LPVOID lpParameter) {
+	Player::_Sound* pSound = NULL;
 	//遍历链表寻找 因由当前线程所维护的播放信息
-	std::list<Player::_Sound>::iterator it = _listPlay.begin();
+	
+	m.lock();
+	std::list<Player::_Sound*>::iterator it = _listPlay.begin();
 	for (; it != _listPlay.end(); ++it) {
-		if ((*it) == (char*)lpParameter) {
-			//打开操作要和其他操作在同一线程.
-			DWORD ret = mciSendCommand(0, MCI_OPEN,
-				MCI_OPEN_ELEMENT, (DWORD_PTR)(LPVOID) & (*it).MciOpen);//打开一个设备 准备播放该音效
-			if (ret != 0) {
-				//std::cout << (*it).szFileName << " MCI_OPEN ret:" << ret << std::endl;
-				return ret;
-			}
-			//std::cout << (*it).szFileName << " id:" << (*it).MciOpen.wDeviceID << std::endl;
-
-			ret = mciSendCommand((*it).MciOpen.wDeviceID, MCI_PLAY,
-				MCI_NOTIFY, (DWORD_PTR)(LPVOID) & (*it).MciPlay);//开始播放
-			//std::cout << (*it).szFileName << " MCI_PLAY ret" <<ret << std::endl;
-
-			(*it).MciStatus.dwItem = MCI_STATUS_LENGTH;//要获取的项 获取长度
-			ret = mciSendCommand((*it).MciOpen.wDeviceID, MCI_STATUS,
-				MCI_STATUS_ITEM, (DWORD_PTR)(LPVOID) & (*it).MciStatus);//获取音效时长  单位毫秒
-			(*it).nLength = (*it).MciStatus.dwReturn;
-			//std::cout << (*it).szFileName << " MCI_STATUS ret" << ret << std::endl;
-			//std::cout << (*it).szFileName << " Length:" << (*it).nLength << std::endl;
-
-
-			(*it).MciSetAudio.dwItem = MCI_DGV_SETAUDIO_VOLUME;
-			(*it).MciSetAudio.dwValue = (*it).volume;
-			ret = mciSendCommand((*it).MciOpen.wDeviceID, MCI_SETAUDIO,
-				MCI_DGV_SETAUDIO_VALUE | MCI_DGV_SETAUDIO_ITEM, (DWORD_PTR) & (*it).MciSetAudio);//设置音量
-			//std::cout << (*it).szFileName << " MCI_SET ret" << ret << std::endl;
-
-			int step = 500;//响应时间
-			for (int i = 0; (!(*it).isStop) && (i < (*it).nLength); i += step) {//等待播放完毕
-				Sleep(step);
-			}
-			//Sleep((*it).nLength);//等待播放完毕
-			ret = mciSendCommand((*it).MciOpen.wDeviceID, MCI_CLOSE, NULL, NULL);//关闭设备
-			//std::cout << (*it).szFileName << " MCI_CLOSE ret" << ret << std::endl;
-			_listPlay.erase(it);//从链表中删除
+		if ((*(*it)) == (char*)lpParameter) {
+			pSound = (*it);
 			break;
 		}
 	}
+	m.unlock();
+
+	if (pSound == NULL) {
+		return -1;
+	}
+
+	//打开操作要和其他操作在同一线程.
+	DWORD ret = mciSendCommand(0, MCI_OPEN,
+		MCI_OPEN_ELEMENT, (DWORD_PTR)&pSound->MciOpen);//打开一个设备 准备播放该音效
+	if (ret != 0) {
+		std::cout <<pSound->szFileName << " MCI_OPEN ret:" << ret << std::endl;
+		return ret;
+	}
+	std::cout <<pSound->szFileName << " id:" <<pSound->MciOpen.wDeviceID << std::endl;
+
+	ret = mciSendCommand(pSound->MciOpen.wDeviceID, MCI_PLAY,
+		MCI_NOTIFY, (DWORD_PTR)(LPVOID)&pSound->MciPlay);//开始播放
+	std::cout <<pSound->szFileName << " MCI_PLAY ret" <<ret << std::endl;
+
+	pSound->MciStatus.dwItem = MCI_STATUS_LENGTH;//要获取的项 获取长度
+	ret = mciSendCommand(pSound->MciOpen.wDeviceID, MCI_STATUS,
+		MCI_STATUS_ITEM, (DWORD_PTR)(LPVOID)&pSound->MciStatus);//获取音效时长  单位毫秒
+	pSound->nLength = pSound->MciStatus.dwReturn;
+	std::cout <<pSound->szFileName << " MCI_STATUS ret" << ret << std::endl;
+	std::cout <<pSound->szFileName << " Length:" <<pSound->nLength << std::endl;
+
+
+	pSound->MciSetAudio.dwItem = MCI_DGV_SETAUDIO_VOLUME;
+	pSound->MciSetAudio.dwValue = pSound->volume;
+	ret = mciSendCommand(pSound->MciOpen.wDeviceID, MCI_SETAUDIO,
+		MCI_DGV_SETAUDIO_VALUE | MCI_DGV_SETAUDIO_ITEM, (DWORD_PTR)&pSound->MciSetAudio);//设置音量
+	std::cout <<pSound->szFileName << " MCI_SET ret" << ret << std::endl;
+
+	
+	for (int i = 0; (!pSound->isStop) && (i < pSound->nLength); i += step) {//等待播放完毕
+		Sleep(step);
+	}
+	//Sleep((*it).nLength);//等待播放完毕
+	ret = mciSendCommand(pSound->MciOpen.wDeviceID, MCI_CLOSE, NULL, NULL);//关闭设备
+	std::cout <<pSound->szFileName << " MCI_CLOSE ret" << ret << std::endl;
+
 	return 0L;
 }
 
 DWORD WINAPI Player::_PlayLoop(LPVOID lpParameter) {
+	Player::_Sound* pSound = NULL;
 	//遍历链表寻找 因由当前线程所维护的播放信息
-	std::list<Player::_Sound>::iterator it = _listPlay.begin();
+
+	m.lock();
+	std::list<Player::_Sound*>::iterator it = _listPlay.begin();
 	for (; it != _listPlay.end(); ++it) {
-		if ((*it) == (char*)lpParameter) {
-			DWORD ret;
-			//循环播放
-			while (!(*it).isStop) {
-				ret = mciSendCommand(0, MCI_OPEN,
-					MCI_OPEN_ELEMENT, (DWORD_PTR)(LPVOID) & (*it).MciOpen);//打开一个设备 准备播放该音效
-				if (ret != 0) {
-					return ret;
-				}
-				//std::cout << (*it).szFileName << " id:" << (*it).MciOpen.wDeviceID << std::endl;
-
-				ret = mciSendCommand((*it).MciOpen.wDeviceID, MCI_PLAY,
-					MCI_NOTIFY, (DWORD_PTR)(LPVOID) & (*it).MciPlay);//开始播放
-				//std::cout << (*it).szFileName << " MCI_PLAY ret" << ret << std::endl;
-
-				(*it).MciStatus.dwItem = MCI_STATUS_LENGTH;//要获取的项 获取长度
-				ret = mciSendCommand((*it).MciOpen.wDeviceID, MCI_STATUS,
-					MCI_STATUS_ITEM, (DWORD_PTR)(LPVOID) & (*it).MciStatus);//获取音效时长  单位毫秒
-				(*it).nLength = (*it).MciStatus.dwReturn;
-				//std::cout << (*it).szFileName << " MCI_STATUS ret" << ret << std::endl;
-				//std::cout << (*it).szFileName << " Length:" << (*it).MciStatus.dwReturn << std::endl;
-
-				(*it).MciSetAudio.dwItem = MCI_DGV_SETAUDIO_VOLUME;
-				(*it).MciSetAudio.dwValue = (*it).volume;
-				ret = mciSendCommand((*it).MciOpen.wDeviceID, MCI_SETAUDIO,
-					MCI_DGV_SETAUDIO_VALUE | MCI_DGV_SETAUDIO_ITEM, (DWORD_PTR) & (*it).MciSetAudio);//设置音量
-				//std::cout << (*it).szFileName << " MCI_SET ret" << ret << std::endl;
-
-				int step = 500;//响应时长
-				for (int i = 0; (!(*it).isStop) && (i < (*it).nLength); i += step) {
-					Sleep(step);
-				}
-
-				ret = mciSendCommand((*it).MciOpen.wDeviceID, MCI_CLOSE, NULL, NULL);//关闭设备
-				//std::cout << (*it).szFileName << " MCI_CLOSE ret" << ret << std::endl;
-			}
-			_listPlay.erase(it);//从链表中删除
+		if ((*(*it)) == (char*)lpParameter) {
+			pSound = (*it);
 			break;
 		}
 	}
+	m.unlock();
 
+	if (pSound == NULL) {
+		return -1;
+	}
+
+	DWORD ret;
+	//循环播放
+	while (!pSound->isStop) {
+		ret = mciSendCommand(0, MCI_OPEN,
+			MCI_OPEN_ELEMENT, (DWORD_PTR)(LPVOID)&pSound->MciOpen);//打开一个设备 准备播放该音效
+		if (ret != 0) {
+			return ret;
+		}
+		std::cout <<pSound->szFileName << " id:" <<pSound->MciOpen.wDeviceID << std::endl;
+
+		ret = mciSendCommand(pSound->MciOpen.wDeviceID, MCI_PLAY,
+			MCI_NOTIFY, (DWORD_PTR)(LPVOID)&pSound->MciPlay);//开始播放
+		std::cout <<pSound->szFileName << " MCI_PLAY ret" << ret << std::endl;
+
+		pSound->MciStatus.dwItem = MCI_STATUS_LENGTH;//要获取的项 获取长度
+		ret = mciSendCommand(pSound->MciOpen.wDeviceID, MCI_STATUS,
+			MCI_STATUS_ITEM, (DWORD_PTR)(LPVOID)&pSound->MciStatus);//获取音效时长  单位毫秒
+		pSound->nLength = pSound->MciStatus.dwReturn;
+		std::cout <<pSound->szFileName << " MCI_STATUS ret" << ret << std::endl;
+		std::cout <<pSound->szFileName << " Length:" <<pSound->MciStatus.dwReturn << std::endl;
+
+		pSound->MciSetAudio.dwItem = MCI_DGV_SETAUDIO_VOLUME;
+		pSound->MciSetAudio.dwValue = pSound->volume;
+		ret = mciSendCommand(pSound->MciOpen.wDeviceID, MCI_SETAUDIO,
+			MCI_DGV_SETAUDIO_VALUE | MCI_DGV_SETAUDIO_ITEM, (DWORD_PTR)&pSound->MciSetAudio);//设置音量
+		std::cout <<pSound->szFileName << " MCI_SET ret" << ret << std::endl;
+
+		for (int i = 0; (!pSound->isStop) && (i < pSound->nLength); i += step) {
+			Sleep(step);
+		}
+
+		ret = mciSendCommand(pSound->MciOpen.wDeviceID, MCI_CLOSE, NULL, NULL);//关闭设备
+		std::cout <<pSound->szFileName << " MCI_CLOSE ret" << ret << std::endl;
+	}
 	return 0L;
 }
+
+void Player::clearPlayList(){
+	m.lock();
+	std::list<Player::_Sound*>::iterator it = _listPlay.begin();
+	for (; it != _listPlay.end(); ++it) {
+		if ((*it)->hThread == NULL) {
+			_listPlay.erase(it);
+			break;
+		}
+	}
+	m.unlock();
+}
+
+Player::_Sound* Player::_MyMalloc(){
+	return new Player::_Sound;
+}
+
+void Player::_MyFree(Player::_Sound* ptr){
+	delete ptr;
+}
+
 
 int drawSum = 0;
 void AddDrawObject(Object* object)
@@ -469,21 +563,35 @@ void Draw() {
 
 	/*
 	Object obj;
-	obj.point.x = -30;
-	obj.point.y = -30;
+	obj.point.x = 10;
+	obj.point.y = 10;
+	obj.z = 1;
 	obj.setAngle(45);
 	obj.pic = &picField;
-	DrawObject(&obj);//测试
-
 
 	Object obj2;
-	obj2.point.x = nScreenWidth - 30;
-	obj2.point.y = nScreenHeight - 30;
+	obj2.point.x = 30;
+	obj2.point.y = 30;
+	obj2.z = 2;
 	obj2.setAngle(45);
-	obj2.pic = &picField;
-	DrawObject(&obj2);//测试*/
+	obj2.pic = &picField1;
 
+	Object obj3;
+	obj3.point.x = 50;
+	obj3.point.y = 50;
+	obj3.setAngle(45);
+	obj3.z = 0;
+	obj3.pic = &picField2;
 
+	Object* _drawList[MaxDrawObjectSum];
+	_drawList[0] = &obj;
+	_drawList[1] = &obj2;
+	_drawList[2] = &obj3;
+	std::sort(*_drawList, *(_drawList + 2));
+	for (int i = 0; i < 3; ++i) {
+		DrawObject(_drawList[i]);
+	}*/
+	
 	for (int i = 0; i < drawSum; i++)
 	{
 		//DebugPrint("第%d个objetc 开始绘制\t",i);
@@ -552,7 +660,6 @@ static LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 	return 0;
 }
 
-
 //Description:
 //	创建并维护一个窗口,目前不对参数合法性进行检查.
 //	该窗口显示的内容依赖于window结构体里所指向的img
@@ -607,13 +714,4 @@ int _CreateWindow(const char* title, int nWidth, int nHeight) {
 	UpdateWindow(hWnd);
 
 	return 0;
-}
-
-void playMusic(char* fileName) {
-	bool ret = PlaySound(fileName, NULL, SND_FILENAME | SND_ASYNC);
-	//DebugPrintln("%d %d", ret, GetLastError());
-}
-void playMusic(const char* fileName) {
-	bool ret = PlaySound(fileName, NULL, SND_FILENAME | SND_ASYNC);
-	//DebugPrintln("%d %d", ret, GetLastError());
 }
