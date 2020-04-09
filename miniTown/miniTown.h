@@ -287,24 +287,6 @@ public:
 
 const int DayTime = 30;
 
-//extern Picture picLand;
-//extern Picture picHouse;
-//extern Picture picHouse1;
-//extern Picture picFarmer;
-//extern Picture picBuilder;
-//extern Picture picField;
-//extern Picture picField1;
-//extern Picture picField2;
-//extern Picture picTree;
-//extern Picture picKing;
-//extern Picture picRice;
-//extern Picture picWood;
-//extern Picture picSun;
-//extern Picture picBackground;
-//extern Picture picBackground1;
-//extern Picture picMoon;
-//extern Picture picKingHouse;
-
 extern Picture picLand;
 extern Picture picHouse;
 extern Picture picHouse1;

@@ -40,7 +40,7 @@ int Player::playSound(const char* szFileNameTemp, unsigned short volume) {
 	}
 	_listPlay.push_back(pSound);//保存信息
 	//CloseHandle(pSound->hThread);
-	Sleep(timeout);
+	//Sleep(timeout);
 	return (int)pSound->hThread;//返回一个被强转的线程句柄
 }
 
@@ -58,7 +58,7 @@ int Player::playSound(char* szFileNameTemp, unsigned short volume) {
 	}
 	_listPlay.push_back(pSound);//保存信息
 	//CloseHandle(pSound->hThread);
-	Sleep(timeout);
+	//Sleep(timeout);
 	return (int)pSound->hThread;//返回一个被强转的线程句柄
 }
 
@@ -76,7 +76,7 @@ int Player::playSoundLoop(const char* szFileNameTemp, unsigned short volume) {
 	}
 	_listPlay.push_back(pSound);//保存信息
 	//CloseHandle(pSound->hThread);
-	Sleep(timeout);
+	//Sleep(timeout);
 	return (int)pSound->hThread;//返回一个被强转的线程句柄
 }
 
@@ -94,7 +94,7 @@ int Player::playSoundLoop(char* szFileNameTemp, unsigned short volume) {
 	}
 	_listPlay.push_back(pSound);//保存信息
 	//CloseHandle(pSound->hThread);
-	Sleep(timeout);
+	//Sleep(timeout);
 	return (int)pSound->hThread;//返回一个被强转的线程句柄
 }
 void Player::stopPlay(const char* szTargetFileName) {
@@ -186,6 +186,7 @@ void Player::stopPlayAll() {
 
 
 DWORD WINAPI Player::_Play(LPVOID lpParameter) {
+	Sleep(timeout);
 	Player::_Sound* pSound = NULL;
 	//遍历链表寻找 因由当前线程所维护的播放信息
 	
@@ -242,6 +243,7 @@ DWORD WINAPI Player::_Play(LPVOID lpParameter) {
 }
 
 DWORD WINAPI Player::_PlayLoop(LPVOID lpParameter) {
+	Sleep(timeout);
 	Player::_Sound* pSound = NULL;
 	//遍历链表寻找 因由当前线程所维护的播放信息
 

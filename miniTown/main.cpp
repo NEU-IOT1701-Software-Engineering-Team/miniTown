@@ -146,13 +146,8 @@ void initObject()
 
 int main()
 {
-	
 	player.playSoundLoop("sound/01 Bloom.mp3", BackgroundMusicVolume);
 
-
-
-	//playMusic("sound/01 Bloom.wav");
-	//const char* title = _T("miniTown");
 	if (_CreateWindow(title, nScreenWidth, nScreenHeight))
 	{
 		return -1;
@@ -160,7 +155,7 @@ int main()
 	
 	cout << "miniTown" << endl;
 
-	initLoadPic();//_CreateWindow执行完之后会加载图片
+	initLoadPic();
 	initObject();
 
 	clock_t start, stop;
