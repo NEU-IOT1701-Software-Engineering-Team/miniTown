@@ -146,7 +146,11 @@ void initObject()
 
 int main()
 {
-	player.playSoundLoop("sound/01 Bloom.mp3", BackgroundMusicVolume);
+	if (SoundOn)
+	{
+		player.playSoundLoop("sound/01 Bloom.mp3", BackgroundMusicVolume);
+	}
+
 
 	if (_CreateWindow(title, nScreenWidth, nScreenHeight))
 	{

@@ -231,6 +231,8 @@ void AddChild(int sex, FamilyTree* familyTree)
 	child[NowChildSum].wantFoodLevel = 0;
 	child[NowChildSum].id = NowChildSum;
 	child[NowChildSum].Sex = sex;
+	familyTree->ChildType = 0;
+	familyTree->child0 = &child[NowChildSum];
 	AddDrawObject(child[NowChildSum].DrawObject);
 	NowChildSum++;
 }
@@ -346,6 +348,12 @@ void ResourceCount()//对村民拥有的资源进行统计
 	for (int i = 0; i < NowBuilderSum; i++)
 	{
 		cout << builder[i].id << "\t"<<((builder[i].Sex==1) ? "man" : "woman")<<"\t" << builder[i].money << "\t" << builder[i].age<<"\t"<<builder[i].belongHouse->StoneRiceSum<<"\t"<<builder[i].OwnHouseCount<<"\t"<<builder[i].belongHouse->StoneWoodSum<<"\t"<<builder[i].wantFoodLevel<<"\t"<<builder[i].wantSexLevel << endl;
+	}
+	cout << "Child:" << endl;
+	cout << "id\tsex\tage\trice\twFood" << endl;
+	for (int i = 0; i < NowChildSum; i++)
+	{
+		cout << child[i].id << "\t" << ((child[i].Sex == 1) ? "man" : "woman") << "\t" << child[i].age << "\t" << child[i].belongHouse->StoneRiceSum << "\t" << child[i].wantFoodLevel << endl;
 	}
 	cout << "King:" << endl;
 	cout << "sex\tmoney\tage\tHouse\tRice" << endl;

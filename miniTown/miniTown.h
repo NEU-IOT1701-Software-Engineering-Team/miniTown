@@ -35,6 +35,7 @@ const int bits = 24;
 //extern BYTE buffer[SCREEN_WIDTH * SCREEN_HEIGHT * bits / 8];
 extern int BackgroundMusicVolume;
 extern int SoundVolume;
+const int SoundOn = false;
 
 
 class coord //以60*60为单位标记坐标
@@ -55,16 +56,12 @@ extern Player player;
 void AddDrawObject(Object* object);
 void RemoveDrawObecjt(Object* object);
 
-
 void KeyControl();
-
-
 
 extern float runtime;
 extern int LastFPS;
 extern int frame; //当前的帧率
 extern float timeScale;
-
 
 
 const int MaxHouseSum = 1000;
@@ -83,6 +80,10 @@ extern int RicePrice;
 extern int HousePrice;
 extern int FirstPayHousePrice; //盖房子预先给木匠的定金
 extern int ChildGrowDayTime;
+extern int MaxWantFoodLevel;
+const float GrowRiceTime = 25;
+
+
 
 extern float DayTimeNowRate; //今天的进度(0~1)
 extern float DayTimeNow;
@@ -161,16 +162,22 @@ public:
 	void Sleep();
 	void GrowRice();
 	void AI();
-	void PutRice();
-	void GetARiceToHand();  //从房子里拿出一个水稻到手上
-	void GetAllRiceToHand(); //从房子里拿出所有水稻到手上
+	void PutRice(House* house);
+	bool GetARiceToHand();  //从房子里拿出一个水稻到手上
+	bool GetAllRiceToHand(); //从房子里拿出所有水稻到手上
 
+	bool BuyRice();
 	bool BuyHouse();
 	void judgeDead();
 
 	bool SellRiceForMoney();
 
 	int LastDaySum=0; //用来计算食欲的临时变量
+	//买水稻用的临时变量
+	bool isTryFeedChild = false;
+	bool isTryBuyRice = false;
+	bool isBuyRiceFinish = false;
+	bool isTrySellRice = false;
 	
 };
 
@@ -198,6 +205,8 @@ public:
 	Object* DrawObject;
 	Object* TakeOnThing[MaxObjectSum];
 	int TakeOnThingSum = 0;
+	bool GetARiceToHand();
+	bool GetAllRiceToHand();
 	void WalkTo(Object* object);
 	void BuildHouse();
 	void Eat();
@@ -209,7 +218,7 @@ public:
 	void PutWood();
 	bool BuyRice();
 	bool BuyHouse();
-	bool PutRice();
+	bool PutRice(House* house);
 	void judgeDead();
 	
 
@@ -218,8 +227,9 @@ public:
 	//买水稻用的临时变量
 	bool isTryBuyRice = false;
 	bool isBuyRiceFinish = false;
-	//买水稻用的临时变量
+	//买房子用的临时变量
 	bool isTryBuyHouse = false;
+	bool isTryFeedChild = false;
 };
 
 class King
@@ -251,7 +261,7 @@ class Child
 {
 public:
 	int id;
-	int age;
+	float age;
 	int Sex;
 	bool isDead = false;
 	House* belongHouse = NULL;
@@ -261,6 +271,7 @@ public:
 	void Sleep();
 	void Eat();
 	void AI();
+	void judgeDead();
 	void WalkTo(Object* object);
 
 	int LastDaySum = 0; //用来计算食欲的临时变量
@@ -283,6 +294,9 @@ public:
 	Farmer *Mother1;
 	King *Mother2;
 	int ChildType;
+	Child* child0;
+	Builder* child1;
+	Farmer* child2;
 };
 
 const int DayTime = 30;
