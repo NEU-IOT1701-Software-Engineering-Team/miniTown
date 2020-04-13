@@ -82,6 +82,8 @@ extern int FirstPayHousePrice; //盖房子预先给木匠的定金
 extern int ChildGrowDayTime;
 extern int MaxWantFoodLevel;
 const float GrowRiceTime = 25;
+const float AgeAddEveryDay = 1;
+const float GrownUpAge = 14; //小孩到成年的年龄
 
 
 
@@ -253,6 +255,8 @@ public:
 	void DestoryMoney(int Sum);
 	void SetRicePrice(int Price);
 	void SetHousePrice(int Price);
+	void SetATree(); //在村长位置种一棵树
+	void SetAField(); //在村长位置弄一块田
 	bool SetUnFinishHouseMark();  //在村长当前位置设置一个盖房子的记号（木匠随后会取盖房子）需要村长花一部分钱
 
 };
@@ -265,9 +269,11 @@ public:
 	int Sex;
 	bool isDead = false;
 	House* belongHouse = NULL;
+	FamilyTree* oldFamilyTree;
 	Object* DrawObject;
 	int wantFoodLevel;
 	void Walk(); //随机在地图里散步
+	void GrowUP(); //变成成人
 	void Sleep();
 	void Eat();
 	void AI();
@@ -388,5 +394,5 @@ float DistanceAToB(Object* A, Object* B);
 House* GetANearEmptyHouse(Object* man,int type=0); 
 Field* GetANearUnUsedField(Object* man);
 House* FindKingHouse();
-Point GetPoint(Object* object); //获取最接近的坐标
-bool IsPointUsed(Point point);
+coord GetCoord(Object* object); //获取最接近的坐标
+bool IsCoordUsed(coord point);

@@ -1,6 +1,6 @@
 #include "miniTown.h"
 
-const char* title = "Title_";
+const char* title = "miniTown";
  int nScreenWidth = SCREEN_WIDTH;
  int nScreenHeight = SCREEN_HEIGHT;
 HWND hWnd = NULL;

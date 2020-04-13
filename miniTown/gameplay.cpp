@@ -141,7 +141,7 @@ void AddUnFinishHouse(int x, int y)
 	house[NowHouseSum].buildTime = 0;
 	house[NowHouseSum].DrawObject = &objHouse[NowHouseSum];
 	house[NowHouseSum].DrawObject->pic = &picHouse1;
-	house[NowHouseSum].id = NowHouseSum - 1;
+	house[NowHouseSum].id = NowHouseSum;
 	house[NowHouseSum].DrawObject->x = x *  picHouse.getWidth();
 	house[NowHouseSum].DrawObject->y = y * picHouse.getHeight();
 	house[NowHouseSum].FirstBuildMoney = FirstPayHousePrice;
@@ -231,6 +231,7 @@ void AddChild(int sex, FamilyTree* familyTree)
 	child[NowChildSum].wantFoodLevel = 0;
 	child[NowChildSum].id = NowChildSum;
 	child[NowChildSum].Sex = sex;
+	child[NowChildSum].oldFamilyTree = familyTree;
 	familyTree->ChildType = 0;
 	familyTree->child0 = &child[NowChildSum];
 	AddDrawObject(child[NowChildSum].DrawObject);
@@ -396,14 +397,14 @@ House* FindKingHouse()
 	return king.belongHouse;
 }
 
-Point GetPoint(Object* object)
+coord GetCoord(Object* object)
 {
 	int x = (object->point.x+object->pic->getWidth()/2) / 60;
 	int y = (object->point.y+object->pic->getHeight()/2) / 60;
-	return Point(x,y);
+	return coord(x,y);
 }
 
-bool IsPointUsed(Point Coord)
+bool IsCoordUsed(coord Coord)
 {
 
 	for (int i = 0; i < NowHouseSum; i++)
