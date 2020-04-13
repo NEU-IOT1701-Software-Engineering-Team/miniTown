@@ -235,6 +235,8 @@ void KeyControl()
 	static int pressM = false;
 	static int pressN = false;
 	static int pressB = false;
+	static int pressT = false;
+	static int pressF = false;
 	int speed = 40; //村长的移动速度
 	if (screen_keys[VK_ESCAPE])
 	{
@@ -352,5 +354,28 @@ void KeyControl()
 	{
 		pressB = false;
 	}
-
+	if (screen_keys['T'])
+	{
+		if (pressT == false)
+		{
+			king.SetATree();
+		}
+		pressT = true;
+	}
+	else
+	{
+		pressF = false;
+	}
+	if (screen_keys['F'])
+	{
+		if (pressF == false)
+		{
+			king.SetAField();
+		}
+		pressF = true;
+	}
+	else
+	{
+		pressF = false;
+	}
 }
