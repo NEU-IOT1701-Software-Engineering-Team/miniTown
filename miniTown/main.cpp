@@ -147,7 +147,13 @@ void initObject()
 int main()
 {
 	player.playSoundLoop("sound/01 Bloom.mp3", BackgroundMusicVolume);
-
+	//RussianChorusS
+	player.playSound("sound/getRice.mp3", SoundVolume);
+	player.playSound("sound/getRice.mp3", SoundVolume);
+	player.playSound("sound/getRice.mp3", SoundVolume);
+	//player.stopPlayAll();
+	//player.playSound("sound/RussianChorusS.wav", BackgroundMusicVolume);
+	//player.playSound("sound/RussianChorusS.wav", BackgroundMusicVolume);
 	if (_CreateWindow(title, nScreenWidth, nScreenHeight))
 	{
 		return -1;

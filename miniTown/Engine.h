@@ -36,6 +36,7 @@ public:
 	Player();
 	~Player();
 
+	//存储播放信息
 	struct _Sound {
 		HANDLE hThread;
 		MCI_OPEN_PARMS MciOpen;
@@ -47,22 +48,53 @@ public:
 		bool isStop;//是否停止播放
 		unsigned short volume;//音量0-1000
 		char* szFileName;
-		_Sound() {
+		time_t id;
+		struct _Sound() {
 			memset(this, 0, sizeof(struct _Sound));
-		}
-		//不推荐使用
-		bool operator==(char* szTargetFileName) {
-			return (strcmp(szFileName, szTargetFileName) == 0);
 		}
 		//推荐使用
 		bool operator==(int hThread) {
 			return this->hThread == (HANDLE)hThread;
+		}
+		bool operator==(struct _Sound* pSound) {
+			//return this->hThread == pSound->hThread;
+			return this->id == pSound->id;
+		}
+		bool operator==(time_t id) {
+			return this->id == id;
 		}
 		void stop() {
 			isStop = true;
 		}
 	};
 	typedef struct _Sound _Sound;
+
+	//Player所用到的消息结构体
+	//用于主线程与Player的消息传递
+	struct _MSG
+	{
+#define PLAYER_MSG_PLAY		0x00
+#define PLAYER_MSG_LOOP		0x01
+#define PLAYER_MSG_STOP		0x02
+#define PLAYER_MSG_STOPALL	0x03
+#define PLAYER_MSG_EXIT		0xff
+		BYTE type;
+		char* szFileName;
+		unsigned short volume;
+		Player::_Sound* pSound;
+		struct _MSG() {
+			memset(this, 0, sizeof(struct _MSG));
+		}
+		struct _MSG& operator=(struct _MSG srcMsg) {
+			this->type = srcMsg.type;
+			this->szFileName = srcMsg.szFileName;
+			this->volume = srcMsg.volume;
+			this->pSound = srcMsg.pSound;
+			return *this;
+		}
+
+	};
+	typedef struct _MSG _MSG;
 
 	//Description:
 	//	播放音效,仅播放一次.
@@ -72,7 +104,7 @@ public:
 	//Return Value:
 	//	-1		创建线程失败
 	//	非负数	线程int类型的线程句柄，使用时请强转为HANDLE
-	static int playSound(const char* szFileNameTemp, unsigned short volume = 800);
+	static void playSound(const char* szFileNameTemp, unsigned short volume = 800);
 
 	//Description:
 	//	播放音效,仅播放一次
@@ -82,7 +114,7 @@ public:
 	//Return Value:
 	//	-1		创建线程失败
 	//	非负数	线程int类型的线程句柄，使用时请强转为HANDLE
-	static int playSound(char* szFileNameTemp, unsigned short volume = 800);
+	static void playSound(char* szFileNameTemp, unsigned short volume = 800);
 
 	//Description:
 	//	播放音效,循环播放
@@ -92,7 +124,7 @@ public:
 	//Return Value:
 	//	-1		创建线程失败
 	//	非负数	线程int类型的线程句柄，使用时请强转为HANDLE.
-	static int playSoundLoop(const char* szFileNameTemp, unsigned short volume = 800);
+	static void playSoundLoop(const char* szFileNameTemp, unsigned short volume = 800);
 
 	//Description:
 	//	播放音效,循环播放
@@ -102,7 +134,7 @@ public:
 	//Return Value:
 	//	-1		创建线程失败
 	//	非负数	线程int类型的线程句柄，使用时请强转为HANDLE.
-	static int playSoundLoop(char* szFileNameTemp, unsigned short volume = 800);
+	static void playSoundLoop(char* szFileNameTemp, unsigned short volume = 800);
 
 	//Description:
 	//	通过文件名终止循环播放(不推荐)
@@ -110,7 +142,7 @@ public:
 	//	const char* szTargetFileName 要停播的音效文件名，文件名中不能有空格，如果有空格必须使用双引号
 	//Return Value:
 	//	NONE
-	static void stopPlay(const char* szTargetFileName);
+	//static void stopPlay(const char* szTargetFileName);
 
 	//Description:
 	//	通过文件名终止循环播放(不推荐)
@@ -118,7 +150,7 @@ public:
 	//	char* szTargetFileName 要停播的音效文件名，文件名中不能有空格，如果有空格必须使用双引号
 	//Return Value:
 	//	NONE
-	static void stopPlay(char* szTargetFileName);
+	//static void stopPlay(char* szTargetFileName);
 
 	//Description:
 	//	通过线程句柄终止循环播放(推荐),在循环播放时会返回一个线程句柄
@@ -129,21 +161,36 @@ public:
 	static void stopPlay(int hThread);
 
 	//Description:
+	//	通过存储播放信息指针终止播放
+	//Paramter: 
+	//	Player::_Sound* pSound 存储播放信息指针
+	//Return Value:
+	//	NONE
+	static void stopPlay(Player::_Sound* pSound);
+
+	//Description:
 	//	停止播放所有音效
 	//Paramter: 
 	//	NONE
 	//Return Value:
 	//	NONE
 	static void stopPlayAll();
+	static void _StaticDestruct();
 private:
-	
 
+
+
+	static HANDLE _hThread;
+	static DWORD WINAPI _Run(LPVOID lpParameter);
+	static void _StaticStructure();
+	//static void _StaticDestruct();
 	static DWORD WINAPI _Play(LPVOID lpParameter);
 	static DWORD WINAPI _PlayLoop(LPVOID lpParameter);
 
-	static void clearPlayList();
+	static void _clearPlayList();
 	static Player::_Sound* _MyMalloc();
 	static void _MyFree(Player::_Sound* ptr);
+	static void _print(Player::_Sound* pSound, _In_z_ _Printf_format_string_ char const* const _Format, ...);
 };
 
 struct Point {
@@ -178,7 +225,7 @@ public:
 	float x;//为了兼容之前的版本 不推荐使用23333
 	float y;//为了兼容之前的版本 不推荐使用23333
 	Point point;
-	
+
 	/*
 	z值越高，在画面越顶层，然后同级的在屏幕越下方的图片越顶层
 	*/
@@ -567,5 +614,3 @@ void Draw();
 void AddDrawObject(Object* object);
 void RemoveDrawObecjt(Object* object);
 void freeSomethingForEngine();
-void playMusic(const char* fileName);
-void playMusic(char* fileName);

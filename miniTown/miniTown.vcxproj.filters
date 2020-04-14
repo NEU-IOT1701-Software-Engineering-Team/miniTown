@@ -104,4 +104,7 @@
       <Filter>资源文件\pic</Filter>
     </Image>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram.cd" />
+  </ItemGroup>
 </Project>
