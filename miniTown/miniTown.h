@@ -35,7 +35,7 @@ const int bits = 24;
 //extern BYTE buffer[SCREEN_WIDTH * SCREEN_HEIGHT * bits / 8];
 extern int BackgroundMusicVolume;
 extern int SoundVolume;
-const int SoundOn = false;
+const int SoundOn = true;
 
 
 class coord //以60*60为单位标记坐标
@@ -79,11 +79,10 @@ extern int FieldProduceRiceSum;
 extern int RicePrice;
 extern int HousePrice;
 extern int FirstPayHousePrice; //盖房子预先给木匠的定金
-extern int ChildGrowDayTime;
 extern int MaxWantFoodLevel;
 const float GrowRiceTime = 25;
 const float AgeAddEveryDay = 1;
-const float GrownUpAge = 14; //小孩到成年的年龄
+const float GrownUpAge = 4; //小孩到成年的年龄
 
 
 

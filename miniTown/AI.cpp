@@ -4,7 +4,6 @@ int RicePrice=2;
 int HousePrice=40;
 int FirstPayHousePrice = 20;
 int FieldProduceRiceSum = 6;
-int ChildGrowDayTime = 10;
 int MaxWantFoodLevel = 5;
 
 void AILoop()
@@ -122,9 +121,13 @@ void Farmer::Sleep()
 				{
 					isCanMarriage = true;
 				}
-				else if (Sex == 0 && money >= RicePrice * ChildGrowDayTime)
+				else if (Sex == 0 && money >= RicePrice * GrownUpAge)
 				{
 					isCanMarriage = true;
+				}
+				else
+				{
+					isCanMarriage = false;
 				}
 			}
 		}
@@ -314,9 +317,13 @@ void Builder::Sleep()
 				{
 					isCanMarriage = true;
 				}
-				else if (Sex == 0 && money >= RicePrice * ChildGrowDayTime)
+				else if (Sex == 0 && money >= RicePrice * GrownUpAge)
 				{
 					isCanMarriage = true;
+				}
+				else
+				{
+					isCanMarriage = false;
 				}
 			}
 
@@ -330,6 +337,7 @@ void Builder::AI()
 {
 	if (this->isDead == false)
 	{
+
 		isTryBuyHouse = false;
 		//白天去砍树或种田
 	//在一天的0.2到0.8部分去干活
@@ -781,6 +789,10 @@ void Farmer::AI()
 	{
 
 		House* kingHouse = FindKingHouse();
+		if (belongField == NULL)
+		{
+			belongField = GetANearUnUsedField(this->DrawObject);
+		}
 		//白天去种田
 		//在一天的0.2到0.8部分去干活
 		if (DayTimeNowRate > 0.2 && DayTimeNowRate < 0.8)
@@ -986,10 +998,13 @@ void Farmer::AI()
 				}
 				else
 				{
+					if (belongField != NULL)
+					{
+						WalkTo(belongField->DrawObject);
 
-					WalkTo(belongField->DrawObject);
+						GrowRice();
+					}
 
-					GrowRice();
 				}
 
 			}
@@ -1287,7 +1302,6 @@ void Child::GrowUP()
 		builder[NowBuilderSum - 1].belongHouse = belongHouse;
 		builder[NowBuilderSum - 1].wantFoodLevel = wantFoodLevel;
 		builder[NowBuilderSum - 1].wantSexLevel = 0;
-		
 	}
 	else if (JobType == 1)
 	{
@@ -1296,7 +1310,14 @@ void Child::GrowUP()
 		AddFarmer(nowCoord.x, nowCoord.y, this->Sex);
 		oldFamilyTree->ChildType = 2;
 		oldFamilyTree->child2 = &farmer[NowFarmerSum - 1];
+		farmer[NowFarmerSum - 1].age = age;
+		farmer[NowFarmerSum - 1].belongHouse = belongHouse;
+		farmer[NowFarmerSum - 1].wantFoodLevel = wantFoodLevel;
+		farmer[NowFarmerSum - 1].wantSexLevel = 0;
 	}
+	this->belongHouse->isUsed = false;
+	RemoveDrawObecjt(this->DrawObject);
+	this->isDead = true;
 }
 
 void Child::Sleep()
