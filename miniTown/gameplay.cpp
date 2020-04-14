@@ -141,7 +141,7 @@ void AddUnFinishHouse(int x, int y)
 	house[NowHouseSum].buildTime = 0;
 	house[NowHouseSum].DrawObject = &objHouse[NowHouseSum];
 	house[NowHouseSum].DrawObject->pic = &picHouse1;
-	house[NowHouseSum].id = NowHouseSum - 1;
+	house[NowHouseSum].id = NowHouseSum;
 	house[NowHouseSum].DrawObject->x = x *  picHouse.getWidth();
 	house[NowHouseSum].DrawObject->y = y * picHouse.getHeight();
 	house[NowHouseSum].FirstBuildMoney = FirstPayHousePrice;
@@ -231,6 +231,9 @@ void AddChild(int sex, FamilyTree* familyTree)
 	child[NowChildSum].wantFoodLevel = 0;
 	child[NowChildSum].id = NowChildSum;
 	child[NowChildSum].Sex = sex;
+	child[NowChildSum].oldFamilyTree = familyTree;
+	familyTree->ChildType = 0;
+	familyTree->child0 = &child[NowChildSum];
 	AddDrawObject(child[NowChildSum].DrawObject);
 	NowChildSum++;
 }
@@ -347,6 +350,12 @@ void ResourceCount()//对村民拥有的资源进行统计
 	{
 		cout << builder[i].id << "\t"<<((builder[i].Sex==1) ? "man" : "woman")<<"\t" << builder[i].money << "\t" << builder[i].age<<"\t"<<builder[i].belongHouse->StoneRiceSum<<"\t"<<builder[i].OwnHouseCount<<"\t"<<builder[i].belongHouse->StoneWoodSum<<"\t"<<builder[i].wantFoodLevel<<"\t"<<builder[i].wantSexLevel << endl;
 	}
+	cout << "Child:" << endl;
+	cout << "id\tsex\tage\trice\twFood" << endl;
+	for (int i = 0; i < NowChildSum; i++)
+	{
+		cout << child[i].id << "\t" << ((child[i].Sex == 1) ? "man" : "woman") << "\t" << child[i].age << "\t" << child[i].belongHouse->StoneRiceSum << "\t" << child[i].wantFoodLevel << endl;
+	}
 	cout << "King:" << endl;
 	cout << "sex\tmoney\tage\tHouse\tRice" << endl;
 	cout << king.Sex<<"\t"<< king.money << "\t" << king.age << "\t" << king.HaveEmptyHouseSum<<"\t"<<king.belongHouse->StoneRiceSum << endl;
@@ -388,14 +397,14 @@ House* FindKingHouse()
 	return king.belongHouse;
 }
 
-Point GetPoint(Object* object)
+coord GetCoord(Object* object)
 {
 	int x = (object->point.x+object->pic->getWidth()/2) / 60;
 	int y = (object->point.y+object->pic->getHeight()/2) / 60;
-	return Point(x,y);
+	return coord(x,y);
 }
 
-bool IsPointUsed(Point Coord)
+bool IsCoordUsed(coord Coord)
 {
 
 	for (int i = 0; i < NowHouseSum; i++)

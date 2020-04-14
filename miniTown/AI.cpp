@@ -5,6 +5,7 @@ int HousePrice=40;
 int FirstPayHousePrice = 20;
 int FieldProduceRiceSum = 6;
 int ChildGrowDayTime = 10;
+int MaxWantFoodLevel = 5;
 
 void AILoop()
 {
@@ -50,22 +51,26 @@ void Farmer::GrowRice()
 			}
 		}
 	}
-	if (belongField->growingTime < 5)
+	if (belongField->growingTime < GrowRiceTime/4)
 	{
 		belongField->DrawObject->pic = &picField;
 	}
-	else if (belongField->growingTime < 10)
+	else if (belongField->growingTime < GrowRiceTime/2)
 	{
 		belongField->DrawObject->pic = &picField1;
 	}
-	else if (belongField->growingTime < 20)
+	else if (belongField->growingTime < GrowRiceTime/4*3)
 	{
 		belongField->DrawObject->pic = &picField2;
 	}
-	else if (belongField->growingTime < 30)
+	else if (belongField->growingTime < GrowRiceTime)
 	{
 
-		player.playSound("sound/getRice.mp3", SoundVolume);
+		if (SoundOn)
+		{
+			player.playSound("sound/getRice.mp3", SoundVolume);
+		}
+		
 		for (int i = 0; i < FieldProduceRiceSum; i++)
 		{
 			belongField->AddRice();		
@@ -108,19 +113,49 @@ void Farmer::Sleep()
 		{
 			wantFoodLevel++;
 			wantSexLevel += 0.5;
-			age += 0.25;
+			age += AgeAddEveryDay;
 			//cout << "want food level update " << wantFoodLevel << endl;
 			LastDaySum = DaySum;
-			if (Sex == 1 && ownHouse != NULL)
+			if (isMarriage == false)
 			{
-				isCanMarriage = true;
-			}
-			else if (Sex == 0 && money >= RicePrice * ChildGrowDayTime)
-			{
-				isCanMarriage = true;
+				if (Sex == 1 && ownHouse != NULL)
+				{
+					isCanMarriage = true;
+				}
+				else if (Sex == 0 && money >= RicePrice * ChildGrowDayTime)
+				{
+					isCanMarriage = true;
+				}
 			}
 		}
 	}
+}
+
+bool Builder::GetARiceToHand()
+{
+	if (belongHouse->StoneRiceSum > 0)
+	{
+		TakeOnThing[TakeOnThingSum] = belongHouse->StoneRice[belongHouse->StoneRiceSum - 1];
+		//belongHouse->StoneRiceSum--;  去村长交易的时候再减
+		TakeOnThingSum++;
+		return true;
+	}
+	return false;
+}
+
+bool Builder::GetAllRiceToHand()
+{
+	if (belongHouse->StoneRiceSum > 0)
+	{
+		for (int i = 0; i < belongHouse->StoneRiceSum; i++)
+		{
+			TakeOnThing[TakeOnThingSum] = belongHouse->StoneRice[i];
+			TakeOnThingSum++;
+		}
+		//belongHouse->StoneRiceSum = 0; 在村长交易成功的时候再减
+		return true;
+	}
+	return false;
 }
 
 void Builder::WalkTo(Object* object)
@@ -215,7 +250,11 @@ void Builder::CutTree()
 		this->TakeOnThing[this->TakeOnThingSum] = &objWood[NowWoodSum - 1];
 		this->TakeOnThingSum++;
 
-		player.playSound("sound/getWood.mp3", SoundVolume);
+		if (SoundOn)
+		{
+			player.playSound("sound/getWood.mp3", SoundVolume);
+		}
+		
 		std::cout << "Builder No." << this->id << " take wood!" << std:: endl;
 		
 	}
@@ -265,18 +304,22 @@ void Builder::Sleep()
 		if (DaySum > LastDaySum)
 		{
 			wantFoodLevel++;
-			wantSexLevel += 0.5;
-			age += 0.25;
+			wantSexLevel += 1;
+			age += AgeAddEveryDay;
 			//cout << "want food level update " << wantFoodLevel << endl;
 			LastDaySum = DaySum;
-			if (Sex == 1 && ownHouse != NULL)
+			if (isMarriage == false)
 			{
-				isCanMarriage = true;
+				if (Sex == 1 && ownHouse != NULL)
+				{
+					isCanMarriage = true;
+				}
+				else if (Sex == 0 && money >= RicePrice * ChildGrowDayTime)
+				{
+					isCanMarriage = true;
+				}
 			}
-			else if (Sex == 0 && money >= RicePrice * ChildGrowDayTime)
-			{
-				isCanMarriage = true;
-			}
+
 			ResourceCount();
 		}
 
@@ -344,7 +387,7 @@ void Builder::AI()
 								//判断一下手上的东西是不是水稻
 							{
 								//是的话把手里所有水稻放进家里
-								PutRice();
+								PutRice(belongHouse);
 
 
 							}
@@ -356,68 +399,117 @@ void Builder::AI()
 
 
 				}
+				//如果有小孩，小孩饿的时候给他/她东西吃
+				else if (isMarriage == true && familyTree->ChildType == 0
+					&& familyTree->child0->belongHouse->StoneRiceSum <= 0 && isTryFeedChild == false
+					&& belongHouse->StoneRiceSum > 0)
+				{
+					int takeRiceSum = min(belongHouse->StoneRiceSum, familyTree->child0->wantFoodLevel + 2);
+					if (takeRiceSum == 0)
+					{
+						isTryFeedChild = true;
+					}
+					if (TakeOnThingSum == 0)
+					{
+						if (IsMoreCloseTo(DrawObject, belongHouse->DrawObject))
+						{
+							for (int i = 0; i < takeRiceSum; i++)
+							{
+								GetARiceToHand();
+								AddDrawObject(TakeOnThing[TakeOnThingSum - 1]);
+							}
+
+						}
+						WalkTo(belongHouse->DrawObject);
+
+					}
+					else
+					{
+						WalkTo(familyTree->child0->belongHouse->DrawObject);
+						if (IsMoreCloseTo(this->DrawObject, familyTree->child0->belongHouse->DrawObject) == true)
+						{
+							while (TakeOnThingSum > 0)
+							{
+								PutRice(familyTree->child0->belongHouse);
+							}
+							
+							if (TakeOnThingSum == 0)
+							{
+								isTryFeedChild = true;
+							}
+						}
+					}
+
+				}
 				else if (isMarriage==false && isCanMarriage == true&&DayTimeNowRate<0.5)
 				{
 					//满足结婚条件去村长那里结婚
 					WalkTo(king.DrawObject);
-					//找人结婚
-					for (int i = 0; i < NowFarmerSum; i++)
+					if (IsMoreCloseTo(this->DrawObject, king.DrawObject))
 					{
-						if (isCanMarriage==true&& farmer[i].isCanMarriage == true&&farmer[i].Sex!=Sex && IsMoreCloseTo(king.DrawObject, farmer[i].DrawObject))
+						//找人结婚
+						for (int i = 0; i < NowFarmerSum; i++)
 						{
-							
-							isCanMarriage = false;
-							farmer[i].isCanMarriage = false;
-							isMarriage = true;
-							farmer[i].isMarriage = true;
-							this->familyTree = new FamilyTree;
-							if (Sex == 1)
+							if (isCanMarriage == true && farmer[i].isCanMarriage == true && farmer[i].Sex != Sex && IsMoreCloseTo(king.DrawObject, farmer[i].DrawObject))
 							{
-								familyTree->FatherType = 0;
-								familyTree->Father0 = this;
-								familyTree->MotherType = 1;
-								familyTree->Mother1 = &farmer[i];
+
+								isCanMarriage = false;
+								farmer[i].isCanMarriage = false;
+								isMarriage = true;
+								farmer[i].isMarriage = true;
+								this->familyTree = new FamilyTree;
+								farmer[i].familyTree = familyTree;
+								if (Sex == 1)
+								{
+									familyTree->FatherType = 0;
+									familyTree->Father0 = this;
+									familyTree->MotherType = 1;
+									familyTree->Mother1 = &farmer[i];
+								}
+								else
+								{
+									familyTree->FatherType = 1;
+									familyTree->Father1 = &farmer[i];
+									familyTree->MotherType = 0;
+									familyTree->Mother0 = this;
+								}
+								cout << "Get Marry!" << endl;
+								MakeBaby(familyTree);
+								break;
 							}
-							else
+						}
+						for (int i = 0; i < NowBuilderSum; i++)
+						{
+							if (isCanMarriage == true && &builder[i] != this && builder[i].isCanMarriage == true && builder[i].Sex != Sex && IsMoreCloseTo(king.DrawObject, builder[i].DrawObject))
 							{
-								familyTree->FatherType = 1;
-								familyTree->Father1 = &farmer[i];
-								familyTree->MotherType = 0;
-								familyTree->Mother0 = this;
+								//这里的另一对就是这个builder[i]
+								isCanMarriage = false;
+								builder[i].isCanMarriage = false;
+								isMarriage = true;
+								builder[i].isMarriage = true;
+								familyTree = new FamilyTree;
+								builder[i].familyTree = familyTree;
+								if (Sex == 1)
+								{
+									familyTree->FatherType = 0;
+									familyTree->Father0 = this;
+									familyTree->MotherType = 0;
+									familyTree->Mother0 = &builder[i];
+								}
+								else
+								{
+									familyTree->FatherType = 0;
+									familyTree->Father0 = &builder[i];
+									familyTree->MotherType = 0;
+									familyTree->Mother0 = this;
+								}
+								cout << "Get Marry!" << endl;
+								MakeBaby(familyTree);
+								break;
 							}
-							cout << "Get Marry!" << endl;
-							MakeBaby(familyTree);
-							break;
 						}
 					}
-					for (int i = 0; i < NowBuilderSum; i++)
-					{
-						if (isCanMarriage==true&& &builder[i] != this && builder[i].isCanMarriage == true && builder[i].Sex != Sex && IsMoreCloseTo(king.DrawObject, builder[i].DrawObject))
-						{
-							isCanMarriage = false;
-							builder[i].isCanMarriage = false;
-							isMarriage = true;
-							builder[i].isMarriage = true;
-							familyTree = new FamilyTree;
-							if (Sex == 1)
-							{
-								familyTree->FatherType = 0;
-								familyTree->Father0 = this;
-								familyTree->MotherType = 0;
-								familyTree->Mother0 = &builder[i];
-							}
-							else
-							{
-								familyTree->FatherType = 0;
-								familyTree->Father0 = &builder[i];
-								familyTree->MotherType = 0;
-								familyTree->Mother0 = this;
-							}
-							cout << "Get Marry!" << endl;
-							MakeBaby(familyTree);
-							break;
-						}
-					}
+					
 
 				}
 				else if (this->Sex==1&& this->money >= HousePrice && this->ownHouse == NULL && isTryBuyHouse == false) //有钱就去买房
@@ -470,11 +562,12 @@ void Builder::AI()
 				}
 				if (ObjectIsRice(TakeOnThing[TakeOnThingSum - 1]))
 				{
-					PutRice();
+					PutRice(belongHouse);
 				}
 				judgeDead(); //判断是否饿死
 				//睡觉时重置这两个状态
 				isTryBuyRice = false;
+				isTryFeedChild = false;
 				isBuyRiceFinish = false;
 			}
 		}
@@ -538,19 +631,19 @@ bool Builder::BuyRice()
 
 }
 
-bool Builder::PutRice()
+bool Builder::PutRice(House* house)
 {
 	if (TakeOnThingSum == 0)
 	{
 		return false;
 	}
-	belongHouse->StoneRice[belongHouse->StoneRiceSum] = TakeOnThing[TakeOnThingSum - 1];
+	house->StoneRice[house->StoneRiceSum] = TakeOnThing[TakeOnThingSum - 1];
 
-	belongHouse->StoneRiceSum++;
+	house->StoneRiceSum++;
 
 	if (DebugShowGrowTimeFlag)
 	{
-		std::cout << "Rice In House No." << belongHouse->id << " Sum " << belongHouse->StoneRiceSum << std::endl;
+		std::cout << "Rice In House No." << house->id << " Sum " << house->StoneRiceSum << std::endl;
 	}
 	RemoveDrawObecjt(TakeOnThing[TakeOnThingSum - 1]);
 	TakeOnThing[TakeOnThingSum - 1] = NULL;
@@ -560,7 +653,7 @@ bool Builder::PutRice()
 
 void Builder::judgeDead()
 {
-	if (wantFoodLevel > 5)
+	if (wantFoodLevel > MaxWantFoodLevel)
 	{
 		this->belongHouse->isUsed = false;
 		this->AimTree = NULL;
@@ -677,7 +770,7 @@ void Object::WalkTo(Object* object)
 		y -= moveStep;
 	}
 	*/
-	
+
 }
 
 
@@ -686,7 +779,7 @@ void Farmer::AI()
 {
 	if (isDead == false)
 	{
-	
+
 		House* kingHouse = FindKingHouse();
 		//白天去种田
 		//在一天的0.2到0.8部分去干活
@@ -695,7 +788,7 @@ void Farmer::AI()
 			if (wantFoodLevel > 0 || wantSexLevel > 0)
 			{
 				//如果有一个水稻就拿去卖
-				if (belongHouse->StoneRiceSum > 0)
+				if (belongHouse->StoneRiceSum > 0&&isTrySellRice==false)
 				{
 					//cout << "take On thing sum " << TakeOnThingSum << endl;
 					//从房子里拿一个水稻来卖
@@ -704,8 +797,12 @@ void Farmer::AI()
 					{
 						if (IsMoreCloseTo(DrawObject, belongHouse->DrawObject))
 						{
-							GetAllRiceToHand();
+							if (GetAllRiceToHand() == false)
+							{
+								isTrySellRice = true;
+							}
 						}
+						
 						WalkTo(belongHouse->DrawObject);
 
 					}
@@ -718,6 +815,86 @@ void Farmer::AI()
 						if (IsMoreCloseTo(DrawObject, kingHouse->DrawObject))
 						{
 							SellRiceForMoney();
+							if (TakeOnThingSum == 0)
+							{
+								isTrySellRice = true;
+							}
+							
+						}
+					}
+
+				}
+				//如果孩子要吃饭，家里没有米,去买
+				else if (isMarriage==true&&familyTree->ChildType==0&&familyTree->child0->wantFoodLevel > 0
+					&& this->belongHouse->StoneRiceSum == 0
+					&& isBuyRiceFinish == false)
+				{
+					if (isTryBuyRice == false)
+					{
+						//买不起一个水稻就回去
+						if (this->money < RicePrice)
+						{
+							isTryBuyRice = true;
+						}
+						//去村长家买水稻
+						WalkTo(king.belongHouse->DrawObject);
+						if (IsMoreCloseTo(this->DrawObject, king.belongHouse->DrawObject))
+						{
+							BuyRice();
+							isTryBuyRice = true;
+						}
+					}
+					else
+					{
+						//买完走回家
+						WalkTo(this->belongHouse->DrawObject);
+						if (IsMoreCloseTo(this->DrawObject, this->belongHouse->DrawObject))
+						{
+							while (TakeOnThingSum > 0 && ObjectIsRice(this->TakeOnThing[this->TakeOnThingSum - 1]) == true)
+								//判断一下手上的东西是不是水稻
+							{
+								//是的话把手里所有水稻放进家里
+								PutRice(belongHouse);
+							}
+							isBuyRiceFinish = true;
+						}
+
+					}
+				}
+				//如果有小孩，小孩饿的时候给他/她东西吃
+				else if (isMarriage == true && familyTree->ChildType == 0
+					&& familyTree->child0->belongHouse->StoneRiceSum <= 0 && isTryFeedChild == false
+					&&belongHouse->StoneRiceSum>0)
+				{
+					int takeRiceSum = min(belongHouse->StoneRiceSum, familyTree->child0->wantFoodLevel + 2);
+					if (takeRiceSum == 0)
+					{
+						isTryFeedChild = true;
+					}
+					if (TakeOnThingSum == 0)
+					{
+						if (IsMoreCloseTo(DrawObject, belongHouse->DrawObject))
+						{
+							for (int i = 0; i < takeRiceSum; i++)
+							{
+								GetARiceToHand();
+								AddDrawObject(TakeOnThing[TakeOnThingSum - 1]);
+							}
+							
+						}
+						WalkTo(belongHouse->DrawObject);
+
+					}
+					else
+					{
+						WalkTo(familyTree->child0->belongHouse->DrawObject);
+						if (IsMoreCloseTo(this->DrawObject, familyTree->child0->belongHouse->DrawObject) == true)
+						{
+							PutRice(familyTree->child0->belongHouse);
+							if (TakeOnThingSum == 0)
+							{
+								isTryFeedChild = true;
+							}
 						}
 					}
 
@@ -726,64 +903,70 @@ void Farmer::AI()
 				{
 					//满足结婚条件去村长那里结婚
 					WalkTo(king.DrawObject);
-					//找人结婚
-					for (int i = 0; i < NowFarmerSum; i++)
+					if (IsMoreCloseTo(this->DrawObject, king.DrawObject))
 					{
-						if (isCanMarriage == true&& &farmer[i]!=this && farmer[i].isCanMarriage == true && farmer[i].Sex != Sex && IsMoreCloseTo(king.DrawObject, farmer[i].DrawObject))
+						//找人结婚
+						for (int i = 0; i < NowFarmerSum; i++)
 						{
-							isCanMarriage = false;
-							farmer[i].isCanMarriage = false;
-							isMarriage = true;
-							farmer[i].isMarriage = true;
-							familyTree = new FamilyTree;
-							if (Sex == 1)
+							if (isCanMarriage == true && &farmer[i] != this && farmer[i].isCanMarriage == true && farmer[i].Sex != Sex && IsMoreCloseTo(king.DrawObject, farmer[i].DrawObject))
 							{
-								familyTree->FatherType = 1;
-								familyTree->Father1 = this;
-								familyTree->MotherType = 1;
-								familyTree->Mother1 = &farmer[i];
-							}
-							else
-							{
-								familyTree->FatherType = 1;
-								familyTree->Father1 = &farmer[i];
-								familyTree->MotherType = 1;
-								familyTree->Mother1 = this;
-							}
-							cout << "Get Marry!" << endl;
-							MakeBaby(familyTree);
-							break;
+								isCanMarriage = false;
+								farmer[i].isCanMarriage = false;
+								isMarriage = true;
+								farmer[i].isMarriage = true;
+								familyTree = new FamilyTree;
+								farmer[i].familyTree = familyTree;
+								if (Sex == 1)
+								{
+									familyTree->FatherType = 1;
+									familyTree->Father1 = this;
+									familyTree->MotherType = 1;
+									familyTree->Mother1 = &farmer[i];
+								}
+								else
+								{
+									familyTree->FatherType = 1;
+									familyTree->Father1 = &farmer[i];
+									familyTree->MotherType = 1;
+									familyTree->Mother1 = this;
+								}
+								cout << "Get Marry!" << endl;
+								MakeBaby(familyTree);
+								break;
 
+							}
 						}
-					}
-					for (int i = 0; i < NowBuilderSum; i++)
-					{
-						if (isCanMarriage == true && builder[i].isCanMarriage == true && builder[i].Sex != Sex && IsMoreCloseTo(king.DrawObject, builder[i].DrawObject))
+						for (int i = 0; i < NowBuilderSum; i++)
 						{
-							isCanMarriage = false;
-							builder[i].isCanMarriage = false;
-							isMarriage = true;
-							builder[i].isMarriage = true;
-							familyTree = new FamilyTree;
-							if (Sex == 1)
+							if (isCanMarriage == true && builder[i].isCanMarriage == true && builder[i].Sex != Sex && IsMoreCloseTo(king.DrawObject, builder[i].DrawObject))
 							{
-								familyTree->FatherType = 1;
-								familyTree->Father1 = this;
-								familyTree->MotherType = 0;
-								familyTree->Mother0 = &builder[i];
+								isCanMarriage = false;
+								builder[i].isCanMarriage = false;
+								isMarriage = true;
+								builder[i].isMarriage = true;
+								familyTree = new FamilyTree;
+								builder[i].familyTree = familyTree;
+								if (Sex == 1)
+								{
+									familyTree->FatherType = 1;
+									familyTree->Father1 = this;
+									familyTree->MotherType = 0;
+									familyTree->Mother0 = &builder[i];
+								}
+								else
+								{
+									familyTree->FatherType = 0;
+									familyTree->Father0 = &builder[i];
+									familyTree->MotherType = 1;
+									familyTree->Mother1 = this;
+								}
+								cout << "Get Marry!" << endl;
+								MakeBaby(familyTree);
+								break;
 							}
-							else
-							{
-								familyTree->FatherType = 0;
-								familyTree->Father0 = &builder[i];
-								familyTree->MotherType = 1;
-								familyTree->Mother1 = this;
-							}
-							cout << "Get Marry!" << endl;
-							MakeBaby(familyTree);
-							break;
 						}
 					}
+					
 
 				}
 				else if (this->Sex==1&& this->money >= HousePrice&&this->ownHouse==NULL&& isTryBuyHouse==false) //有钱就去买房
@@ -823,13 +1006,15 @@ void Farmer::AI()
 				{
 					if (ObjectIsRice(TakeOnThing[TakeOnThingSum - 1]))
 					{
-						PutRice();
+						PutRice(belongHouse);
 					}
 				}
 
 				Eat();
 				Sleep();
 				isTryBuyHouse = false; //尝试买房子状态清零
+				isTryFeedChild = false;
+				isTrySellRice = false;
 
 			}
 		}
@@ -837,15 +1022,15 @@ void Farmer::AI()
 	
 }
 
-void Farmer::PutRice()
+void Farmer::PutRice(House *house)
 {
-	belongHouse->StoneRice[belongHouse->StoneRiceSum] = TakeOnThing[TakeOnThingSum-1];
+	house->StoneRice[house->StoneRiceSum] = TakeOnThing[TakeOnThingSum-1];
 	
-	belongHouse->StoneRiceSum++;
+	house->StoneRiceSum++;
 	
 	if (DebugShowGrowTimeFlag)
 	{
-		std::cout << "Rice In House No." << belongHouse->id << " Sum " << belongHouse->StoneRiceSum << std::endl;
+		std::cout << "Rice In House No." << house->id << " Sum " << house->StoneRiceSum << std::endl;
 	}
 	RemoveDrawObecjt(TakeOnThing[TakeOnThingSum-1]);
 	TakeOnThing[TakeOnThingSum-1] = NULL;
@@ -853,20 +1038,61 @@ void Farmer::PutRice()
 	
 }
 
-void Farmer::GetARiceToHand()
+bool Farmer::GetARiceToHand()
 {
-	TakeOnThing[TakeOnThingSum] = belongHouse->StoneRice[belongHouse->StoneRiceSum - 1];
-	TakeOnThingSum++;
+	if (belongHouse->StoneRiceSum > 0)
+	{
+		TakeOnThing[TakeOnThingSum] = belongHouse->StoneRice[belongHouse->StoneRiceSum - 1];
+		//房子里的水稻是去村长交易后消失的
+		TakeOnThingSum++;
+		return true;
+	}
+	return false;
+
 }
 
-void Farmer::GetAllRiceToHand()
+bool Farmer::GetAllRiceToHand()
 {
-	for (int i = 0; i < belongHouse->StoneRiceSum; i++)
+	if (belongHouse->StoneRiceSum > 0)
 	{
-		TakeOnThing[TakeOnThingSum] = belongHouse->StoneRice[i];
-		TakeOnThingSum++;
+		for (int i = 0; i < belongHouse->StoneRiceSum; i++)
+		{
+			TakeOnThing[TakeOnThingSum] = belongHouse->StoneRice[i];
+			TakeOnThingSum++;
+		}
+		return true;
 	}
-	//belongHouse->StoneRiceSum = 0;
+	return false;
+
+}
+
+bool Farmer::BuyRice()
+{
+	int wantBuyRiceSum = wantFoodLevel + 3; //现在要买水稻的数量
+
+	//买不起或者买不到那么多就减一尝试
+	while (this->money < wantBuyRiceSum * RicePrice || king.belongHouse->StoneRiceSum <= wantBuyRiceSum)
+	{
+		wantBuyRiceSum--;
+	}
+	//买不起就回去
+	if (wantBuyRiceSum == 0)
+	{
+		return false;
+	}
+	else //买得起
+	{
+		for (int i = 0; i < wantBuyRiceSum; i++)
+		{
+			//拿起一个水稻到手上
+			this->TakeOnThing[i] = king.belongHouse->StoneRice[king.belongHouse->StoneRiceSum - 1];
+			king.belongHouse->StoneRiceSum--;
+			king.money += RicePrice;
+			this->TakeOnThingSum++;
+			this->money -= RicePrice;
+			AddDrawObject(this->TakeOnThing[TakeOnThingSum - 1]);//画上手里拿的水稻
+		}
+	}
 }
 
 bool Farmer::BuyHouse()
@@ -884,7 +1110,7 @@ bool Farmer::BuyHouse()
 
 void Farmer::judgeDead()
 {
-	if (this->wantFoodLevel > 5)
+	if (this->wantFoodLevel > MaxWantFoodLevel)
 	{
 		this->belongHouse->isUsed = false;
 		this->belongField->isUsed = false; 
@@ -975,6 +1201,33 @@ void King::SetHousePrice(int Price)
 	HousePrice = Price;
 }
 
+void King::SetATree()
+{
+
+	//获得当前位置的坐标
+	coord CoordHere = GetCoord(this->DrawObject);
+	//如果现在这个坐标被用了，则退出
+	if (IsCoordUsed(CoordHere))
+	{
+		return;
+	}
+
+	AddTree(CoordHere.x, CoordHere.y);
+}
+
+void King::SetAField()
+{
+	//获得当前位置的坐标
+	coord CoordHere = GetCoord(this->DrawObject);
+	//如果现在这个坐标被用了，则退出
+	if (IsCoordUsed(CoordHere))
+	{
+		return;
+	}
+
+	AddField(CoordHere.x, CoordHere.y);
+}
+
 
 //在村长当前位置设置一个盖房子的标记，木匠随后会去盖房子
 bool King::SetUnFinishHouseMark()
@@ -982,9 +1235,9 @@ bool King::SetUnFinishHouseMark()
 	if (money >= FirstPayHousePrice)
 	{
 		//获得当前位置的坐标
-		Point CoordHere = GetPoint(this->DrawObject);
+		coord CoordHere = GetCoord(this->DrawObject);
 		//如果现在这个坐标被用了，则退出
-		if (IsPointUsed(CoordHere))
+		if (IsCoordUsed(CoordHere))
 		{
 			return false;
 		}
@@ -1020,6 +1273,32 @@ void Child::Walk()
 	}
 }
 
+void Child::GrowUP()
+{
+	int JobType = rand() % 2;
+	if (JobType == 0)
+	{
+		coord nowCoord;
+		nowCoord = GetCoord(this->DrawObject);
+		AddBuilder(nowCoord.x, nowCoord.y, this->Sex);
+		oldFamilyTree->ChildType = 1;
+		oldFamilyTree->child1 = &builder[NowBuilderSum - 1];
+		builder[NowBuilderSum - 1].age = age;
+		builder[NowBuilderSum - 1].belongHouse = belongHouse;
+		builder[NowBuilderSum - 1].wantFoodLevel = wantFoodLevel;
+		builder[NowBuilderSum - 1].wantSexLevel = 0;
+		
+	}
+	else if (JobType == 1)
+	{
+		coord nowCoord;
+		nowCoord = GetCoord(this->DrawObject);
+		AddFarmer(nowCoord.x, nowCoord.y, this->Sex);
+		oldFamilyTree->ChildType = 2;
+		oldFamilyTree->child2 = &farmer[NowFarmerSum - 1];
+	}
+}
+
 void Child::Sleep()
 {
 	if (clkClick)
@@ -1027,10 +1306,9 @@ void Child::Sleep()
 		if (DaySum > LastDaySum)
 		{
 			wantFoodLevel++;
-			age += 0.25;
+			age += AgeAddEveryDay;
 			//cout << "want food level update " << wantFoodLevel << endl;
 			LastDaySum = DaySum;
-
 		}
 
 	}
@@ -1063,8 +1341,23 @@ void Child::AI()
 					Eat();
 				}
 				Sleep();
+				if (age >= GrownUpAge)
+				{
+					GrowUP();
+				}
+				judgeDead();
 			}
 		}
+	}
+}
+
+void Child::judgeDead()
+{
+	if (this->wantFoodLevel > MaxWantFoodLevel)
+	{
+		this->belongHouse->isUsed = false;
+		RemoveDrawObecjt(this->DrawObject);
+		this->isDead = true;
 	}
 }
 

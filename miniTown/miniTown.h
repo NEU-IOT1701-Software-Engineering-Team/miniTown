@@ -35,6 +35,7 @@ const int bits = 24;
 //extern BYTE buffer[SCREEN_WIDTH * SCREEN_HEIGHT * bits / 8];
 extern int BackgroundMusicVolume;
 extern int SoundVolume;
+const int SoundOn = false;
 
 
 class coord //以60*60为单位标记坐标
@@ -55,16 +56,12 @@ extern Player player;
 void AddDrawObject(Object* object);
 void RemoveDrawObecjt(Object* object);
 
-
 void KeyControl();
-
-
 
 extern float runtime;
 extern int LastFPS;
 extern int frame; //当前的帧率
 extern float timeScale;
-
 
 
 const int MaxHouseSum = 1000;
@@ -83,6 +80,12 @@ extern int RicePrice;
 extern int HousePrice;
 extern int FirstPayHousePrice; //盖房子预先给木匠的定金
 extern int ChildGrowDayTime;
+extern int MaxWantFoodLevel;
+const float GrowRiceTime = 25;
+const float AgeAddEveryDay = 1;
+const float GrownUpAge = 14; //小孩到成年的年龄
+
+
 
 extern float DayTimeNowRate; //今天的进度(0~1)
 extern float DayTimeNow;
@@ -161,16 +164,22 @@ public:
 	void Sleep();
 	void GrowRice();
 	void AI();
-	void PutRice();
-	void GetARiceToHand();  //从房子里拿出一个水稻到手上
-	void GetAllRiceToHand(); //从房子里拿出所有水稻到手上
+	void PutRice(House* house);
+	bool GetARiceToHand();  //从房子里拿出一个水稻到手上
+	bool GetAllRiceToHand(); //从房子里拿出所有水稻到手上
 
+	bool BuyRice();
 	bool BuyHouse();
 	void judgeDead();
 
 	bool SellRiceForMoney();
 
 	int LastDaySum=0; //用来计算食欲的临时变量
+	//买水稻用的临时变量
+	bool isTryFeedChild = false;
+	bool isTryBuyRice = false;
+	bool isBuyRiceFinish = false;
+	bool isTrySellRice = false;
 	
 };
 
@@ -198,6 +207,8 @@ public:
 	Object* DrawObject;
 	Object* TakeOnThing[MaxObjectSum];
 	int TakeOnThingSum = 0;
+	bool GetARiceToHand();
+	bool GetAllRiceToHand();
 	void WalkTo(Object* object);
 	void BuildHouse();
 	void Eat();
@@ -209,7 +220,7 @@ public:
 	void PutWood();
 	bool BuyRice();
 	bool BuyHouse();
-	bool PutRice();
+	bool PutRice(House* house);
 	void judgeDead();
 	
 
@@ -218,8 +229,9 @@ public:
 	//买水稻用的临时变量
 	bool isTryBuyRice = false;
 	bool isBuyRiceFinish = false;
-	//买水稻用的临时变量
+	//买房子用的临时变量
 	bool isTryBuyHouse = false;
+	bool isTryFeedChild = false;
 };
 
 class King
@@ -243,6 +255,8 @@ public:
 	void DestoryMoney(int Sum);
 	void SetRicePrice(int Price);
 	void SetHousePrice(int Price);
+	void SetATree(); //在村长位置种一棵树
+	void SetAField(); //在村长位置弄一块田
 	bool SetUnFinishHouseMark();  //在村长当前位置设置一个盖房子的记号（木匠随后会取盖房子）需要村长花一部分钱
 
 };
@@ -251,16 +265,19 @@ class Child
 {
 public:
 	int id;
-	int age;
+	float age;
 	int Sex;
 	bool isDead = false;
 	House* belongHouse = NULL;
+	FamilyTree* oldFamilyTree;
 	Object* DrawObject;
 	int wantFoodLevel;
 	void Walk(); //随机在地图里散步
+	void GrowUP(); //变成成人
 	void Sleep();
 	void Eat();
 	void AI();
+	void judgeDead();
 	void WalkTo(Object* object);
 
 	int LastDaySum = 0; //用来计算食欲的临时变量
@@ -283,6 +300,9 @@ public:
 	Farmer *Mother1;
 	King *Mother2;
 	int ChildType;
+	Child* child0;
+	Builder* child1;
+	Farmer* child2;
 };
 
 const int DayTime = 30;
@@ -374,5 +394,5 @@ float DistanceAToB(Object* A, Object* B);
 House* GetANearEmptyHouse(Object* man,int type=0); 
 Field* GetANearUnUsedField(Object* man);
 House* FindKingHouse();
-Point GetPoint(Object* object); //获取最接近的坐标
-bool IsPointUsed(Point point);
+coord GetCoord(Object* object); //获取最接近的坐标
+bool IsCoordUsed(coord point);

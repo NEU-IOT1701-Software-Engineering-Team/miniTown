@@ -146,14 +146,12 @@ void initObject()
 
 int main()
 {
-	player.playSoundLoop("sound/01 Bloom.mp3", BackgroundMusicVolume);
-	//RussianChorusS
-	player.playSound("sound/getRice.mp3", SoundVolume);
-	player.playSound("sound/getRice.mp3", SoundVolume);
-	player.playSound("sound/getRice.mp3", SoundVolume);
-	//player.stopPlayAll();
-	//player.playSound("sound/RussianChorusS.wav", BackgroundMusicVolume);
-	//player.playSound("sound/RussianChorusS.wav", BackgroundMusicVolume);
+	if (SoundOn)
+	{
+		player.playSoundLoop("sound/01 Bloom.mp3", BackgroundMusicVolume);
+	}
+
+
 	if (_CreateWindow(title, nScreenWidth, nScreenHeight))
 	{
 		return -1;
@@ -237,6 +235,8 @@ void KeyControl()
 	static int pressM = false;
 	static int pressN = false;
 	static int pressB = false;
+	static int pressT = false;
+	static int pressF = false;
 	int speed = 40; //村长的移动速度
 	if (screen_keys[VK_ESCAPE])
 	{
@@ -354,5 +354,28 @@ void KeyControl()
 	{
 		pressB = false;
 	}
-
+	if (screen_keys['T'])
+	{
+		if (pressT == false)
+		{
+			king.SetATree();
+		}
+		pressT = true;
+	}
+	else
+	{
+		pressF = false;
+	}
+	if (screen_keys['F'])
+	{
+		if (pressF == false)
+		{
+			king.SetAField();
+		}
+		pressF = true;
+	}
+	else
+	{
+		pressF = false;
+	}
 }
