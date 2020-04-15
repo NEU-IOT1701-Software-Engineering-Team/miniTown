@@ -1,8 +1,8 @@
 #include "miniTown.h"
 
 const char* title = "miniTown";
- int nScreenWidth = SCREEN_WIDTH;
- int nScreenHeight = SCREEN_HEIGHT;
+int nScreenWidth = SCREEN_WIDTH;
+int nScreenHeight = SCREEN_HEIGHT;
 HWND hWnd = NULL;
 HDC hMemDC = NULL;
 HBITMAP hBitmapBuffer = NULL;
@@ -11,12 +11,13 @@ BYTE* buffer = NULL;
 BYTE screen_keys[512] = { 0 };
 Player player;
 
-Object* drawList[MaxDrawObjectSum];
+//Object* drawList[MaxDrawObjectSum];
+//绘制队列
+std::vector<ObjectPointer> drawList;
 
-//std::vector<Player::_Sound> _listPlay;
 std::list<Player::_Sound*> _listPlay;
 std::vector<Player::_MSG> _listMsg;
-const int timeout = 1400;//播放间隔 对音频外设操作需要时间间隔
+const int timeout = 1000;//播放间隔 对音频外设操作需要时间间隔
 const int step = 200;//响应时间
 std::mutex m_listPlay;//对_listPlay的互斥锁
 std::mutex m_listMsg;//对_listMsg的互斥锁
@@ -483,43 +484,44 @@ void Player::_print(Player::_Sound* pSound, char const* const _Format, ...)
 	__crt_va_end(_ArgList);
 }
 
-
-int drawSum = 0;
+//Description:
+//	向绘制队列中加入一个新对象,如果该对象已被加入，则不会重复加入.
+//Paramter: 
+//	Object* object 将要加入对象的地址
+//Return Value:
+//	NONE
 void AddDrawObject(Object* object)
 {
-	bool findFlag = false;
-	for (int i = 0; i < drawSum; i++)
-	{
-		if (drawList[i] == object)
-		{
-			findFlag = true;
-		}
-	}
-	if (!findFlag)
-	{
-		drawList[drawSum] = object;
-		drawSum++;
-	}
-}
-
-void RemoveDrawObecjt(Object* object)
-{
-	int findIndex = -1;
-	for (int i = 0; i < drawSum; i++)
-	{
-		if (drawList[i] == object)
-		{
-			findIndex = i;
+	ObjectPointer op(object);
+	bool isExist = false;//该对象是否已存在
+	for (std::vector<ObjectPointer>::iterator it = drawList.begin();
+		it != drawList.end(); ++it) {
+		if ((*it) == op) {
+			isExist = true;
 			break;
 		}
 	}
-	if (findIndex != -1)
-	{
-		for (int i = findIndex; i < drawSum - 1; i++)
-		{
-			drawList[i] = drawList[i + 1];
+	if (!isExist) {
+		//不存在需要添加
+		drawList.push_back(op);
+	}
+}
+
+//Description:
+//	从绘制队列中删掉一个对象。
+//Paramter: 
+//	Object* object 将要删除的对象地址
+//Return Value:
+//	NONE
+void RemoveDrawObecjt(Object* object)
+{
+	ObjectPointer op(object);
+	for (std::vector<ObjectPointer>::iterator it = drawList.begin();
+		it != drawList.end(); ++it) {
+		if ((*it) == op) {
+			drawList.erase(it);
+			break;
 		}
-		drawSum--;
 	}
 }
 
@@ -733,32 +735,37 @@ void Draw() {
 	obj.point.x = 10;
 	obj.point.y = 10;
 	obj.z = 1;
-	obj.setAngle(45);
+	//obj.setAngle(20);
 	obj.pic = &picField;
 
 	Object obj2;
-	obj2.point.x = 30;
-	obj2.point.y = 30;
+	obj2.point.x = 10;
+	obj2.point.y = 20;
 	obj2.z = 2;
-	obj2.setAngle(45);
-	obj2.pic = &picField1;
+	obj2.setAngle(120);
+	obj2.pic = &picLove;
 
 	Object obj3;
-	obj3.point.x = 50;
-	obj3.point.y = 50;
-	obj3.setAngle(45);
-	obj3.z = 0;
+	obj3.point.x = 10;
+	obj3.point.y = 20;
+	//obj3.setAngle(-60);
+	obj3.z = 1;
 	obj3.pic = &picField2;
 
-	Object* _drawList[MaxDrawObjectSum];
-	_drawList[0] = &obj;
-	_drawList[1] = &obj2;
-	_drawList[2] = &obj3;
-	std::sort(*_drawList, *(_drawList + 2));
-	for (int i = 0; i < 3; ++i) {
-		DrawObject(_drawList[i]);
+	drawList.clear();
+	AddDrawObject(&obj);
+	AddDrawObject(&obj2);
+	AddDrawObject(&obj3);
+	std::sort(drawList.begin(), drawList.end());
+	for (int i = 0; i < drawList.size(); ++i) {
+		DrawObject(drawList[i].pObject);
 	}*/
-
+	std::sort(drawList.begin(), drawList.end());
+	for (int i = 0; i < drawList.size(); ++i) {
+		drawList[i].pObject->updatePoint();
+		DrawObject(drawList[i].pObject);
+	}
+	/*
 	for (int i = 0; i < drawSum; i++)
 	{
 		//DebugPrint("第%d个objetc 开始绘制\t",i);
@@ -767,7 +774,7 @@ void Draw() {
 		drawNowObject->updatePoint();
 		DrawObject(drawNowObject);
 		//DebugPrintln("绘制完成");
-	}
+	}*/
 
 	HDC hDC = GetDC(hWnd);
 	BitBlt(hDC, 0, 0, nScreenWidth, nScreenHeight, hMemDC, 0, 0, SRCCOPY);

@@ -49,12 +49,12 @@ public:
 
 void Draw();
 const int MaxDrawObjectSum = 100000;
-extern Object* drawList[MaxDrawObjectSum];
+//extern Object* drawList[MaxDrawObjectSum];
 extern int drawSum;
 extern Player player;
 
-void AddDrawObject(Object* object);
-void RemoveDrawObecjt(Object* object);
+//void AddDrawObject(Object* object);
+//void RemoveDrawObecjt(Object* object);
 
 void KeyControl();
 

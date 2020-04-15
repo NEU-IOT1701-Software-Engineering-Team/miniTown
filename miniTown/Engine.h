@@ -30,7 +30,6 @@ extern int drawSum;
 
 constexpr auto PI = 3.1415926;
 
-
 class Player {
 public:
 	Player();
@@ -227,10 +226,15 @@ public:
 	Point point;
 
 	/*
-	z值越高，在画面越顶层，然后同级的在屏幕越下方的图片越顶层
+	z值越小，越先绘制
+	z值相同，y越小越先绘制
 	*/
 	int z;
 	Picture* pic;//该对象的图标
+
+	Object() {
+		memset(this, 0, sizeof(Object));
+	}
 
 	void WalkTo(Object* object);
 
@@ -300,12 +304,52 @@ public:
 	void setPoint(const Point& point) {
 		this->point = point;
 	}
-	bool operator<(Object obj2) {
-		return this->z < obj2.z;
-	}
+
 private:
 	float angle = 0.0f;//图像的旋转角度(弧度制)
 };
+
+struct ObjectPointer {
+public:
+	Object* pObject;//一个指向实际object对象的指针
+
+	struct ObjectPointer() {
+		pObject = NULL;
+	}
+
+	struct ObjectPointer(Object* tpObject) {
+		pObject = tpObject;
+	}
+
+	//Description:
+	//	重载<操作符以实现对object的按Z值的排序
+	//Paramter: 
+	//	class ObjectPointer obj2 另一个比较对象
+	//Return Value:
+	//	bool 比较结果
+	bool operator<(struct ObjectPointer obj2) {
+		if (this->pObject == NULL || obj2.pObject == NULL) {
+			return false;
+		}
+		if (this->pObject->z == obj2.pObject->z) {
+			//z值相同
+			return this->pObject->y < obj2.pObject->y;
+		}
+		return this->pObject->z < obj2.pObject->z;
+	}
+
+	//Description:
+	//	重载==操作符以实现对object比较，判断是否是同一个对象
+	//Paramter: 
+	//	class ObjectPointer obj2 另一个比较对象
+	//Return Value:
+	//	bool 比较结果
+	bool operator==(struct ObjectPointer obj2) {
+		return this->pObject == obj2.pObject;
+	}
+private:
+};
+typedef struct ObjectPointer ObjectPoint;
 
 class Color {
 public:
@@ -611,6 +655,19 @@ int _CreateWindow(const char* title, int nWidth, int nHeight);
 //	NONE
 void Draw();
 
+//Description:
+//	向绘制队列中加入一个新对象,如果该对象已被加入，则不会重复加入.
+//Paramter: 
+//	Object* object 将要加入对象的地址
+//Return Value:
+//	NONE
 void AddDrawObject(Object* object);
+
+//Description:
+//	从绘制队列中删掉一个对象。
+//Paramter: 
+//	Object* object 将要删除的对象地址
+//Return Value:
+//	NONE
 void RemoveDrawObecjt(Object* object);
 void freeSomethingForEngine();
