@@ -117,7 +117,7 @@ void Farmer::Sleep()
 			LastDaySum = DaySum;
 			if (isMarriage == false)
 			{
-				if (Sex == 1 && ownHouse != NULL)
+				if (Sex == 1 && NowOwnHouseSum != 0)
 				{
 					isCanMarriage = true;
 				}
@@ -128,6 +128,13 @@ void Farmer::Sleep()
 				else
 				{
 					isCanMarriage = false;
+				}
+			}
+			if (isMarriage == true && Sex == 1)
+			{
+				if (familyTree->NowChildSum < this->NowOwnHouseSum)
+				{
+					MakeBaby(familyTree);
 				}
 			}
 		}
@@ -313,7 +320,7 @@ void Builder::Sleep()
 			LastDaySum = DaySum;
 			if (isMarriage == false)
 			{
-				if (Sex == 1 && ownHouse != NULL)
+				if (Sex == 1 && NowOwnHouseSum != 0)
 				{
 					isCanMarriage = true;
 				}
@@ -324,6 +331,13 @@ void Builder::Sleep()
 				else
 				{
 					isCanMarriage = false;
+				}
+			}
+			if (isMarriage == true && Sex == 1)
+			{
+				if (familyTree->NowChildSum < this->NowOwnHouseSum)
+				{
+					MakeBaby(familyTree);
 				}
 			}
 
@@ -381,7 +395,7 @@ void Builder::AI()
 						WalkTo(king.belongHouse->DrawObject);
 						if (IsMoreCloseTo(this->DrawObject, king.belongHouse->DrawObject))
 						{
-							BuyRice();
+							BuyRice(wantFoodLevel+3);
 							isTryBuyRice = true;
 						}
 					}
@@ -404,49 +418,117 @@ void Builder::AI()
 						}
 
 					}
+				}
+				//如果孩子要吃饭，家里没有米,去买
+				else if (isMarriage == true 
+					&& this->belongHouse->StoneRiceSum == 0
+					&& isBuyRiceFinish == false)
+				{
+					//计算需要买的米
+					int NeedBuyRiceSum = 0;
+					for (int i = 0; i < familyTree->NowChild0Sum; i++)
+					{
+						NeedBuyRiceSum += (familyTree->child0List[i]->wantFoodLevel + 2) - familyTree->child0List[i]->belongHouse->StoneRiceSum;
+					}
+					if (NeedBuyRiceSum > 0)
+					{
+						if (isTryBuyRice == false)
+						{
+							//买不起一个水稻就回去
+							if (this->money < RicePrice)
+							{
+								isTryBuyRice = true;
+							}
+							//去村长家买水稻
+							WalkTo(king.belongHouse->DrawObject);
+							if (IsMoreCloseTo(this->DrawObject, king.belongHouse->DrawObject))
+							{
+								BuyRice(NeedBuyRiceSum);
+								isTryBuyRice = true;
+							}
+						}
+						else
+						{
+							//买完走回家
+							WalkTo(this->belongHouse->DrawObject);
+							if (IsMoreCloseTo(this->DrawObject, this->belongHouse->DrawObject))
+							{
+								while (TakeOnThingSum > 0 && ObjectIsRice(this->TakeOnThing[this->TakeOnThingSum - 1]) == true)
+									//判断一下手上的东西是不是水稻
+								{
+									//是的话把手里所有水稻放进家里
+									PutRice(belongHouse);
+								}
+								isBuyRiceFinish = true;
+							}
 
+						}
+					}
 
 				}
 				//如果有小孩，小孩饿的时候给他/她东西吃
-				else if (isMarriage == true && familyTree->ChildType == 0
-					&& familyTree->child0->belongHouse->StoneRiceSum <= 0 && isTryFeedChild == false
+				else if (isMarriage == true
+					&& isTryFeedChild == false
 					&& belongHouse->StoneRiceSum > 0)
 				{
-					int takeRiceSum = min(belongHouse->StoneRiceSum, familyTree->child0->wantFoodLevel + 2);
-					if (takeRiceSum == 0)
+					bool isNeedRice = false;
+					//先找下要不要喂
+					for (int i = 0; i < familyTree->NowChild0Sum; i++)
 					{
-						isTryFeedChild = true;
-					}
-					if (TakeOnThingSum == 0)
-					{
-						if (IsMoreCloseTo(DrawObject, belongHouse->DrawObject))
+						if (familyTree->child0List[i]->belongHouse->StoneRiceSum <= 0)
 						{
-							for (int i = 0; i < takeRiceSum; i++)
-							{
-								GetARiceToHand();
-								AddDrawObject(TakeOnThing[TakeOnThingSum - 1]);
-							}
-
+							isNeedRice = true;
 						}
-						WalkTo(belongHouse->DrawObject);
-
 					}
-					else
+					if (isNeedRice == false)
 					{
-						WalkTo(familyTree->child0->belongHouse->DrawObject);
-						if (IsMoreCloseTo(this->DrawObject, familyTree->child0->belongHouse->DrawObject) == true)
+						isTryFeedChild = true; //如果全部都有米，就不用喂
+					}
+					for (int i = 0; i < familyTree->NowChild0Sum; i++)
+					{
+
+						if (familyTree->child0List[i]->belongHouse->StoneRiceSum <= 0)
 						{
-							while (TakeOnThingSum > 0)
-							{
-								PutRice(familyTree->child0->belongHouse);
-							}
-							
-							if (TakeOnThingSum == 0)
+							int takeRiceSum = min(belongHouse->StoneRiceSum, familyTree->child0List[i]->wantFoodLevel + 2);
+							if (takeRiceSum == 0)
 							{
 								isTryFeedChild = true;
 							}
+							if (TakeOnThingSum == 0)
+							{
+								if (IsMoreCloseTo(DrawObject, belongHouse->DrawObject))
+								{
+									for (int i = 0; i < takeRiceSum; i++)
+									{
+										GetARiceToHand();
+										AddDrawObject(TakeOnThing[TakeOnThingSum - 1]);
+									}
+
+								}
+								WalkTo(belongHouse->DrawObject);
+
+							}
+							else
+							{
+								WalkTo(familyTree->child0List[i]->belongHouse->DrawObject);
+								if (IsMoreCloseTo(this->DrawObject, familyTree->child0List[i]->belongHouse->DrawObject) == true)
+								{
+									while (TakeOnThingSum > 0)
+									{
+										PutRice(familyTree->child0List[i]->belongHouse);
+									}
+
+									if (TakeOnThingSum == 0)
+									{
+										isTryFeedChild = true;
+									}
+								}
+							}
+							break;
 						}
+						
 					}
+				
 
 				}
 				else if (isMarriage==false && isCanMarriage == true&&DayTimeNowRate<0.5)
@@ -520,7 +602,7 @@ void Builder::AI()
 					
 
 				}
-				else if (this->Sex==1&& this->money >= HousePrice && this->ownHouse == NULL && isTryBuyHouse == false) //有钱就去买房
+				else if (this->Sex==1&& this->money >= HousePrice&& isTryBuyHouse == false) //有钱就去买房
 				{
 					WalkTo(king.DrawObject);
 					if (IsMoreCloseTo(DrawObject, king.DrawObject))
@@ -602,15 +684,15 @@ bool Builder::BuyHouse()
 		this->money -= HousePrice;
 		king.money += HousePrice;
 		king.HaveEmptyHouseSum--;
-		this->ownHouse = GetANearEmptyHouse(this->DrawObject);
+		this->ownHouseList[NowOwnHouseSum] = GetANearEmptyHouse(this->DrawObject);
+		NowOwnHouseSum++;
 		return true;
 	}
 	return false;
 }
 
-bool Builder::BuyRice()
+bool Builder::BuyRice(int wantBuyRiceSum)
 {
-	int wantBuyRiceSum = wantFoodLevel + 3; //现在要买水稻的数量
 	
 	//买不起或者买不到那么多就减一尝试
 	while (this->money < wantBuyRiceSum * RicePrice||king.belongHouse->StoneRiceSum<=wantBuyRiceSum)
@@ -837,78 +919,108 @@ void Farmer::AI()
 
 				}
 				//如果孩子要吃饭，家里没有米,去买
-				else if (isMarriage==true&&familyTree->ChildType==0&&familyTree->child0->wantFoodLevel > 0
+				else if (isMarriage==true
 					&& this->belongHouse->StoneRiceSum == 0
 					&& isBuyRiceFinish == false)
 				{
-					if (isTryBuyRice == false)
+					//计算需要买的米
+					int NeedBuyRiceSum = 0;
+					for (int i = 0; i < familyTree->NowChild0Sum; i++)
 					{
-						//买不起一个水稻就回去
-						if (this->money < RicePrice)
-						{
-							isTryBuyRice = true;
-						}
-						//去村长家买水稻
-						WalkTo(king.belongHouse->DrawObject);
-						if (IsMoreCloseTo(this->DrawObject, king.belongHouse->DrawObject))
-						{
-							BuyRice();
-							isTryBuyRice = true;
-						}
+						NeedBuyRiceSum += (familyTree->child0List[i]->wantFoodLevel +2)- familyTree->child0List[i]->belongHouse->StoneRiceSum;
 					}
-					else
+					if (NeedBuyRiceSum > 0)
 					{
-						//买完走回家
-						WalkTo(this->belongHouse->DrawObject);
-						if (IsMoreCloseTo(this->DrawObject, this->belongHouse->DrawObject))
+						if (isTryBuyRice == false)
 						{
-							while (TakeOnThingSum > 0 && ObjectIsRice(this->TakeOnThing[this->TakeOnThingSum - 1]) == true)
-								//判断一下手上的东西是不是水稻
+							//买不起一个水稻就回去
+							if (this->money < RicePrice)
 							{
-								//是的话把手里所有水稻放进家里
-								PutRice(belongHouse);
+								isTryBuyRice = true;
 							}
-							isBuyRiceFinish = true;
+							//去村长家买水稻
+							WalkTo(king.belongHouse->DrawObject);
+							if (IsMoreCloseTo(this->DrawObject, king.belongHouse->DrawObject))
+							{
+								BuyRice(NeedBuyRiceSum);
+								isTryBuyRice = true;
+							}
 						}
+						else
+						{
+							//买完走回家
+							WalkTo(this->belongHouse->DrawObject);
+							if (IsMoreCloseTo(this->DrawObject, this->belongHouse->DrawObject))
+							{
+								while (TakeOnThingSum > 0 && ObjectIsRice(this->TakeOnThing[this->TakeOnThingSum - 1]) == true)
+									//判断一下手上的东西是不是水稻
+								{
+									//是的话把手里所有水稻放进家里
+									PutRice(belongHouse);
+								}
+								isBuyRiceFinish = true;
+							}
 
+						}
 					}
+				
 				}
 				//如果有小孩，小孩饿的时候给他/她东西吃
-				else if (isMarriage == true && familyTree->ChildType == 0
-					&& familyTree->child0->belongHouse->StoneRiceSum <= 0 && isTryFeedChild == false
-					&&belongHouse->StoneRiceSum>0)
+				else if (isMarriage == true
+					&& isTryFeedChild == false
+					&& belongHouse->StoneRiceSum > 0)
 				{
-					int takeRiceSum = min(belongHouse->StoneRiceSum, familyTree->child0->wantFoodLevel + 2);
-					if (takeRiceSum == 0)
+					int Child0Now = -1;
+					for (int i = 0; i < familyTree->NowChildSum; i++)
 					{
-						isTryFeedChild = true;
-					}
-					if (TakeOnThingSum == 0)
-					{
-						if (IsMoreCloseTo(DrawObject, belongHouse->DrawObject))
+						if (familyTree->ChildTypeList[i] == 0)
 						{
-							for (int i = 0; i < takeRiceSum; i++)
+							Child0Now++;
+							if (familyTree->child0List[Child0Now]->belongHouse->StoneRiceSum <= 0)
 							{
-								GetARiceToHand();
-								AddDrawObject(TakeOnThing[TakeOnThingSum - 1]);
+								int takeRiceSum = min(belongHouse->StoneRiceSum, familyTree->child0List[Child0Now]->wantFoodLevel + 2);
+								if (takeRiceSum == 0)
+								{
+									isTryFeedChild = true;
+								}
+								if (TakeOnThingSum == 0)
+								{
+									if (IsMoreCloseTo(DrawObject, belongHouse->DrawObject))
+									{
+										for (int i = 0; i < takeRiceSum; i++)
+										{
+											GetARiceToHand();
+											AddDrawObject(TakeOnThing[TakeOnThingSum - 1]);
+										}
+
+									}
+									WalkTo(belongHouse->DrawObject);
+
+								}
+								else
+								{
+									WalkTo(familyTree->child0List[Child0Now]->belongHouse->DrawObject);
+									if (IsMoreCloseTo(this->DrawObject, familyTree->child0List[Child0Now]->belongHouse->DrawObject) == true)
+									{
+										while (TakeOnThingSum > 0)
+										{
+											PutRice(familyTree->child0List[Child0Now]->belongHouse);
+										}
+
+										if (TakeOnThingSum == 0)
+										{
+											isTryFeedChild = true;
+										}
+									}
+								}
+								break;
 							}
-							
+
+
 						}
-						WalkTo(belongHouse->DrawObject);
 
 					}
-					else
-					{
-						WalkTo(familyTree->child0->belongHouse->DrawObject);
-						if (IsMoreCloseTo(this->DrawObject, familyTree->child0->belongHouse->DrawObject) == true)
-						{
-							PutRice(familyTree->child0->belongHouse);
-							if (TakeOnThingSum == 0)
-							{
-								isTryFeedChild = true;
-							}
-						}
-					}
+
 
 				}
 				else if (isMarriage == false && isCanMarriage == true && DayTimeNowRate < 0.5)
@@ -981,7 +1093,7 @@ void Farmer::AI()
 					
 
 				}
-				else if (this->Sex==1&& this->money >= HousePrice&&this->ownHouse==NULL&& isTryBuyHouse==false) //有钱就去买房
+				else if (this->Sex==1&& this->money >= HousePrice&&isTryBuyHouse==false) //有钱就去买房
 				{
 					WalkTo(king.DrawObject);
 					if (IsMoreCloseTo(DrawObject, king.DrawObject))
@@ -1081,9 +1193,8 @@ bool Farmer::GetAllRiceToHand()
 
 }
 
-bool Farmer::BuyRice()
+bool Farmer::BuyRice(int wantBuyRiceSum)
 {
-	int wantBuyRiceSum = wantFoodLevel + 3; //现在要买水稻的数量
 
 	//买不起或者买不到那么多就减一尝试
 	while (this->money < wantBuyRiceSum * RicePrice || king.belongHouse->StoneRiceSum <= wantBuyRiceSum)
@@ -1117,7 +1228,8 @@ bool Farmer::BuyHouse()
 		this->money -= HousePrice;
 		king.money += HousePrice;
 		king.HaveEmptyHouseSum--;
-		this->ownHouse = GetANearEmptyHouse(this->DrawObject);
+		this->ownHouseList[NowOwnHouseSum] = GetANearEmptyHouse(this->DrawObject);
+		NowOwnHouseSum++;
 		return true;
 	}
 	return false;
@@ -1296,24 +1408,27 @@ void Child::GrowUP()
 		coord nowCoord;
 		nowCoord = GetCoord(this->DrawObject);
 		AddBuilder(nowCoord.x, nowCoord.y, this->Sex);
-		oldFamilyTree->ChildType = 1;
-		oldFamilyTree->child1 = &builder[NowBuilderSum - 1];
+		oldFamilyTree->ChildTypeList[oldFamilyTree->NowChildSum-1] = 1;
+		oldFamilyTree->child1List[oldFamilyTree->NowChild1Sum-1] = &builder[NowBuilderSum - 1];
 		builder[NowBuilderSum - 1].age = age;
 		builder[NowBuilderSum - 1].belongHouse = belongHouse;
 		builder[NowBuilderSum - 1].wantFoodLevel = wantFoodLevel;
 		builder[NowBuilderSum - 1].wantSexLevel = 0;
+		builder[NowBuilderSum - 1].oleFamilyTree = oldFamilyTree;
+		
 	}
 	else if (JobType == 1)
 	{
 		coord nowCoord;
 		nowCoord = GetCoord(this->DrawObject);
 		AddFarmer(nowCoord.x, nowCoord.y, this->Sex);
-		oldFamilyTree->ChildType = 2;
-		oldFamilyTree->child2 = &farmer[NowFarmerSum - 1];
+		oldFamilyTree->ChildTypeList[oldFamilyTree->NowChildSum-1] = 2;
+		oldFamilyTree->child2List[oldFamilyTree->NowChild2Sum-1] = &farmer[NowFarmerSum - 1];
 		farmer[NowFarmerSum - 1].age = age;
 		farmer[NowFarmerSum - 1].belongHouse = belongHouse;
 		farmer[NowFarmerSum - 1].wantFoodLevel = wantFoodLevel;
 		farmer[NowFarmerSum - 1].wantSexLevel = 0;
+		farmer[NowFarmerSum - 1].oleFamilyTree = oldFamilyTree;
 	}
 	this->belongHouse->isUsed = false;
 	RemoveDrawObecjt(this->DrawObject);

@@ -94,7 +94,8 @@ House* GetANearEmptyHouse(Object *man,int type)
 	{
 		if (house[i].isUsed == false)
 		{
-			if ((type == 0 && house[i].isKingHouse == false) || (type == 1 && house[i].isKingHouse == true))
+			if (((type == 0 && house[i].isKingHouse == false) || (type == 1 && house[i].isKingHouse == true))
+				&&house[i].buildTime==house[i].RequireBuildTime)
 			{
 				int nowDistance = DistanceAToB(man, house[i].DrawObject);
 				if (nowDistance < MinDistance)
@@ -211,16 +212,18 @@ void AddBuilder(int x, int y,int sex)
 
 void AddChild(int sex, FamilyTree* familyTree)
 {
+	int NowChildSum = familyTree->NowChildSum;
+	
 	objChild[NowChildSum].pic = &picChild;
 
 	child[NowChildSum].DrawObject = &objChild[NowChildSum];
 	if (familyTree->FatherType == 0)
 	{
-		child[NowChildSum].belongHouse = familyTree->Father0->ownHouse;
+		child[NowChildSum].belongHouse = familyTree->Father0->ownHouseList[NowChildSum];
 	}
 	else if (familyTree->FatherType == 1)
 	{
-		child[NowChildSum].belongHouse = familyTree->Father1->ownHouse;
+		child[NowChildSum].belongHouse = familyTree->Father1->ownHouseList[NowChildSum];
 	}
 	else if (familyTree->FatherType == 2)
 	{
@@ -232,8 +235,12 @@ void AddChild(int sex, FamilyTree* familyTree)
 	child[NowChildSum].id = NowChildSum;
 	child[NowChildSum].Sex = sex;
 	child[NowChildSum].oldFamilyTree = familyTree;
-	familyTree->ChildType = 0;
-	familyTree->child0 = &child[NowChildSum];
+	
+	
+	familyTree->ChildTypeList[familyTree->NowChildSum] = 0;
+	familyTree->child0List[familyTree->NowChild0Sum] = &child[NowChildSum];
+	familyTree->NowChildSum++;
+	familyTree->NowChild0Sum++;
 	AddDrawObject(child[NowChildSum].DrawObject);
 	NowChildSum++;
 }

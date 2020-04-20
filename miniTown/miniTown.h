@@ -73,6 +73,8 @@ const int MaxTreeSum = 1000;
 const int MaxRiceSum = 1000;
 const int MaxWoodSum = 1000;
 const int MaxObjectSum = 1000;
+const int MaxOwnHouseSum = 1000;
+
 
 
 extern int FieldProduceRiceSum;
@@ -82,7 +84,7 @@ extern int FirstPayHousePrice; //盖房子预先给木匠的定金
 extern int MaxWantFoodLevel;
 const float GrowRiceTime = 25;
 const float AgeAddEveryDay = 1;
-const float GrownUpAge = 4; //小孩到成年的年龄
+const float GrownUpAge = 15; //小孩到成年的年龄
 
 
 
@@ -147,8 +149,10 @@ public:
 	int money;
 	Field* belongField;
 	House* belongHouse;
-	House* ownHouse = NULL; //给后代的房子
+	House* ownHouseList[MaxOwnHouseSum]; //给后代的房子
+	int NowOwnHouseSum = 0;
 	FamilyTree* familyTree = NULL;
+	FamilyTree* oleFamilyTree = NULL;
 	bool isCanMarriage = false;
 	bool isMarriage = false;
 	Object* DrawObject;
@@ -167,7 +171,7 @@ public:
 	bool GetARiceToHand();  //从房子里拿出一个水稻到手上
 	bool GetAllRiceToHand(); //从房子里拿出所有水稻到手上
 
-	bool BuyRice();
+	bool BuyRice(int wantBuyRiceSum);
 	bool BuyHouse();
 	void judgeDead();
 
@@ -192,8 +196,10 @@ public:
 	House* belongHouse;
 	Tree* AimTree=NULL;
 	House* AimUnFinishHouse = NULL;
-	House* ownHouse=NULL; //给后代的房子
+	House* ownHouseList[MaxOwnHouseSum]; //给后代的房子
+	int NowOwnHouseSum = 0;
 	FamilyTree* familyTree = NULL;
+	FamilyTree* oleFamilyTree = NULL;
 	bool isCanMarriage = false;
 	bool isMarriage = false;
 
@@ -217,7 +223,7 @@ public:
 	House* FindAUnFinishHouse();
 	void AI();
 	void PutWood();
-	bool BuyRice();
+	bool BuyRice(int wantBuyRiceSum);
 	bool BuyHouse();
 	bool PutRice(House* house);
 	void judgeDead();
@@ -298,10 +304,16 @@ public:
 	Builder *Mother0;
 	Farmer *Mother1;
 	King *Mother2;
-	int ChildType;
-	Child* child0;
-	Builder* child1;
-	Farmer* child2;
+	
+	int ChildTypeList[MaxChildSum];
+	int NowChildSum = 0;
+
+	Child* child0List[MaxChildSum];
+	int NowChild0Sum = 0;
+	Builder* child1List[MaxChildSum];
+	int NowChild1Sum = 0;
+	Farmer* child2List[MaxChildSum];
+	int NowChild2Sum = 0;
 };
 
 const int DayTime = 30;
