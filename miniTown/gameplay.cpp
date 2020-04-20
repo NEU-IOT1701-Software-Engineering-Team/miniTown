@@ -335,7 +335,7 @@ void ResourceCount()//对村民拥有的资源进行统计
 
 	cout << "==================" << endl;
 	cout << "ResourceCount" << endl;
-	cout << "DrawObjectSum:" << drawSum << endl;
+	//cout << "DrawObjectSum:" << drawSum << endl;
 	cout << "money:" << moneyCount << endl;
 	cout << "rice:" << riceCount << endl;
 	cout << "wood:" << woodCount << endl;
