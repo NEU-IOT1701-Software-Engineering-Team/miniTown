@@ -366,7 +366,7 @@ public:
 				return this->pObject->z < obj2.pObject->z;
 			}
 			else {
-				return this->pObject->point.y > obj2.pObject->point.y;
+				return this->pObject->point.y < obj2.pObject->point.y;
 			}
 		}
 	}
