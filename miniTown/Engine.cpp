@@ -17,7 +17,7 @@ std::vector<ObjectPointer> drawList;
 
 std::list<Player::_Sound*> _listPlay;
 std::vector<Player::_MSG> _listMsg;
-const int timeout = 1000;//播放间隔 对音频外设操作需要时间间隔
+const int timeout = 850;//播放间隔 对音频外设操作需要时间间隔
 const int step = 200;//响应时间
 std::mutex m_listPlay;//对_listPlay的互斥锁
 std::mutex m_listMsg;//对_listMsg的互斥锁
@@ -190,7 +190,7 @@ DWORD __stdcall Player::_Run(LPVOID lpParameter)
 		}
 		case PLAYER_MSG_STOP: {
 			msg.pSound->stop();//通知线程结束
-			WaitForSingleObject(msg.pSound->hThread, step * 2);//等待结束
+			WaitForSingleObject(msg.pSound->hThread, step * 2000);//等待结束
 			CloseHandle(msg.pSound->hThread);
 			msg.pSound->hThread = NULL;
 
@@ -213,7 +213,7 @@ DWORD __stdcall Player::_Run(LPVOID lpParameter)
 					m_listPlay.unlock();
 
 					pSound->stop();
-					WaitForSingleObject(pSound->hThread, step * 200);//it失效
+					WaitForSingleObject(pSound->hThread, step * 2000);//it失效
 					CloseHandle(pSound->hThread);
 
 					pSound->hThread = NULL;
@@ -298,7 +298,7 @@ void Player::_StaticDestruct() {
 	_listMsg.push_back(msg);//将退出消息加入队列
 	m_listMsg.unlock();
 	//m_listPlay.
-	WaitForSingleObject(_hThread, step * 200);
+	WaitForSingleObject(_hThread, step * 2000);
 	CloseHandle(_hThread);
 }
 

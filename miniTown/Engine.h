@@ -331,11 +331,13 @@ public:
 		if (this->pObject == NULL || obj2.pObject == NULL) {
 			return false;
 		}
-		if (this->pObject->z == obj2.pObject->z) {
-			//z值相同
-			return this->pObject->y < obj2.pObject->y;
+		this->pObject->updatePoint();
+		obj2.pObject->updatePoint();
+		if (this->pObject->point.y == obj2.pObject->point.y) {
+			//y值相同
+			return this->pObject->z < obj2.pObject->z;
 		}
-		return this->pObject->z < obj2.pObject->z;
+		return this->pObject->point.y > obj2.pObject->point.y;
 	}
 
 	//Description:
