@@ -17,7 +17,7 @@ std::vector<ObjectPointer> drawList;
 
 std::list<Player::_Sound*> _listPlay;
 std::vector<Player::_MSG> _listMsg;
-const int timeout = 850;//播放间隔 对音频外设操作需要时间间隔
+const int timeout = 950;//播放间隔 对音频外设操作需要时间间隔
 const int step = 200;//响应时间
 std::mutex m_listPlay;//对_listPlay的互斥锁
 std::mutex m_listMsg;//对_listMsg的互斥锁
