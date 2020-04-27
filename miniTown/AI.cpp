@@ -1408,13 +1408,15 @@ void Child::GrowUP()
 		nowCoord = GetCoord(this->DrawObject);
 		AddBuilder(nowCoord.x, nowCoord.y, this->Sex);
 		oldFamilyTree->ChildTypeList[oldFamilyTree->NowFamilyTreeChildSum-1] = 1;
-		oldFamilyTree->child1List[oldFamilyTree->NowFamilyTreeChild1Sum-1] = &builder[NowBuilderSum - 1];
+		oldFamilyTree->child1List[oldFamilyTree->NowFamilyTreeChild1Sum] = &builder[NowBuilderSum - 1];
 		builder[NowBuilderSum - 1].age = age;
 		builder[NowBuilderSum - 1].belongHouse = belongHouse;
 		builder[NowBuilderSum - 1].wantFoodLevel = wantFoodLevel;
 		builder[NowBuilderSum - 1].wantSexLevel = 0;
 		builder[NowBuilderSum - 1].oleFamilyTree = oldFamilyTree;
-		
+
+		oldFamilyTree->NowFamilyTreeChild1Sum++;
+		oldFamilyTree->NowFamilyTreeChild0Sum--;
 	}
 	else if (JobType == 1)
 	{
@@ -1422,12 +1424,14 @@ void Child::GrowUP()
 		nowCoord = GetCoord(this->DrawObject);
 		AddFarmer(nowCoord.x, nowCoord.y, this->Sex);
 		oldFamilyTree->ChildTypeList[oldFamilyTree->NowFamilyTreeChildSum-1] = 2;
-		oldFamilyTree->child2List[oldFamilyTree->NowFamilyTreeChild2Sum-1] = &farmer[NowFarmerSum - 1];
+		oldFamilyTree->child2List[oldFamilyTree->NowFamilyTreeChild2Sum] = &farmer[NowFarmerSum - 1];
 		farmer[NowFarmerSum - 1].age = age;
 		farmer[NowFarmerSum - 1].belongHouse = belongHouse;
 		farmer[NowFarmerSum - 1].wantFoodLevel = wantFoodLevel;
 		farmer[NowFarmerSum - 1].wantSexLevel = 0;
 		farmer[NowFarmerSum - 1].oleFamilyTree = oldFamilyTree;
+		oldFamilyTree->NowFamilyTreeChild2Sum++;
+		oldFamilyTree->NowFamilyTreeChild0Sum--;
 	}
 	this->belongHouse->isUsed = false;
 	RemoveDrawObecjt(this->DrawObject);

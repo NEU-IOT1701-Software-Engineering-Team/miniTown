@@ -380,7 +380,7 @@ void KeyControl()
 	}
 	else
 	{
-		pressF = false;
+		pressT = false;
 	}
 	if (screen_keys['F'])
 	{
