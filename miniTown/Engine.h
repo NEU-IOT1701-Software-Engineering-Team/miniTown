@@ -335,9 +335,9 @@ public:
 		obj2.pObject->updatePoint();
 		
 		//渲染规则
-		//obj1 obj2 的z都等于-1时  y越小越先画越靠底层
-		//obj1 obj2 只有一个z等于 - 1时  z不等于 - 1的先画
-		//obj1 obj2 的z都不等于 - 1时  y越小越先画越靠底层 y相同时 z越小越先画越靠底层
+		//obj1 obj2 的z都等于-1时		y越小越先画越靠底层
+		//obj1 obj2 只有一个z等于 - 1时	z= - 1的先画
+		//obj1 obj2 的z都不等于 - 1时		y越小越先画越靠底层 y相同时 z越小越先画越靠底层
 
 		//判断第一个对象的z值是否为-1
 		if (this->pObject->z == -1) {
@@ -347,7 +347,7 @@ public:
 			}
 			else {
 				//z1==-1 && z2!=-1
-				return false;//this 和 obj2相比 this后画
+				return true;//this 和 obj2相比 this先画
 			}
 		}
 		else if (obj2.pObject->z == -1) {
@@ -356,7 +356,7 @@ public:
 			}
 			else {
 				//z1!=-1 && z2==-1
-				return true;//this 和 obj2相比 obj后画
+				return false;//this 和 obj2相比 obj先画
 			}
 		}
 		else {
