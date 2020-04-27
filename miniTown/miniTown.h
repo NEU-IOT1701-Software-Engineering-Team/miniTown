@@ -77,15 +77,6 @@ const int MaxOwnHouseSum = 1000;
 
 
 
-extern int FieldProduceRiceSum;
-extern int RicePrice;
-extern int HousePrice;
-extern int FirstPayHousePrice; //盖房子预先给木匠的定金
-extern int MaxWantFoodLevel;
-const float GrowRiceTime = 25;
-const float AgeAddEveryDay = 1;
-const float GrownUpAge = 15; //小孩到成年的年龄
-
 
 
 extern float DayTimeNowRate; //今天的进度(0~1)
@@ -116,7 +107,7 @@ class House
 public:
 	int id;
 	float buildTime=0;
-	const int RequireBuildTime = 30;
+	
 	int FirstBuildMoney = 0; //盖房子预付给木匠的钱
 	bool isKingHouse = false;
 	bool isUsed = false;
@@ -306,14 +297,14 @@ public:
 	King *Mother2;
 	
 	int ChildTypeList[MaxChildSum];
-	int NowChildSum = 0;
+	int NowFamilyTreeChildSum = 0;
 
 	Child* child0List[MaxChildSum];
-	int NowChild0Sum = 0;
+	int NowFamilyTreeChild0Sum = 0;
 	Builder* child1List[MaxChildSum];
-	int NowChild1Sum = 0;
+	int NowFamilyTreeChild1Sum = 0;
 	Farmer* child2List[MaxChildSum];
-	int NowChild2Sum = 0;
+	int NowFamilyTreeChild2Sum = 0;
 };
 
 const int DayTime = 30;
@@ -379,6 +370,22 @@ void AILoop();
 
 //--------------------------------
 //游戏机制
+
+//游戏机制的数据
+extern int RicePrice;
+extern int HousePrice;
+extern int FirstPayHousePrice; //盖房子预先给木匠的定金
+
+
+const float GrowRiceTime = 25;
+const float AgeAddEveryDay = 1;
+const float GrownUpAge = 5; //小孩到成年的年龄
+const int FieldProduceRiceSum = 4;
+const int MaxWantFoodLevel = 5;
+const int HouseRequireBuildTime = 15;
+const int HouseRequireWood = 0;
+
+
 
 extern bool clkClick;
 void AddUnFinishHouse(int x, int y);

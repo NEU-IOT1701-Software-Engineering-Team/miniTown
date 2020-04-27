@@ -95,7 +95,7 @@ House* GetANearEmptyHouse(Object *man,int type)
 		if (house[i].isUsed == false)
 		{
 			if (((type == 0 && house[i].isKingHouse == false) || (type == 1 && house[i].isKingHouse == true))
-				&&house[i].buildTime==house[i].RequireBuildTime)
+				&&house[i].buildTime== HouseRequireBuildTime)
 			{
 				int nowDistance = DistanceAToB(man, house[i].DrawObject);
 				if (nowDistance < MinDistance)
@@ -145,6 +145,7 @@ void AddUnFinishHouse(int x, int y)
 	house[NowHouseSum].id = NowHouseSum;
 	house[NowHouseSum].DrawObject->x = x *  picHouse.getWidth();
 	house[NowHouseSum].DrawObject->y = y * picHouse.getHeight();
+	house[NowHouseSum].DrawObject->z = 1;
 	house[NowHouseSum].FirstBuildMoney = FirstPayHousePrice;
 	AddDrawObject(house[NowHouseSum].DrawObject);
 	NowHouseSum++;
@@ -154,12 +155,13 @@ void AddUnFinishHouse(int x, int y)
 
 void AddFinishHouse(int x, int y,int type)
 {
-	house[NowHouseSum].buildTime = house[NowHouseSum].RequireBuildTime;
+	house[NowHouseSum].buildTime = HouseRequireBuildTime;
 	house[NowHouseSum].DrawObject = &objHouse[NowHouseSum];
 	house[NowHouseSum].DrawObject->pic = &picHouse;
 	house[NowHouseSum].id = NowHouseSum;
 	house[NowHouseSum].DrawObject->x = x * picHouse.getWidth();
 	house[NowHouseSum].DrawObject->y = y * picHouse.getHeight();
+	house[NowHouseSum].DrawObject->z = 1;
 	if (type == 1)
 	{
 		house[NowHouseSum].isKingHouse = true;
@@ -175,6 +177,7 @@ void AddFarmer(int x,int y,int sex)
 	objFarmer[NowFarmerSum].pic = &picFarmer;
 	objFarmer[NowFarmerSum].x = x * objFarmer[NowFarmerSum].pic->getWidth();
 	objFarmer[NowFarmerSum].y = y * objFarmer[NowFarmerSum].pic->getHeight();
+	objFarmer[NowFarmerSum].z = 1;
 
 	farmer[NowFarmerSum].DrawObject = &objFarmer[NowFarmerSum];
 	farmer[NowFarmerSum].belongField = GetANearUnUsedField(farmer[NowFarmerSum].DrawObject);
@@ -196,6 +199,7 @@ void AddBuilder(int x, int y,int sex)
 	objBuilder[NowBuilderSum].pic = &picBuilder;
 	objBuilder[NowBuilderSum].x = x*objBuilder[NowBuilderSum].pic->getWidth();
 	objBuilder[NowBuilderSum].y = y*objBuilder[NowBuilderSum].pic->getHeight();
+	objBuilder[NowBuilderSum].z = 1;
 
 	builder[NowBuilderSum].DrawObject = &objBuilder[NowBuilderSum];
 	builder[NowBuilderSum].belongHouse = GetANearEmptyHouse(builder[NowBuilderSum].DrawObject);
@@ -212,18 +216,18 @@ void AddBuilder(int x, int y,int sex)
 
 void AddChild(int sex, FamilyTree* familyTree)
 {
-	int NowChildSum = familyTree->NowChildSum;
+
 	
 	objChild[NowChildSum].pic = &picChild;
 
 	child[NowChildSum].DrawObject = &objChild[NowChildSum];
 	if (familyTree->FatherType == 0)
 	{
-		child[NowChildSum].belongHouse = familyTree->Father0->ownHouseList[NowChildSum];
+		child[NowChildSum].belongHouse = familyTree->Father0->ownHouseList[familyTree->NowFamilyTreeChildSum];
 	}
 	else if (familyTree->FatherType == 1)
 	{
-		child[NowChildSum].belongHouse = familyTree->Father1->ownHouseList[NowChildSum];
+		child[NowChildSum].belongHouse = familyTree->Father1->ownHouseList[familyTree->NowFamilyTreeChildSum];
 	}
 	else if (familyTree->FatherType == 2)
 	{
@@ -231,16 +235,17 @@ void AddChild(int sex, FamilyTree* familyTree)
 	}
 	objChild[NowChildSum].x = child[NowChildSum].belongHouse->DrawObject->x;	
 	objChild[NowChildSum].y = child[NowChildSum].belongHouse->DrawObject->y;
+	objChild[NowChildSum].z = 1;
 	child[NowChildSum].wantFoodLevel = 0;
 	child[NowChildSum].id = NowChildSum;
 	child[NowChildSum].Sex = sex;
 	child[NowChildSum].oldFamilyTree = familyTree;
 	
 	
-	familyTree->ChildTypeList[familyTree->NowChildSum] = 0;
-	familyTree->child0List[familyTree->NowChild0Sum] = &child[NowChildSum];
-	familyTree->NowChildSum++;
-	familyTree->NowChild0Sum++;
+	familyTree->ChildTypeList[familyTree->NowFamilyTreeChildSum] = 0;
+	familyTree->child0List[familyTree->NowFamilyTreeChild0Sum] = &child[NowChildSum];
+	familyTree->NowFamilyTreeChildSum++;
+	familyTree->NowFamilyTreeChild0Sum++;
 	AddDrawObject(child[NowChildSum].DrawObject);
 	NowChildSum++;
 }
@@ -250,6 +255,7 @@ void AddKing(int x, int y,int sex)
 	objKing.pic = &picKing;
 	objKing.x = x * objKing.pic->getWidth();
 	objKing.y = y * objKing.pic->getHeight();
+	objKing.z = 1;
 	king.Sex = sex;
 
 	king.DrawObject = &objKing;
@@ -268,6 +274,7 @@ void AddTree(int x, int y)
 	objTree[NowTreeSum].pic = &picTree;
 	objTree[NowTreeSum].x = x * picTree.getWidth();
 	objTree[NowTreeSum].y = y * picTree.getHeight();
+	objTree[NowTreeSum].z = 1;
 	tree[NowTreeSum].cutTime = 0;
 	tree[NowTreeSum].DrawObject = &objTree[NowTreeSum];
 	tree[NowTreeSum].id = NowTreeSum ;
@@ -283,6 +290,7 @@ void AddField(int x, int y)
 	objField[NowFieldSum].pic = &picField;
 	objField[NowFieldSum].x = x * picField.getWidth();
 	objField[NowFieldSum].y = y * picField.getHeight();
+	objField[NowFieldSum].z = 0;
 
 	field[NowFieldSum].DrawObject = &objField[NowFieldSum];
 	field[NowFieldSum].id = NowFieldSum ;
@@ -323,7 +331,7 @@ void ResourceCount()//对村民拥有的资源进行统计
 
 	for (int i = 0; i < NowHouseSum; i++)
 	{
-		if (house[i].buildTime == house[i].RequireBuildTime)
+		if (house[i].buildTime == HouseRequireBuildTime)
 		{
 			FinishHouseCount++;
 		}

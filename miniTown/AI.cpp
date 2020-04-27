@@ -3,8 +3,7 @@ using namespace std;
 int RicePrice=2;
 int HousePrice=40;
 int FirstPayHousePrice = 20;
-int FieldProduceRiceSum = 6;
-int MaxWantFoodLevel = 5;
+
 
 void AILoop()
 {
@@ -132,7 +131,7 @@ void Farmer::Sleep()
 			}
 			if (isMarriage == true && Sex == 1)
 			{
-				if (familyTree->NowChildSum < this->NowOwnHouseSum)
+				if (familyTree->NowFamilyTreeChildSum < this->NowOwnHouseSum)
 				{
 					MakeBaby(familyTree);
 				}
@@ -205,7 +204,7 @@ House* Builder::FindAUnFinishHouse()
 	House* ClossestHouse = NULL;
 	for (int i = 0; i < NowHouseSum; i++)
 	{
-		if (house[i].buildTime < house[i].RequireBuildTime&&house[i].isOnBuild==false)
+		if (house[i].buildTime < HouseRequireBuildTime &&house[i].isOnBuild==false)
 		{
 			int nowDistance = DistanceAToB(this->DrawObject, house[i].DrawObject);
 			if (nowDistance < minDistance)
@@ -288,13 +287,13 @@ void Builder::BuildHouse()
 		//std::cout << AimUnFinishHouse->buildTime << std::endl;
 	}
 	
-	if (AimUnFinishHouse->buildTime > house->RequireBuildTime)
+	if (AimUnFinishHouse->buildTime > HouseRequireBuildTime)
 	{
-		AimUnFinishHouse->buildTime = AimUnFinishHouse->RequireBuildTime;
+		AimUnFinishHouse->buildTime = HouseRequireBuildTime;
 		AimUnFinishHouse->DrawObject->pic = &picHouse;
 		AimUnFinishHouse = NULL;
 		OwnHouseCount++;
-		belongHouse->StoneWoodSum -= 3;
+		belongHouse->StoneWoodSum -= HouseRequireWood;
 	}
 }
 
@@ -314,7 +313,7 @@ void Builder::Sleep()
 		if (DaySum > LastDaySum)
 		{
 			wantFoodLevel++;
-			wantSexLevel += 1;
+			wantSexLevel += 0.5;
 			age += AgeAddEveryDay;
 			//cout << "want food level update " << wantFoodLevel << endl;
 			LastDaySum = DaySum;
@@ -335,7 +334,7 @@ void Builder::Sleep()
 			}
 			if (isMarriage == true && Sex == 1)
 			{
-				if (familyTree->NowChildSum < this->NowOwnHouseSum)
+				if (familyTree->NowFamilyTreeChildSum < this->NowOwnHouseSum)
 				{
 					MakeBaby(familyTree);
 				}
@@ -426,7 +425,7 @@ void Builder::AI()
 				{
 					//计算需要买的米
 					int NeedBuyRiceSum = 0;
-					for (int i = 0; i < familyTree->NowChild0Sum; i++)
+					for (int i = 0; i < familyTree->NowFamilyTreeChild0Sum; i++)
 					{
 						NeedBuyRiceSum += (familyTree->child0List[i]->wantFoodLevel + 2) - familyTree->child0List[i]->belongHouse->StoneRiceSum;
 					}
@@ -473,7 +472,7 @@ void Builder::AI()
 				{
 					bool isNeedRice = false;
 					//先找下要不要喂
-					for (int i = 0; i < familyTree->NowChild0Sum; i++)
+					for (int i = 0; i < familyTree->NowFamilyTreeChild0Sum; i++)
 					{
 						if (familyTree->child0List[i]->belongHouse->StoneRiceSum <= 0)
 						{
@@ -484,7 +483,7 @@ void Builder::AI()
 					{
 						isTryFeedChild = true; //如果全部都有米，就不用喂
 					}
-					for (int i = 0; i < familyTree->NowChild0Sum; i++)
+					for (int i = 0; i < familyTree->NowFamilyTreeChild0Sum; i++)
 					{
 
 						if (familyTree->child0List[i]->belongHouse->StoneRiceSum <= 0)
@@ -617,7 +616,7 @@ void Builder::AI()
 					
 				}
 
-				else if (belongHouse->StoneWoodSum >= 3 && AimUnFinishHouse != NULL)
+				else if (belongHouse->StoneWoodSum >= HouseRequireWood && AimUnFinishHouse != NULL)
 				{
 
 					WalkTo(AimUnFinishHouse->DrawObject);
@@ -925,7 +924,7 @@ void Farmer::AI()
 				{
 					//计算需要买的米
 					int NeedBuyRiceSum = 0;
-					for (int i = 0; i < familyTree->NowChild0Sum; i++)
+					for (int i = 0; i < familyTree->NowFamilyTreeChild0Sum; i++)
 					{
 						NeedBuyRiceSum += (familyTree->child0List[i]->wantFoodLevel +2)- familyTree->child0List[i]->belongHouse->StoneRiceSum;
 					}
@@ -971,7 +970,7 @@ void Farmer::AI()
 					&& belongHouse->StoneRiceSum > 0)
 				{
 					int Child0Now = -1;
-					for (int i = 0; i < familyTree->NowChildSum; i++)
+					for (int i = 0; i < familyTree->NowFamilyTreeChildSum; i++)
 					{
 						if (familyTree->ChildTypeList[i] == 0)
 						{
@@ -1281,7 +1280,7 @@ void Field::AddRice()
 	Object* newObjRice = &objRice[NowRiceSum];
 	newObjRice->x = this->DrawObject->x;
 	newObjRice->y = this->DrawObject->y;
-	newObjRice->z = 0;
+	newObjRice->z = 2;
 	newObjRice->pic = &picRice;
 	NowRiceSum++;
 	//std::cout << "Add Rice Called!" << std::endl;
@@ -1293,7 +1292,7 @@ void Tree::AddWood()
 	Object* newObjWood = &objWood[NowWoodSum];
 	newObjWood->x = this->DrawObject->x;
 	newObjWood->y = this->DrawObject->y;
-	newObjWood->z = 0;
+	newObjWood->z = 2;
 	newObjWood->pic = &picWood;
 	NowWoodSum++;
 	AddDrawObject(newObjWood);
@@ -1408,8 +1407,8 @@ void Child::GrowUP()
 		coord nowCoord;
 		nowCoord = GetCoord(this->DrawObject);
 		AddBuilder(nowCoord.x, nowCoord.y, this->Sex);
-		oldFamilyTree->ChildTypeList[oldFamilyTree->NowChildSum-1] = 1;
-		oldFamilyTree->child1List[oldFamilyTree->NowChild1Sum-1] = &builder[NowBuilderSum - 1];
+		oldFamilyTree->ChildTypeList[oldFamilyTree->NowFamilyTreeChildSum-1] = 1;
+		oldFamilyTree->child1List[oldFamilyTree->NowFamilyTreeChild1Sum-1] = &builder[NowBuilderSum - 1];
 		builder[NowBuilderSum - 1].age = age;
 		builder[NowBuilderSum - 1].belongHouse = belongHouse;
 		builder[NowBuilderSum - 1].wantFoodLevel = wantFoodLevel;
@@ -1422,8 +1421,8 @@ void Child::GrowUP()
 		coord nowCoord;
 		nowCoord = GetCoord(this->DrawObject);
 		AddFarmer(nowCoord.x, nowCoord.y, this->Sex);
-		oldFamilyTree->ChildTypeList[oldFamilyTree->NowChildSum-1] = 2;
-		oldFamilyTree->child2List[oldFamilyTree->NowChild2Sum-1] = &farmer[NowFarmerSum - 1];
+		oldFamilyTree->ChildTypeList[oldFamilyTree->NowFamilyTreeChildSum-1] = 2;
+		oldFamilyTree->child2List[oldFamilyTree->NowFamilyTreeChild2Sum-1] = &farmer[NowFarmerSum - 1];
 		farmer[NowFarmerSum - 1].age = age;
 		farmer[NowFarmerSum - 1].belongHouse = belongHouse;
 		farmer[NowFarmerSum - 1].wantFoodLevel = wantFoodLevel;

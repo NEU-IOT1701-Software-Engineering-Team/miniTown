@@ -117,7 +117,7 @@ void initObject()
 
 	AddTree(-1, 5);
 
-	AddFinishHouse(8, 2,1);
+	AddFinishHouse(7, 2,1);
 	AddKing(8, 2);
 	king.money = 100;
 
@@ -246,19 +246,35 @@ void KeyControl()
 	}
 	 if (screen_keys['W'])
 	{
-		king.DrawObject->y-= (float)timeScale * speed * FrameTime;
+		 if (king.DrawObject->y + king.DrawObject->pic->getHeight() -10> 60)
+		 {
+			 king.DrawObject->y -= (float)timeScale * speed * FrameTime;
+		 }
+	
 	}
 	if (screen_keys['S'])
 	{
-		king.DrawObject->y+= (float)timeScale * speed * FrameTime;
+		if (king.DrawObject->y + king.DrawObject->pic->getHeight() < SCREEN_HEIGHT)
+		{
+			king.DrawObject->y += (float)timeScale * speed * FrameTime;
+
+		}
 	}
 	if (screen_keys['A'])
 	{
-		king.DrawObject->x-= (float)timeScale * speed * FrameTime;
+		if (king.DrawObject->x > 0)
+		{
+			king.DrawObject->x -= (float)timeScale * speed * FrameTime;
+		}
+		
 	}
 	if (screen_keys['D'])
 	{
-		king.DrawObject->x+= (float)timeScale * speed * FrameTime;
+		if (king.DrawObject->x + king.DrawObject->pic->getWidth() < SCREEN_WIDTH)
+		{
+			king.DrawObject->x += (float)timeScale * speed * FrameTime;
+
+		}
 	}
 	if (screen_keys['Q']) {
 		int angle = king.DrawObject->getAngle();
