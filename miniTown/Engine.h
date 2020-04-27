@@ -333,11 +333,42 @@ public:
 		}
 		this->pObject->updatePoint();
 		obj2.pObject->updatePoint();
-		if (this->pObject->point.y == obj2.pObject->point.y) {
-			//y值相同
-			return this->pObject->z < obj2.pObject->z;
+		
+		//渲染规则
+		//obj1 obj2 的z都等于-1时  y越小越先画越靠底层
+		//obj1 obj2 只有一个z等于 - 1时  z不等于 - 1的先画
+		//obj1 obj2 的z都不等于 - 1时  y越小越先画越靠底层 y相同时 z越小越先画越靠底层
+
+		//判断第一个对象的z值是否为-1
+		if (this->pObject->z == -1) {
+			//判断第二个对象的z值是否为-1
+			if (obj2.pObject->z == -1) {
+				return this->pObject->point.y < obj2.pObject->point.y;
+			}
+			else {
+				//z1==-1 && z2!=-1
+				return false;//this 和 obj2相比 this后画
+			}
 		}
-		return this->pObject->point.y < obj2.pObject->point.y;
+		else if (obj2.pObject->z == -1) {
+			if (this->pObject->z == -1) {
+				return this->pObject->point.y < obj2.pObject->point.y;
+			}
+			else {
+				//z1!=-1 && z2==-1
+				return true;//this 和 obj2相比 obj后画
+			}
+		}
+		else {
+			//两者里边都没z=-1  //y优先
+			if (this->pObject->point.y == obj2.pObject->point.y) {
+				//y值相同
+				return this->pObject->z < obj2.pObject->z;
+			}
+			else {
+				return this->pObject->point.y > obj2.pObject->point.y;
+			}
+		}
 	}
 
 	//Description:

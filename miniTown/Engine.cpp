@@ -17,7 +17,7 @@ std::vector<ObjectPointer> drawList;
 
 std::list<Player::_Sound*> _listPlay;
 std::vector<Player::_MSG> _listMsg;
-const int timeout = 950;//播放间隔 对音频外设操作需要时间间隔
+const int timeout = 1000;//播放间隔 对音频外设操作需要时间间隔
 const int step = 200;//响应时间
 std::mutex m_listPlay;//对_listPlay的互斥锁
 std::mutex m_listMsg;//对_listMsg的互斥锁
@@ -668,11 +668,11 @@ inline void spin(Point p, Point p0, float angle, Point& p_) {
 	float sinAngle = sin(angle);
 	float cosAngle = cos(angle);
 
+	float tempX = p.x * cosAngle + p.y * sinAngle + p0.x * (1 - cosAngle) - p0.y * sinAngle;
+	p_.x =tempX+1;
 
-	p_.x = p.x * cosAngle + p.y * sinAngle + p0.x * (1 - cosAngle) - p0.y * sinAngle;
-
-
-	p_.y = -p.x * sinAngle + p.y * cosAngle + p0.y * (1 - cosAngle) + p0.x * sinAngle;
+	float tempY = -p.x * sinAngle + p.y * cosAngle + p0.y * (1 - cosAngle) + p0.x * sinAngle;
+	p_.y = tempY+1;
 }
 
 inline void DrawObject(Object* obj) {
@@ -688,6 +688,8 @@ inline void DrawObject(Object* obj) {
 		int nWidth = obj->pic->getWidth();
 		int nHeight = obj->pic->getHeight();
 
+		int count = 0;
+		int size = nWidth * nHeight;
 		//遍历图像
 		for (int i = 0; i < nHeight; ++i) {
 			for (int j = 0; j < nWidth; ++j) {
@@ -709,11 +711,13 @@ inline void DrawObject(Object* obj) {
 				int posBuffer = (p_.y * nScreenWidth + p_.x) * 4;
 				int posPic = i * nWidth + j;
 
+				++count;
 				DrawPoint(posBuffer, obj->pic->pChannelR[posPic], obj->pic->pChannelG[posPic], obj->pic->pChannelB[posPic]);
 				posBuffer += 4;
 				++posPic;
 			}
 		}
+		count = size;
 	}
 
 }
