@@ -70,8 +70,8 @@ const int MaxFarmerSum = 1000;
 const int MaxBuilderSum = 1000;
 const int MaxChildSum = 1000;
 const int MaxTreeSum = 1000;
-const int MaxRiceSum = 1000;
-const int MaxWoodSum = 1000;
+const int MaxRiceSum = 10000;
+const int MaxWoodSum = 10000;
 const int MaxObjectSum = 1000;
 const int MaxOwnHouseSum = 1000;
 
@@ -379,11 +379,11 @@ extern int FirstPayHousePrice; //盖房子预先给木匠的定金
 
 const float GrowRiceTime = 25;
 const float AgeAddEveryDay = 1;
-const float GrownUpAge = 3; //小孩到成年的年龄
+const float GrownUpAge = 5; //小孩到成年的年龄
 const int FieldProduceRiceSum = 4;
 const int MaxWantFoodLevel = 5;
 const int HouseRequireBuildTime = 15;
-const int HouseRequireWood = 0;
+const int HouseRequireWood = 3;
 
 
 
@@ -399,6 +399,7 @@ void AddKing(int x, int y,int sex=0);
 bool ObjectIsRice(Object* object);
 bool ObjectIsWood(Object* object);
 void MakeBaby(FamilyTree* familyTree);
+bool IsTheHouseHasOwner(House* house); //判断这个房子是不是被人买了
 
 
 void ShowSky();

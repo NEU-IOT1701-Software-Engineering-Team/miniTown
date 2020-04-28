@@ -197,6 +197,7 @@ int main()
 		{
 			DayTimeNow = 0;
 			cout << "Day Out!" << endl;
+			ResourceCount();
 		}
 		DayTimeNowRate = DayTimeNow / (float)DayTime;
 		start = stop;

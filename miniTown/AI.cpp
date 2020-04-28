@@ -340,7 +340,7 @@ void Builder::Sleep()
 				}
 			}
 
-			ResourceCount();
+		
 		}
 
 	}
@@ -608,7 +608,8 @@ void Builder::AI()
 					{
 						if (BuyHouse() == true)
 						{
-							cout << "Buy house!" << endl;
+							cout<<this->id << " buy house! id:"<<this->ownHouseList[this->NowOwnHouseSum-1]->id  << endl;
+							
 						}
 						isTryBuyHouse = true;
 					}
@@ -1099,7 +1100,7 @@ void Farmer::AI()
 					{
 						if (BuyHouse() == true)
 						{
-							cout << "Buy house!" << endl;
+							cout << this->id << " buy house! id:" << this->ownHouseList[this->NowOwnHouseSum - 1]->id << endl;
 						}
 						
 						isTryBuyHouse = true;
@@ -1224,12 +1225,17 @@ bool Farmer::BuyHouse()
 {
 	if (this->money >= HousePrice && king.HaveEmptyHouseSum > 0)
 	{
-		this->money -= HousePrice;
-		king.money += HousePrice;
-		king.HaveEmptyHouseSum--;
 		this->ownHouseList[NowOwnHouseSum] = GetANearEmptyHouse(this->DrawObject);
-		NowOwnHouseSum++;
-		return true;
+		if (this->ownHouseList[NowOwnHouseSum] != NULL)
+		{
+			this->money -= HousePrice;
+			king.money += HousePrice;
+			king.HaveEmptyHouseSum--;
+
+			NowOwnHouseSum++;
+			return true;
+		}
+		return false;
 	}
 	return false;
 }

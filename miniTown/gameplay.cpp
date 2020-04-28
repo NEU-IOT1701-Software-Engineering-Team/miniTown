@@ -95,7 +95,7 @@ House* GetANearEmptyHouse(Object *man,int type)
 		if (house[i].isUsed == false)
 		{
 			if (((type == 0 && house[i].isKingHouse == false) || (type == 1 && house[i].isKingHouse == true))
-				&&house[i].buildTime== HouseRequireBuildTime)
+				&&house[i].buildTime== HouseRequireBuildTime && IsTheHouseHasOwner(&house[i])==false)
 			{
 				int nowDistance = DistanceAToB(man, house[i].DrawObject);
 				if (nowDistance < MinDistance)
@@ -354,32 +354,34 @@ void ResourceCount()//对村民拥有的资源进行统计
 
 
 	cout << "Farmer:" << endl;
-	cout << "id\tsex\tmoney\tage\trice\twFood\twSex\tisMarry" << endl;
+	cout << "id\tsex\tmoney\tage\trice\twFood\twSex\tisMarry\tHouseId\toHouseSum" << endl;
 	for (int i = 0; i < NowFarmerSum; i++)
 	{
 		if (farmer[i].isDead == false)
 		{
-			cout << farmer[i].id << "\t" << ((farmer[i].Sex == 1) ? "man" : "woman") << "\t" << farmer[i].money << "\t" << farmer[i].age << "\t" << farmer[i].belongHouse->StoneRiceSum << "\t" << farmer[i].wantFoodLevel << "\t" << farmer[i].wantSexLevel<<"\t"<<farmer[i].isMarriage << endl;
+			cout << farmer[i].id << "\t" << ((farmer[i].Sex == 1) ? "man" : "woman") << "\t" << farmer[i].money << "\t" << farmer[i].age << "\t" << farmer[i].belongHouse->StoneRiceSum 
+				<< "\t" << farmer[i].wantFoodLevel << "\t" << farmer[i].wantSexLevel<<"\t"<<farmer[i].isMarriage<<"\t"<<farmer[i].belongHouse->id <<"\t"<<farmer[i].NowOwnHouseSum<< endl;
 
 		}
 	}
 	cout << "Builder:" << endl;
-	cout << "id\tsex\tmoney\tage\trice\tHouse\tWood\twFood\twSex\tisMarry" << endl;
+	cout << "id\tsex\tmoney\tage\trice\tHouse\tWood\twFood\twSex\tisMarry\tHouseId\toHouseSum" << endl;
 	for (int i = 0; i < NowBuilderSum; i++)
 	{
 		if (builder[i].isDead == false)
 		{
-			cout << builder[i].id << "\t" << ((builder[i].Sex == 1) ? "man" : "woman") << "\t" << builder[i].money << "\t" << builder[i].age << "\t" << builder[i].belongHouse->StoneRiceSum << "\t" << builder[i].OwnHouseCount << "\t" << builder[i].belongHouse->StoneWoodSum << "\t" << builder[i].wantFoodLevel << "\t" << builder[i].wantSexLevel<<"\t"<<builder[i].isMarriage << endl;
+			cout << builder[i].id << "\t" << ((builder[i].Sex == 1) ? "man" : "woman") << "\t" << builder[i].money << "\t" << builder[i].age << "\t" << builder[i].belongHouse->StoneRiceSum 
+				<< "\t" << builder[i].OwnHouseCount << "\t" << builder[i].belongHouse->StoneWoodSum << "\t" << builder[i].wantFoodLevel << "\t" << builder[i].wantSexLevel<<"\t"<<builder[i].isMarriage <<"\t"<<builder[i].belongHouse->id<< "\t" << builder[i].NowOwnHouseSum<< endl;
 
 		}
 	}
 	cout << "Child:" << endl;
-	cout << "id\tsex\tage\trice\twFood" << endl;
+	cout << "id\tsex\tage\trice\twFood\tHouseId" << endl;
 	for (int i = 0; i < NowChildSum; i++)
 	{
 		if (child[i].isDead == false)
 		{
-			cout << child[i].id << "\t" << ((child[i].Sex == 1) ? "man" : "woman") << "\t" << child[i].age << "\t" << child[i].belongHouse->StoneRiceSum << "\t" << child[i].wantFoodLevel << endl;
+			cout << child[i].id << "\t" << ((child[i].Sex == 1) ? "man" : "woman") << "\t" << child[i].age << "\t" << child[i].belongHouse->StoneRiceSum << "\t" << child[i].wantFoodLevel<<"\t"<<child[i].belongHouse->id << endl;
 
 		}
 	}
@@ -463,4 +465,43 @@ void MakeBaby(FamilyTree* familyTree)
 {
 	int sex = rand() % 2;
 	AddChild(sex, familyTree);
+}
+
+bool IsTheHouseHasOwner(House* house)
+{
+	for (int i = 0; i < NowFarmerSum; i++)
+	{
+		Farmer* NowFarmer = &farmer[i];
+		if (house == NowFarmer->belongHouse)
+		{
+			return true;
+		}
+		for (int j = 0; j < NowFarmer->NowOwnHouseSum; j++)
+		{
+			if (house == NowFarmer->ownHouseList[j])
+			{
+				return true;
+			}
+		}
+	}
+	for (int i = 0; i < NowBuilderSum; i++)
+	{
+		Builder* NowBuilder = &builder[i];
+		if (house == NowBuilder->belongHouse)
+		{
+			return true;
+		}
+		for (int j = 0; j < NowBuilder->NowOwnHouseSum; j++)
+		{
+			if (house == NowBuilder->ownHouseList[j])
+			{
+				return true;
+			}
+		}
+	}
+	if (house == king.belongHouse)
+	{
+		return true;
+	}
+	return false;
 }
