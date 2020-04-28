@@ -290,7 +290,7 @@ void AddField(int x, int y)
 	objField[NowFieldSum].pic = &picField;
 	objField[NowFieldSum].x = x * picField.getWidth();
 	objField[NowFieldSum].y = y * picField.getHeight();
-	objField[NowFieldSum].z = 0;
+	objField[NowFieldSum].z = -1;
 
 	field[NowFieldSum].DrawObject = &objField[NowFieldSum];
 	field[NowFieldSum].id = NowFieldSum ;

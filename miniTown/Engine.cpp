@@ -685,11 +685,97 @@ inline void DrawObject(Object* obj) {
 		DrawPic(obj->point.x, obj->point.y, obj->pic);
 	}
 	else {
+
 		int nWidth = obj->pic->getWidth();
 		int nHeight = obj->pic->getHeight();
 
 		int count = 0;
 		int size = nWidth * nHeight;
+		
+		float co = cos(angle);
+		float si = sin(angle);
+		int rotateW, rotateH; //旋转后的宽高
+
+		int xMin, xMax, yMin, yMax;
+		float xSrc = 0; 
+		float ySrc = 0;  //变换后图像的坐标在原图中的坐标
+
+		int xOff = nWidth / 2; //x中心的偏移量
+		int yOff = nHeight / 2; //y中心的偏移量
+		
+		int nchannel = 3;  //颜色通道
+
+
+		float a1, a2, a3, a4;
+
+
+		//旋转后的坐标范围
+		rotateH = nWidth * fabs(si) + nHeight * fabs(co);  
+		rotateW = nWidth * fabs(co) + nHeight * fabs(si);
+
+		yMin = (nHeight - rotateH) / 2;
+		yMax = yMin + rotateH + 1;
+		xMin = (nWidth - rotateW) / 2;
+		xMax = xMin + rotateW + 1;
+
+		int x, y;
+		for (y = yMin; y <= yMax; y++)
+		{
+			for (x = xMin; x < xMax; x++)
+			{
+				//求在原图中的坐标
+				ySrc = si * float(x - xOff) + co * float(y - yOff) + float(int(nHeight / 2));
+				xSrc = co * float(x - xOff) - si * float(y - yOff) + float(int(nWidth / 2));
+
+				//如果在原图范围内
+				if (ySrc >= 0. && ySrc < nHeight - 0.5 && xSrc >= 0. && xSrc < nWidth - 0.5)
+				{
+					//开始插值
+					int xSmall = floor(xSrc);
+					int xBig = ceil(xSrc);
+					int ySmall = floor(ySrc);
+					int yBig = ceil(ySrc);
+
+					float ux = xSrc - xSmall;
+					float uy = ySrc - ySmall;
+					float valueTempR;
+					float valueTempG;
+					float valueTempB;
+					
+					Point DrawNowPoint = Point(x, y);
+					DrawNowPoint += obj->point;
+					int DrawNowPointMemLocation =( DrawNowPoint.y * nScreenWidth + DrawNowPoint.x)*4;
+
+					a1 = (xSmall >= 0 && ySmall >= 0 ?  obj->pic->pChannelR[ySmall * nWidth + xSmall] : 0);
+					a2 = (xBig < nWidth && ySmall >= 0 ? obj->pic->pChannelR[ySmall * nWidth + xBig ] : 0);
+					a3 = (xSmall >= 0 && yBig < nHeight ? obj->pic->pChannelR[yBig * nWidth + xSmall ] : 0);
+					a4 = (xBig < nWidth && yBig < nHeight ? obj->pic->pChannelR[yBig * nWidth + xBig ] : 0);
+
+					valueTempR = (1 - ux) * (1 - uy) * a1 + (1 - ux) * uy * a3 + (1 - uy) * ux * a2 + ux * uy * a4;
+					
+					a1 = (xSmall >= 0 && ySmall >= 0 ? obj->pic->pChannelG[ySmall * nWidth + xSmall] : 0);
+					a2 = (xBig < nWidth && ySmall >= 0 ? obj->pic->pChannelG[ySmall * nWidth + xBig] : 0);
+					a3 = (xSmall >= 0 && yBig < nHeight ? obj->pic->pChannelG[yBig * nWidth + xSmall] : 0);
+					a4 = (xBig < nWidth && yBig < nHeight ? obj->pic->pChannelG[yBig * nWidth + xBig] : 0);
+
+					valueTempG = (1 - ux) * (1 - uy) * a1 + (1 - ux) * uy * a3 + (1 - uy) * ux * a2 + ux * uy * a4;
+
+					a1 = (xSmall >= 0 && ySmall >= 0 ? obj->pic->pChannelB[ySmall * nWidth + xSmall] : 0);
+					a2 = (xBig < nWidth && ySmall >= 0 ? obj->pic->pChannelB[ySmall * nWidth + xBig] : 0);
+					a3 = (xSmall >= 0 && yBig < nHeight ? obj->pic->pChannelB[yBig * nWidth + xSmall] : 0);
+					a4 = (xBig < nWidth && yBig < nHeight ? obj->pic->pChannelB[yBig * nWidth + xBig] : 0);
+
+					valueTempB = (1 - ux) * (1 - uy) * a1 + (1 - ux) * uy * a3 + (1 - uy) * ux * a2 + ux * uy * a4;
+
+					Color c = Color(valueTempR, valueTempG, valueTempB);
+					//c = Color(50, 50, 50);
+					//std::cout << "DrawPos x" << DrawNowPoint.x << " y " << DrawNowPoint.y << std::endl;
+					DrawPoint(DrawNowPointMemLocation, c);
+				}
+			}
+		}
+
+		
 		//遍历图像
 		for (int i = 0; i < nHeight; ++i) {
 			for (int j = 0; j < nWidth; ++j) {
@@ -718,6 +804,7 @@ inline void DrawObject(Object* obj) {
 			}
 		}
 		count = size;
+		
 	}
 
 }
