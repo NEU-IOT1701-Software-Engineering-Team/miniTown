@@ -386,8 +386,8 @@ void ResourceCount()//对村民拥有的资源进行统计
 		}
 	}
 	cout << "King:" << endl;
-	cout << "sex\tmoney\tage\tHouse\tRice" << endl;
-	cout << king.Sex<<"\t"<< king.money << "\t" << king.age << "\t" << king.HaveEmptyHouseSum<<"\t"<<king.belongHouse->StoneRiceSum << endl;
+	cout << "sex\tmoney\tage\tHouse\tRice\twFood" << endl;
+	cout << king.Sex<<"\t"<< king.money << "\t" << king.age << "\t" << king.HaveEmptyHouseSum<<"\t"<<king.belongHouse->StoneRiceSum<<"\t"<<king.wantFoodLevel << endl;
 	cout << "==================" << endl;
 	
 }

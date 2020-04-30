@@ -1306,7 +1306,50 @@ void Tree::AddWood()
 
 void King::AI()
 {
+	if (this->isDead == false)
+	{
+		Sleep();
+	}
+}
 
+void King::Eat()
+{
+	if (IsMoreCloseTo(this->DrawObject, this->belongHouse->DrawObject) == true)
+	{
+		if (this->belongHouse->StoneRiceSum > 0&&this->wantFoodLevel>0)
+		{
+			this->wantFoodLevel--;
+			this->belongHouse->StoneRiceSum--;
+		}
+	}
+}
+
+void King::judgeDead()
+{
+	if (wantFoodLevel > MaxWantFoodLevel)
+	{
+		this->belongHouse->isUsed = false;
+		RemoveDrawObecjt(this->DrawObject);
+		this->isDead = true;
+	}
+}
+
+void King::Sleep()
+{
+	if (clkClick)
+	{
+		if (DaySum > LastDaySum)
+		{
+			wantFoodLevel++;
+			wantSexLevel += 0.5;
+			age += AgeAddEveryDay;
+			//cout << "want food level update " << wantFoodLevel << endl;
+			LastDaySum = DaySum;
+			judgeDead();
+			
+		}
+
+	}
 }
 
 void King::MakeMoney(int Sum)

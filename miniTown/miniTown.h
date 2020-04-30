@@ -243,10 +243,15 @@ public:
 	int wantFoodLevel;
 	float wantSexLevel;
 	Object* TakeOnThing;
+	bool isDead = false;
 	int HaveEmptyHouseSum=0;
 	void WalkTo(Object* object);
+	int LastDaySum = 0;
 	
 	void AI();
+	void Eat();
+	void judgeDead();
+	void Sleep();
 	void MakeMoney(int Sum);
 	void DestoryMoney(int Sum);
 	void SetRicePrice(int Price);

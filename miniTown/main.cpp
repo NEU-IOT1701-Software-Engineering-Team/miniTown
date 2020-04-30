@@ -220,6 +220,11 @@ int main()
 			clkClick = false;
 		}
 
+		if (king.isDead == true)
+		{
+			cout << "King Dead! Game Over!" << endl;
+			return 0;
+		}
 	}
 
 	return 0;
@@ -238,161 +243,173 @@ void KeyControl()
 	static int pressB = false;
 	static int pressT = false;
 	static int pressF = false;
+	static int pressE = false;
 	int speed = 40; //村长的移动速度
-	if (screen_keys[VK_ESCAPE])
+	if (king.isDead == false)
 	{
-		//在这里调用其他模块的释放函数
-		freeSomethingForEngine();
-		exit(1);		//正常结束
+		if (screen_keys[VK_ESCAPE])
+		{
+			//在这里调用其他模块的释放函数
+			freeSomethingForEngine();
+			exit(1);		//正常结束
+		}
+		if (screen_keys['W'])
+		{
+			if (king.DrawObject->y + king.DrawObject->pic->getHeight() - 10 > 60)
+			{
+				king.DrawObject->y -= (float)timeScale * speed * FrameTime;
+			}
+
+		}
+		if (screen_keys['S'])
+		{
+			if (king.DrawObject->y + king.DrawObject->pic->getHeight() < SCREEN_HEIGHT)
+			{
+				king.DrawObject->y += (float)timeScale * speed * FrameTime;
+
+			}
+		}
+		if (screen_keys['A'])
+		{
+			if (king.DrawObject->x > 0)
+			{
+				king.DrawObject->x -= (float)timeScale * speed * FrameTime;
+			}
+
+		}
+		if (screen_keys['D'])
+		{
+			if (king.DrawObject->x + king.DrawObject->pic->getWidth() < SCREEN_WIDTH)
+			{
+				king.DrawObject->x += (float)timeScale * speed * FrameTime;
+
+			}
+		}
+		if (screen_keys['Q']) {
+			int angle = king.DrawObject->getAngle();
+			king.DrawObject->setAngle(angle + 5);
+
+		}
+		if (screen_keys['E']) {
+			if (pressE == false)
+			{
+				king.Eat();
+			}
+			pressE = true;
+
+		}
+		else
+		{
+			pressE = false;
+		}
+		if (screen_keys['L'])  //list 显示当前村民资源
+		{
+			if (pressL == false)
+			{
+				ResourceCount();
+			}
+			pressL = true;
+		}
+		else
+		{
+			pressL = false;
+		}
+		if (screen_keys['R'])
+		{
+			if (pressR == false)
+			{
+				cout << "Enter Rice Price:";
+				int price;
+				cin >> price;
+				king.SetRicePrice(price);
+			}
+			pressR = true;
+		}
+		else
+		{
+			pressR = false;
+		}
+		if (screen_keys['H'])
+		{
+			if (pressH == false)
+			{
+				cout << "Enter House Price:";
+				int price;
+				cin >> price;
+				king.SetHousePrice(price);
+			}
+			pressH = true;
+		}
+		else
+		{
+			pressH = false;
+		}
+		if (screen_keys['M'])
+		{
+			if (pressM == false)
+			{
+				cout << "Enter Sum of the Money Add:";
+				int sum;
+				cin >> sum;
+				king.MakeMoney(sum);
+			}
+			pressM = true;
+		}
+		else
+		{
+			pressM = false;
+		}
+		if (screen_keys['N'])
+		{
+			if (pressN == false)
+			{
+				cout << "Enter Sum of the Money Destory:";
+				int sum;
+				cin >> sum;
+				king.DestoryMoney(sum);
+			}
+			pressN = true;
+		}
+		else
+		{
+			pressN = false;
+		}
+		if (screen_keys['B'])
+		{
+			if (pressB == false)
+			{
+				king.SetUnFinishHouseMark();
+			}
+			pressB = true;
+		}
+		else
+		{
+			pressB = false;
+		}
+		if (screen_keys['T'])
+		{
+			if (pressT == false)
+			{
+				king.SetATree();
+			}
+			pressT = true;
+		}
+		else
+		{
+			pressT = false;
+		}
+		if (screen_keys['F'])
+		{
+			if (pressF == false)
+			{
+				king.SetAField();
+			}
+			pressF = true;
+		}
+		else
+		{
+			pressF = false;
+		}
 	}
-	 if (screen_keys['W'])
-	{
-		 if (king.DrawObject->y + king.DrawObject->pic->getHeight() -10> 60)
-		 {
-			 king.DrawObject->y -= (float)timeScale * speed * FrameTime;
-		 }
 	
-	}
-	if (screen_keys['S'])
-	{
-		if (king.DrawObject->y + king.DrawObject->pic->getHeight() < SCREEN_HEIGHT)
-		{
-			king.DrawObject->y += (float)timeScale * speed * FrameTime;
-
-		}
-	}
-	if (screen_keys['A'])
-	{
-		if (king.DrawObject->x > 0)
-		{
-			king.DrawObject->x -= (float)timeScale * speed * FrameTime;
-		}
-		
-	}
-	if (screen_keys['D'])
-	{
-		if (king.DrawObject->x + king.DrawObject->pic->getWidth() < SCREEN_WIDTH)
-		{
-			king.DrawObject->x += (float)timeScale * speed * FrameTime;
-
-		}
-	}
-	if (screen_keys['Q']) {
-		int angle = king.DrawObject->getAngle();
-		king.DrawObject->setAngle(angle + 5);
-
-	}
-	if (screen_keys['E']) {
-		int angle = king.DrawObject->getAngle();
-		king.DrawObject->setAngle(angle - 5);
-
-	}
-	if (screen_keys['L'])  //list 显示当前村民资源
-	{
-		if (pressL == false)
-		{
-			ResourceCount();
-		}
-		pressL = true;
-	}
-	else
-	{
-		pressL = false;
-	}
-	if (screen_keys['R'])
-	{
-		if (pressR == false)
-		{
-			cout << "Enter Rice Price:";
-			int price;
-			cin >> price;
-			king.SetRicePrice(price);
-		}
-		pressR = true;
-	}
-	else
-	{
-		pressR = false;
-	}
-	if (screen_keys['H'])
-	{
-		if (pressH == false)
-		{
-			cout << "Enter House Price:";
-			int price;
-			cin >> price;
-			king.SetHousePrice(price);
-		}
-		pressH = true;
-	}
-	else
-	{
-		pressH = false;
-	}
-	if (screen_keys['M'])
-	{
-		if (pressM == false)
-		{
-			cout << "Enter Sum of the Money Add:";
-			int sum;
-			cin >> sum;
-			king.MakeMoney(sum);
-		}
-		pressM = true;
-	}
-	else
-	{
-		pressM = false;
-	}
-	if (screen_keys['N'])
-	{
-		if (pressN == false)
-		{
-			cout << "Enter Sum of the Money Destory:";
-			int sum;
-			cin >> sum;
-			king.DestoryMoney(sum);
-		}
-		pressN = true;
-	}
-	else
-	{
-		pressN = false;
-	}
-	if (screen_keys['B'])
-	{
-		if (pressB == false)
-		{
-			king.SetUnFinishHouseMark();
-		}
-		pressB = true;
-	}
-	else
-	{
-		pressB = false;
-	}
-	if (screen_keys['T'])
-	{
-		if (pressT == false)
-		{
-			king.SetATree();
-		}
-		pressT = true;
-	}
-	else
-	{
-		pressT = false;
-	}
-	if (screen_keys['F'])
-	{
-		if (pressF == false)
-		{
-			king.SetAField();
-		}
-		pressF = true;
-	}
-	else
-	{
-		pressF = false;
-	}
 }
