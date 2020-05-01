@@ -14,6 +14,7 @@ Player player;
 //Object* drawList[MaxDrawObjectSum];
 //绘制队列
 std::vector<ObjectPointer> drawList;
+std::vector<Button*> listButton;
 
 std::list<Player::_Sound*> _listPlay;
 std::vector<Player::_MSG> _listMsg;
@@ -558,6 +559,20 @@ inline void DrawPoint(int x, int y, BYTE r, BYTE g, BYTE b) {
 		buffer[nPos++] = r;
 	}
 }
+
+inline void DrawRect(RECT rect, Color color) {
+	int width = rect.right - rect.left;
+	int height = rect.bottom - rect.top;
+
+	for (int i = 0; i < height; ++i) {
+		int posBuffer = (nScreenWidth * (rect.top + i) + rect.left) * 4;//计算每行的起点
+		for (int j = 0; j < width; ++j) {
+			DrawPoint(posBuffer,color);
+			posBuffer += 4;
+		}
+	}
+}
+
 inline void DrawRect(int x, int y, int width, int height, BYTE r, BYTE g, BYTE b) {
 	for (int i = 0; i < height; ++i) {
 		int posBuffer = (nScreenWidth * (y + i) + x) * 4;//计算每行的起点
@@ -867,6 +882,10 @@ void Draw() {
 		//DebugPrintln("绘制完成");
 	}*/
 
+	for (int i = 0; i < listButton.size(); ++i) {
+		DrawRect(listButton[i]->rect, listButton[i]->backgroundColor);
+	}
+
 	HDC hDC = GetDC(hWnd);
 	BitBlt(hDC, 0, 0, nScreenWidth, nScreenHeight, hMemDC, 0, 0, SRCCOPY);
 	ReleaseDC(hWnd, hDC);
@@ -902,6 +921,19 @@ void freeSomethingForEngine() {
 
 	Player::_StaticDestruct();
 }
+
+
+
+//Button
+
+
+
+//void AddDrawObject(Object* object);
+void AddButton(Button * button) {
+	listButton.push_back(button);
+}
+
+
 //处理消息
 static LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	switch (message) {
@@ -917,6 +949,51 @@ static LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 	case WM_KEYUP: {
 		screen_keys[wParam & 511] = 0;
 		break;
+	}
+	case WM_PAINT: {
+		PAINTSTRUCT ps;
+		HDC hdc = BeginPaint(hWnd, &ps);
+
+		for (int i = 0; i < listButton.size(); ++i) {
+			DrawRect(listButton[i]->rect, listButton[i]->backgroundColor);
+		}
+
+		BitBlt(hdc, 0, 0, nScreenWidth, nScreenHeight, hMemDC, 0, 0, SRCCOPY);
+		EndPaint(hWnd, &ps);
+		break;
+	}
+	case WM_LBUTTONDOWN: {
+		//坐标  在lparam 中
+		//高16位是y 低16位是x
+		//DebugPrintln("%d %d", lParam >> 16, lParam & 0x0000ffff);
+		Point p(lParam & 0x0000ffff, lParam >> 16);
+
+		for (int i = 0; i < listButton.size(); ++i) {
+			if ((*listButton[i]) == p) {//寻找鼠标点击的点所在的按钮
+				listButton[i]->isClick = true;
+				break;
+			}
+		}
+	}
+	case WM_LBUTTONUP: {
+		//坐标  在lparam 中
+		//高16位是y 低16位是x
+		//DebugPrintln("%d %d", lParam >> 16, lParam & 0x0000ffff);
+		Point p(lParam & 0x0000ffff, lParam >> 16);
+
+		for (int i = 0; i < listButton.size(); ++i) {
+			if ((*listButton[i]) == p) {
+				if (listButton[i]->isClick) {
+					//判断按下 和 送开始是否是同一个button
+					if (listButton[i]->lpClickL != NULL) {
+						listButton[i]->lpClickL();//调用该按钮所定义的函数
+					}
+					listButton[i]->isClick = false;
+					break;
+				}
+				break;
+			}
+		}
 	}
 	default: {
 		return DefWindowProc(hWnd, message, wParam, lParam);

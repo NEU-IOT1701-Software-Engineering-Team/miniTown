@@ -704,3 +704,51 @@ void AddDrawObject(Object* object);
 //	NONE
 void RemoveDrawObecjt(Object* object);
 void freeSomethingForEngine();
+
+
+struct Button
+{
+	char* title;
+	RECT rect;
+	Color foregroundColor;
+	Color backgroundColor;
+	void (*lpDoubleClickL)(void);
+	void (*lpClickL)(void);
+	void (*lpClickR)(void);
+	bool isClick;
+
+	Button() {
+		memset(this, 0, sizeof(*this));
+		backgroundColor = { 255,255,254 };
+	}
+	Button(char* tTitle, RECT tRect) {
+		memset(this, 0, sizeof(*this));
+		title = tTitle;
+		rect = tRect;
+		backgroundColor = { 255,255,254 };
+		foregroundColor = { 0,0,0 };
+	}
+	Button(char* tTitle, RECT tRect, Color tBackgroundColor, Color tForegroundColor) {
+		memset(this, 0, sizeof(*this));
+		title = tTitle;
+		rect = tRect;
+		backgroundColor = tBackgroundColor;
+		foregroundColor = tForegroundColor;
+	}
+	Button(char* tTitle, RECT tRect, Color tBackgroundColor, Color tForegroundColor, void (*tlpClickL)(void)) {
+		memset(this, 0, sizeof(*this));
+		title = tTitle;
+		rect = tRect;
+		backgroundColor = tBackgroundColor;
+		foregroundColor = tForegroundColor;
+		lpClickL = tlpClickL;
+	}
+
+	//判断被点击的点是否再rect内
+	bool operator==(Point point) {
+		return point.x <= rect.right && point.x >= rect.left && point.y <= rect.bottom && point.y >= rect.top;
+	}
+};
+typedef struct Button Button;
+
+void AddButton(Button* button);

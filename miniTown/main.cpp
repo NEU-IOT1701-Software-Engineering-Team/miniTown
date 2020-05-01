@@ -144,13 +144,21 @@ void initObject()
 
 }
 
+void func(void) {
+	MessageBox(NULL, TEXT("Button is click!"), TEXT("ÌבÊ¾"), 0);
+
+}
 int main()
 {
 	if (SoundOn)
 	{
 		player.playSoundLoop("sound/01 Bloom.mp3", BackgroundMusicVolume);
 	}
-
+	Button b;
+	b.title = (char*)"Button";
+	b.rect = { 100,100,180,140 };
+	b.lpClickL = func;
+	AddButton(&b);
 
 	if (_CreateWindow(title, nScreenWidth, nScreenHeight))
 	{
