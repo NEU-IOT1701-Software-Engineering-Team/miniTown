@@ -384,6 +384,11 @@ private:
 };
 typedef struct ObjectPointer ObjectPoint;
 
+#define COLOR_WHITE	{255,255,254}
+#define COLOR_BLACK	{  0,  0,  0}
+#define COLOR_RED	{255,  0,  0}
+#define COLOR_GREEN	{  0,255,  0}
+#define COLOR_BLUE	{  0,  0,255}
 class Color {
 public:
 	BYTE r, g, b, a;
@@ -395,6 +400,9 @@ public:
 	}
 	bool isTransparent() {
 		return (r == 255 && g == 255 && b == 255);
+	}
+	COLORREF getColorRef() {
+		return RGB(r, g, b);
 	}
 };
 
@@ -708,46 +716,123 @@ void freeSomethingForEngine();
 
 struct Button
 {
+#define DEFAULT_BC			COLOR_WHITE
+#define DEFAULT_FC			COLOR_BLACK
+#define DEFAULT_FOCUS_BC	{201,218,248}
+#define DEFAULT_DOWN_BC		{109,158,235}
 	char* title;
 	RECT rect;
-	Color foregroundColor;
-	Color backgroundColor;
+	Color currentBackgroundColor;
 	void (*lpDoubleClickL)(void);
 	void (*lpClickL)(void);
 	void (*lpClickR)(void);
 	bool isClick;
+	bool enabled;//按钮是否可用
+	bool isVisible;//按钮是否可用
 
 	Button() {
-		memset(this, 0, sizeof(*this));
-		backgroundColor = { 255,255,254 };
+		_initALL();
+	}
+	Button(char* tTitle, int x,int y,int width,int height) {
+		_initALL();
+		title = tTitle;
+		rect = { x,y,x + width,y + height };
 	}
 	Button(char* tTitle, RECT tRect) {
-		memset(this, 0, sizeof(*this));
+		_initALL();
 		title = tTitle;
 		rect = tRect;
-		backgroundColor = { 255,255,254 };
-		foregroundColor = { 0,0,0 };
 	}
 	Button(char* tTitle, RECT tRect, Color tBackgroundColor, Color tForegroundColor) {
-		memset(this, 0, sizeof(*this));
+		_initALL();
 		title = tTitle;
 		rect = tRect;
 		backgroundColor = tBackgroundColor;
+		currentBackgroundColor = tBackgroundColor;
+		foregroundColor = tForegroundColor;
+	}
+	Button(char* tTitle, int x, int y, int width, int height, Color tBackgroundColor, Color tForegroundColor) {
+		_initALL();
+		title = tTitle;
+		rect = { x,y,x + width,y + height };
+		backgroundColor = tBackgroundColor;
+		currentBackgroundColor = tBackgroundColor;
 		foregroundColor = tForegroundColor;
 	}
 	Button(char* tTitle, RECT tRect, Color tBackgroundColor, Color tForegroundColor, void (*tlpClickL)(void)) {
-		memset(this, 0, sizeof(*this));
+		_initALL();
 		title = tTitle;
 		rect = tRect;
 		backgroundColor = tBackgroundColor;
+		currentBackgroundColor = tBackgroundColor;
 		foregroundColor = tForegroundColor;
 		lpClickL = tlpClickL;
+	}
+
+	void setBackgroundColor(Color color) {
+		backgroundColor = color;
+		currentBackgroundColor = color;
+	}
+	void setBackgroundColor(BYTE r,BYTE g ,BYTE b) {
+		backgroundColor = { r,g,b };
+		currentBackgroundColor = {r,g,b};
+	}
+	Color getBackgroundColor() {
+		return backgroundColor;
+	}
+
+	void setForegroundColor(Color color) {
+		foregroundColor = color;
+	}
+	void setForegroundColor(BYTE r, BYTE g, BYTE b) {
+		foregroundColor = { r,g,b };
+	}
+	Color getForegroundColor() {
+		return foregroundColor;
+	}
+
+	//修改按钮位置
+	void setRect(RECT tRect) {
+		rect = tRect;
+	}
+	void setRect(Point point) {
+		rect = { point.x,point.y, rect.right ,rect.bottom };
+	}
+	void setRect(int width, int height) {
+		rect = { rect.left,rect.top,rect.left + width,rect.top + height };
+	}
+	void setRect(int x, int y, int width, int height) {
+		rect = { x,y,x + width,y + height };
+	}
+
+	Point getPoint() {
+		return Point(rect.left, rect.top);
+	}
+	RECT getRect() {
+		return rect;
+	}
+	
+	inline void _initALL() {
+		memset(this, 0, sizeof(*this));
+		currentBackgroundColor = DEFAULT_BC;
+		backgroundColor = DEFAULT_BC;
+		lpDoubleClickL = NULL;
+		lpClickL = NULL;
+		lpClickR = NULL;
+		enabled = true;
+		isVisible = true;
 	}
 
 	//判断被点击的点是否再rect内
 	bool operator==(Point point) {
 		return point.x <= rect.right && point.x >= rect.left && point.y <= rect.bottom && point.y >= rect.top;
 	}
+
+
+private:
+	
+	Color foregroundColor;
+	Color backgroundColor;
 };
 typedef struct Button Button;
 

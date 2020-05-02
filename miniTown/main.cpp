@@ -143,22 +143,35 @@ void initObject()
 	objLove.y = 0;
 
 }
-
+Button b;
+Button b2;
 void func(void) {
-	MessageBox(NULL, TEXT("Button is click!"), TEXT("提示"), 0);
-
+	//MessageBox(NULL, TEXT("Button is click!"), TEXT("提示"), 0);
+	b.rect.left+=25;
+	b.rect.right += 25;
+	b2.rect.top+=25;
+	b2.rect.bottom += 25;
 }
 int main()
 {
+	
 	if (SoundOn)
 	{
 		player.playSoundLoop("sound/01 Bloom.mp3", BackgroundMusicVolume);
 	}
-	Button b;
+
 	b.title = (char*)"Button";
-	b.rect = { 100,100,180,140 };
+	b.setRect(100, 100, 80, 40);
+	b.setForegroundColor ( { 255,0,0 });
 	b.lpClickL = func;
 	AddButton(&b);
+
+	b2.title = (char*)"Button2";
+	b2.setRect(400, 400, 80, 40);
+	b2.setForegroundColor(  { 0,255,0 });
+	b2.setBackgroundColor( COLOR_BLACK);
+	b2.lpClickL = func;
+	AddButton(&b2);
 
 	if (_CreateWindow(title, nScreenWidth, nScreenHeight))
 	{

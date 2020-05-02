@@ -871,20 +871,15 @@ void Draw() {
 		drawList[i].pObject->updatePoint();
 		DrawObject(drawList[i].pObject);
 	}
-	/*
-	for (int i = 0; i < drawSum; i++)
-	{
-		//DebugPrint("第%d个objetc 开始绘制\t",i);
-		Object* drawNowObject = drawList[i];
-		//DrawBmp(drawNowObject->x, drawNowObject->y, drawNowObject->pic);
-		drawNowObject->updatePoint();
-		DrawObject(drawNowObject);
-		//DebugPrintln("绘制完成");
-	}*/
-
+	
+	int nOldBkMode = SetBkMode(hMemDC, TRANSPARENT);//绘制字体时设置透明
 	for (int i = 0; i < listButton.size(); ++i) {
-		DrawRect(listButton[i]->rect, listButton[i]->backgroundColor);
+		DrawRect(listButton[i]->rect, listButton[i]->currentBackgroundColor);//绘制前景
+		COLORREF nOldBkColor = SetTextColor(hMemDC, listButton[i]->getForegroundColor().getColorRef());
+		DrawText(hMemDC, listButton[i]->title, -1, &listButton[i]->rect, DT_VCENTER|DT_CENTER|DT_SINGLELINE);
+		SetTextColor(hMemDC, nOldBkColor);
 	}
+	SetBkMode(hMemDC, nOldBkMode);//恢复模式
 
 	HDC hDC = GetDC(hWnd);
 	BitBlt(hDC, 0, 0, nScreenWidth, nScreenHeight, hMemDC, 0, 0, SRCCOPY);
@@ -926,9 +921,6 @@ void freeSomethingForEngine() {
 
 //Button
 
-
-
-//void AddDrawObject(Object* object);
 void AddButton(Button * button) {
 	listButton.push_back(button);
 }
@@ -950,19 +942,40 @@ static LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 		screen_keys[wParam & 511] = 0;
 		break;
 	}
-	case WM_PAINT: {
-		PAINTSTRUCT ps;
-		HDC hdc = BeginPaint(hWnd, &ps);
-
+	case WM_MOUSEMOVE: {
+		TRACKMOUSEEVENT tme;
+		tme.cbSize = sizeof(tme);
+		tme.dwFlags = TME_HOVER;
+		tme.dwHoverTime = 10;
+		tme.hwndTrack = hWnd;
+		TrackMouseEvent(&tme);//注册鼠标悬停消息
+		
+		//tme.dwFlags = TME_LEAVE;
+		//TrackMouseEvent(&tme);//注册鼠标离开消息  好像没什么用
+		//DebugPrintln("WM_MOUSEMOVE");
+		break;
+	}
+	case WM_MOUSEHOVER: {
+		//判断是否在ROI
+		Point p(lParam & 0x0000ffff, lParam >> 16);
+		
 		for (int i = 0; i < listButton.size(); ++i) {
-			DrawRect(listButton[i]->rect, listButton[i]->backgroundColor);
+			if ((*listButton[i]) == p) {//寻找鼠标停留点所在的按钮
+				listButton[i]->currentBackgroundColor = DEFAULT_FOCUS_BC;//悬停在按钮上时  修改背景颜色
+			}
+			else {
+				listButton[i]->currentBackgroundColor = listButton[i]->getBackgroundColor();//离开时恢复
+			}
 		}
-
-		BitBlt(hdc, 0, 0, nScreenWidth, nScreenHeight, hMemDC, 0, 0, SRCCOPY);
-		EndPaint(hWnd, &ps);
+		//DebugPrintln("WM_MOUSEHOVER %d %d ",p.x,p.y);
+		break;
+	}
+	case WM_NCMOUSEHOVER: {
+		DebugPrintln("WM_NCMOUSEHOVER");
 		break;
 	}
 	case WM_LBUTTONDOWN: {
+		//DebugPrintln("WM_LBUTTONDOWN");
 		//坐标  在lparam 中
 		//高16位是y 低16位是x
 		//DebugPrintln("%d %d", lParam >> 16, lParam & 0x0000ffff);
@@ -971,31 +984,38 @@ static LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 		for (int i = 0; i < listButton.size(); ++i) {
 			if ((*listButton[i]) == p) {//寻找鼠标点击的点所在的按钮
 				listButton[i]->isClick = true;
+				listButton[i]->currentBackgroundColor = DEFAULT_DOWN_BC;
+				//DebugPrintln("WM_LBUTTONDOWN");
 				break;
 			}
 		}
+		break;
 	}
 	case WM_LBUTTONUP: {
+		//DebugPrintln("WM_LBUTTONUP");
 		//坐标  在lparam 中
 		//高16位是y 低16位是x
 		//DebugPrintln("%d %d", lParam >> 16, lParam & 0x0000ffff);
 		Point p(lParam & 0x0000ffff, lParam >> 16);
 
 		for (int i = 0; i < listButton.size(); ++i) {
-			if ((*listButton[i]) == p) {
-				if (listButton[i]->isClick) {
-					//判断按下 和 送开始是否是同一个button
-					if (listButton[i]->lpClickL != NULL) {
+			if ((*listButton[i]) == p) {//寻找当前点所对应的button
+				if (listButton[i]->isClick) {//判断 down 和 up 是同一个button
+					if (listButton[i]->lpClickL != NULL) {//判断该事件是否被定义
+						//DebugPrintln("WM_LBUTTONUP");
 						listButton[i]->lpClickL();//调用该按钮所定义的函数
 					}
 					listButton[i]->isClick = false;
+					listButton[i]->currentBackgroundColor = listButton[i]->getBackgroundColor();//单击之后恢复
 					break;
 				}
-				break;
+				break;//up 消息与 down 不是同一个button
 			}
 		}
+		break;
 	}
 	default: {
+		//DebugPrintln("%x", message);
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
 	}
