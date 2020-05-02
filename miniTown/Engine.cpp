@@ -918,12 +918,44 @@ void freeSomethingForEngine() {
 }
 
 
+//UI Button
 
-//Button
-
+//Description:
+//	增加一个按钮对象,如果该对象已被加入，则不会重复加入.
+//Paramter: 
+//	Button * button 将要加入对象的地址
+//Return Value:
+//	NONE
 void AddButton(Button * button) {
-	listButton.push_back(button);
+	bool isExist = false;
+	for (int i = 0; i < listButton.size(); ++i) {
+		if (listButton[i] == button) {
+			isExist = true;
+			break;
+		}
+	}
+	if (!isExist) {
+		listButton.push_back(button);
+	}
 }
+
+//Description:
+//	从按钮对象列表中删掉一个对象。
+//Paramter: 
+//	Button * button 将要删除的对象地址
+//Return Value:
+//	NONE
+void RemoveButton(Button* button)
+{
+	std::vector<Button*>::iterator it;
+	for (it = listButton.begin(); it != listButton.end(); ++it) {
+		if ((*it) == button) {
+			listButton.erase(it);
+			break;
+		}
+	}
+}
+
 
 
 //处理消息

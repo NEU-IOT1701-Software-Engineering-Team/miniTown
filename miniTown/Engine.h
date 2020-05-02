@@ -836,4 +836,18 @@ private:
 };
 typedef struct Button Button;
 
+//Description:
+//	增加一个按钮对象,如果该对象已被加入，则不会重复加入.
+//Paramter: 
+//	Button * button 将要加入对象的地址
+//Return Value:
+//	NONE
 void AddButton(Button* button);
+
+//Description:
+//	从按钮对象列表中删掉一个对象。
+//Paramter: 
+//	Button * button 将要删除的对象地址
+//Return Value:
+//	NONE
+void RemoveButton(Button* button);
