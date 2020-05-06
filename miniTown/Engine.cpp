@@ -16,6 +16,7 @@ Player player;
 std::vector<ObjectPointer> drawList;
 std::vector<Button*> listButton;
 std::vector<Label*> listLabel;
+std::vector<EditBox*> listEditBox;
 
 std::list<Player::_Sound*> _listPlay;
 std::vector<Player::_MSG> _listMsg;
@@ -243,7 +244,7 @@ DWORD __stdcall Player::_Run(LPVOID lpParameter)
 				++it;
 			}
 			m_listPlay.unlock();
-			
+
 			m_listMsg.lock();//删除stop消息
 			{
 				std::vector<Player::_MSG>::iterator it = _listMsg.begin();
@@ -252,7 +253,7 @@ DWORD __stdcall Player::_Run(LPVOID lpParameter)
 					msg = (*it);
 					//m_listMsg.unlock();
 					if (msg.type == PLAYER_MSG_STOP) {
-						
+
 						//erase之后it指针会失效 所以需要保存erase之前的指针
 						if (it != _listMsg.begin()) {
 							std::vector<Player::_MSG>::iterator tmp = --it;
@@ -437,7 +438,7 @@ void Player::_clearPlayList() {
 	std::list<Player::_Sound*>::iterator it = _listPlay.begin();
 	for (; it != _listPlay.end(); ) {
 		if ((*it)->hThread == NULL) {
-			std::list<Player::_Sound*>::iterator tmp ;
+			std::list<Player::_Sound*>::iterator tmp;
 			//erase之后it指针会失效 所以需要保存erase之前的指针
 			if (it != _listPlay.begin()) {
 				tmp = --it;
@@ -450,7 +451,7 @@ void Player::_clearPlayList() {
 			else {
 				_MyFree((*it));
 				_listPlay.erase(it);
-				it= _listPlay.begin();
+				it = _listPlay.begin();
 				continue;//it已经指向下一个了
 			}
 		}
@@ -553,12 +554,62 @@ inline void DrawPoint(int x, int y, Color c) {
 }
 
 inline void DrawPoint(int x, int y, BYTE r, BYTE g, BYTE b) {
+	if (x > nScreenWidth || x<0 || y>nScreenHeight || y < 0) {
+		return;
+	}
 	if (!(r == 255 && g == 255 && b == 255)) {
 		int nPos = (y * nScreenWidth + x) * 4;
 		buffer[nPos++] = b;
 		buffer[nPos++] = g;
 		buffer[nPos++] = r;
 	}
+}
+
+//base
+inline void DrawLine(int x1, int y1, int x2, int y2, BYTE r, BYTE g, BYTE b) {
+	int x, y, dx, dy;
+	float k, e;
+	if (x1 > x2) {
+		x = x1; x1 = x2; x2 = x;
+		y = y1; y1 = y2; y2 = y;
+	}
+	if (x1 == x2) {
+		if (y1 > y2) {
+			y = y1; y1 = y2; y2 = y;
+		}
+		x = x1;
+		for (y = y1; y < y2; ++y) {
+			DrawPoint(x, y, r, g, b);
+		}
+		return ;
+	}
+	dx = x2 - x1;
+	dy = y2 - y1;
+	k = dy / dx;
+	
+	x = x1;
+	y = y1;
+	int driect = signbit(k) ? -1 : 1;
+	e = -driect*0.5;
+	for (int i = 0; i < dx; ++i) {
+		DrawPoint(x, y, r, g, b);
+		x += 1;
+		e += driect * k;
+		
+		if (e >= 0) {
+			y += driect * 1;
+			e -= 1;
+		}
+		
+	}
+}
+
+inline void DrawLine(Point p1, Point p2, BYTE r, BYTE g, BYTE b) {
+	DrawLine(p1.x, p1.y, p2.x, p2.y, r, g, b);
+}
+
+inline void DrawLine(Point p1, Point p2, Color color) {
+	DrawLine(p1.x, p1.y, p2.x, p2.y, color.r,color.g,color.b);
 }
 
 inline void DrawRect(RECT rect, Color color) {
@@ -568,7 +619,7 @@ inline void DrawRect(RECT rect, Color color) {
 	for (int i = 0; i < height; ++i) {
 		int posBuffer = (nScreenWidth * (rect.top + i) + rect.left) * 4;//计算每行的起点
 		for (int j = 0; j < width; ++j) {
-			DrawPoint(posBuffer,color);
+			DrawPoint(posBuffer, color);
 			posBuffer += 4;
 		}
 	}
@@ -685,10 +736,10 @@ inline void spin(Point p, Point p0, float angle, Point& p_) {
 	float cosAngle = cos(angle);
 
 	float tempX = p.x * cosAngle + p.y * sinAngle + p0.x * (1 - cosAngle) - p0.y * sinAngle;
-	p_.x =tempX+1;
+	p_.x = tempX + 1;
 
 	float tempY = -p.x * sinAngle + p.y * cosAngle + p0.y * (1 - cosAngle) + p0.x * sinAngle;
-	p_.y = tempY+1;
+	p_.y = tempY + 1;
 }
 
 inline void DrawObject(Object* obj) {
@@ -707,18 +758,18 @@ inline void DrawObject(Object* obj) {
 
 		int count = 0;
 		int size = nWidth * nHeight;
-		
+
 		float co = cos(angle);
 		float si = sin(angle);
 		int rotateW, rotateH; //旋转后的宽高
 
 		int xMin, xMax, yMin, yMax;
-		float xSrc = 0; 
+		float xSrc = 0;
 		float ySrc = 0;  //变换后图像的坐标在原图中的坐标
 
 		int xOff = nWidth / 2; //x中心的偏移量
 		int yOff = nHeight / 2; //y中心的偏移量
-		
+
 		int nchannel = 3;  //颜色通道
 
 
@@ -726,7 +777,7 @@ inline void DrawObject(Object* obj) {
 
 
 		//旋转后的坐标范围
-		rotateH = nWidth * fabs(si) + nHeight * fabs(co);  
+		rotateH = nWidth * fabs(si) + nHeight * fabs(co);
 		rotateW = nWidth * fabs(co) + nHeight * fabs(si);
 
 		yMin = (nHeight - rotateH) / 2;
@@ -757,29 +808,29 @@ inline void DrawObject(Object* obj) {
 					float valueTempR;
 					float valueTempG;
 					float valueTempB;
-					
+
 					Point DrawNowPoint = Point(x, y);
 					DrawNowPoint += obj->point;
-					int DrawNowPointMemLocation =( DrawNowPoint.y * nScreenWidth + DrawNowPoint.x)*4;
+					int DrawNowPointMemLocation = (DrawNowPoint.y * nScreenWidth + DrawNowPoint.x) * 4;
 
-					a1 = (xSmall >= 0 && ySmall >= 0 ?  obj->pic->pChannelR[ySmall * nWidth + xSmall] : 0);
-					a2 = (xBig < nWidth && ySmall >= 0 ? obj->pic->pChannelR[ySmall * nWidth + xBig ] : 0);
-					a3 = (xSmall >= 0 && yBig < nHeight ? obj->pic->pChannelR[yBig * nWidth + xSmall ] : 0);
-					a4 = (xBig < nWidth && yBig < nHeight ? obj->pic->pChannelR[yBig * nWidth + xBig ] : 0);
+					a1 = (xSmall >= 0 && ySmall >= 0 ? obj->pic->pChannelR[ySmall * nWidth + xSmall] : 0);
+					a2 = (xBig < nWidth&& ySmall >= 0 ? obj->pic->pChannelR[ySmall * nWidth + xBig] : 0);
+					a3 = (xSmall >= 0 && yBig < nHeight ? obj->pic->pChannelR[yBig * nWidth + xSmall] : 0);
+					a4 = (xBig < nWidth&& yBig < nHeight ? obj->pic->pChannelR[yBig * nWidth + xBig] : 0);
 
 					valueTempR = (1 - ux) * (1 - uy) * a1 + (1 - ux) * uy * a3 + (1 - uy) * ux * a2 + ux * uy * a4;
-					
+
 					a1 = (xSmall >= 0 && ySmall >= 0 ? obj->pic->pChannelG[ySmall * nWidth + xSmall] : 0);
-					a2 = (xBig < nWidth && ySmall >= 0 ? obj->pic->pChannelG[ySmall * nWidth + xBig] : 0);
+					a2 = (xBig < nWidth&& ySmall >= 0 ? obj->pic->pChannelG[ySmall * nWidth + xBig] : 0);
 					a3 = (xSmall >= 0 && yBig < nHeight ? obj->pic->pChannelG[yBig * nWidth + xSmall] : 0);
-					a4 = (xBig < nWidth && yBig < nHeight ? obj->pic->pChannelG[yBig * nWidth + xBig] : 0);
+					a4 = (xBig < nWidth&& yBig < nHeight ? obj->pic->pChannelG[yBig * nWidth + xBig] : 0);
 
 					valueTempG = (1 - ux) * (1 - uy) * a1 + (1 - ux) * uy * a3 + (1 - uy) * ux * a2 + ux * uy * a4;
 
 					a1 = (xSmall >= 0 && ySmall >= 0 ? obj->pic->pChannelB[ySmall * nWidth + xSmall] : 0);
-					a2 = (xBig < nWidth && ySmall >= 0 ? obj->pic->pChannelB[ySmall * nWidth + xBig] : 0);
+					a2 = (xBig < nWidth&& ySmall >= 0 ? obj->pic->pChannelB[ySmall * nWidth + xBig] : 0);
 					a3 = (xSmall >= 0 && yBig < nHeight ? obj->pic->pChannelB[yBig * nWidth + xSmall] : 0);
-					a4 = (xBig < nWidth && yBig < nHeight ? obj->pic->pChannelB[yBig * nWidth + xBig] : 0);
+					a4 = (xBig < nWidth&& yBig < nHeight ? obj->pic->pChannelB[yBig * nWidth + xBig] : 0);
 
 					valueTempB = (1 - ux) * (1 - uy) * a1 + (1 - ux) * uy * a3 + (1 - uy) * ux * a2 + ux * uy * a4;
 
@@ -791,7 +842,7 @@ inline void DrawObject(Object* obj) {
 			}
 		}
 
-		
+
 		//遍历图像
 		for (int i = 0; i < nHeight; ++i) {
 			for (int j = 0; j < nWidth; ++j) {
@@ -820,7 +871,7 @@ inline void DrawObject(Object* obj) {
 			}
 		}
 		count = size;
-		
+
 	}
 
 }
@@ -836,6 +887,11 @@ void Draw() {
 	void getMessage();
 
 	DrawRect(0, 0, nScreenWidth, nScreenHeight, 192, 224, 0);
+
+	//DrawLine(300, 300, 0, 0, 255, 0, 0);
+	//DrawLine(300, 300, 600, 0, 255, 0, 0);
+	//DrawLine(300,300, 600, 600, 255, 0, 0);
+	//DrawLine(300, 300, 0, 600, 255, 0, 0);
 
 	/*
 	Object obj;
@@ -872,17 +928,19 @@ void Draw() {
 		drawList[i].pObject->updatePoint();
 		DrawObject(drawList[i].pObject);
 	}
-	
+
 	int nOldBkMode = SetBkMode(hMemDC, TRANSPARENT);//绘制字体时设置透明
 	//绘制Button
 	{
 		for (int i = 0; i < listButton.size(); ++i) {
+			//EDGE_ETCHED
 			DrawRect(listButton[i]->rect, listButton[i]->currentBackgroundColor);//绘制背景
+			DrawEdge(hMemDC, &listButton[i]->rect, EDGE_ETCHED, BF_RECT);//传统按钮风格
 			COLORREF nOldTextColor = SetTextColor(hMemDC, listButton[i]->getForegroundColor().getColorRef());
 			DrawText(hMemDC, listButton[i]->title, -1, &listButton[i]->rect, DT_VCENTER | DT_CENTER | DT_SINGLELINE);
 			SetTextColor(hMemDC, nOldTextColor);
 		}
-		
+
 	}
 
 	//绘制Label
@@ -895,13 +953,43 @@ void Draw() {
 		}
 	}
 
+	//绘制EditBox
+	{
+		for (int i = 0; i < listEditBox.size(); ++i) {
+			DrawRect(listEditBox[i]->rect, listEditBox[i]->currentBackgroundColor);
+			DrawEdge(hMemDC, &listEditBox[i]->rect, EDGE_SUNKEN, BF_RECT);//传统编辑框风格
+
+			COLORREF nOldTextColor = SetTextColor(hMemDC, listEditBox[i]->getForegroundColor().getColorRef());
+			DrawText(hMemDC, listEditBox[i]->text.c_str(), -1, &listEditBox[i]->rect, DT_VCENTER | DT_SINGLELINE);
+			SetTextColor(hMemDC, nOldTextColor);
+
+			//判断是否需要绘制光标
+			if (listEditBox[i]->isShowCaret) {
+				if ((listEditBox[i]->sumFPS++) > (frame * 5)) {
+					listEditBox[i]->stateCaret = !listEditBox[i]->stateCaret;
+				}
+				//光标闪烁
+				if (listEditBox[i]->stateCaret) {
+					//显示
+					
+					DrawLine(listEditBox[i]->pointCaret.x, listEditBox[i]->pointCaret.y - 16,
+						listEditBox[i]->pointCaret.x, listEditBox[i]->pointCaret.y+8,
+						0, 0, 0);
+				}
+				else {
+					//
+				}
+			}
+		}
+	}
+
 	SetBkMode(hMemDC, nOldBkMode);//恢复模式
 
 	//从内存设备拷贝到窗口
 	HDC hDC = GetDC(hWnd);
 	BitBlt(hDC, 0, 0, nScreenWidth, nScreenHeight, hMemDC, 0, 0, SRCCOPY);
 	ReleaseDC(hWnd, hDC);
-	
+
 	getMessage();
 }
 
@@ -915,6 +1003,7 @@ void getMessage() {
 }
 
 void freeSomethingForEngine() {
+	//DestroyCaret();//销毁光标
 	if (hMemDC) {
 		if (hBitmapDevice) {
 			SelectObject(hMemDC, hBitmapDevice);
@@ -944,7 +1033,7 @@ void freeSomethingForEngine() {
 //	Button * button 将要加入对象的地址
 //Return Value:
 //	NONE
-void AddButton(Button * button) {
+void AddButton(Button* button) {
 	bool isExist = false;
 	for (int i = 0; i < listButton.size(); ++i) {
 		if (listButton[i] == button) {
@@ -1011,6 +1100,43 @@ void RemoveLabel(Label* label)
 	}
 }
 
+//Description:
+//	增加一个编辑框对象,如果该对象已被加入，则不会重复加入.
+//Paramter: 
+//	Label* label 将要加入对象的地址
+//Return Value:
+//	NONE
+void AddEditBox(EditBox* editBox)
+{
+	bool isExist = false;
+	for (int i = 0; i < listEditBox.size(); ++i) {
+		if (listEditBox[i] = editBox) {
+			isExist = true;
+			break;
+		}
+	}
+	if (!isExist) {
+		listEditBox.push_back(editBox);
+	}
+}
+
+//Description:
+//	从编辑框对象列表中删掉一个对象。
+//Paramter: 
+//	EditBox* editBox 将要删除的对象地址
+//Return Value:
+//	NONE
+void RemoveEditBox(EditBox* editBox)
+{
+	std::vector<EditBox*>::iterator it;
+	for (it = listEditBox.begin(); it != listEditBox.end(); ++it) {
+		if ((*it) == editBox) {
+			listEditBox.erase(it);
+			break;
+		}
+	}
+}
+
 
 
 //处理消息
@@ -1020,12 +1146,73 @@ static LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 		//DebugPrintln("%d\t%d", wParam, wParam & 511);
 		break;
 	}
+	case WM_CHAR: {
+		Point p(lParam & 0x0000ffff, lParam >> 16);
+
+		TCHAR code = wParam;
+
+		//遍历EditBox
+		for (int i = 0; i < listEditBox.size(); ++i) {
+			if ((*listEditBox[i]) == p) {//寻找鼠标点击的点所在的EditBox
+				listEditBox[i]->text.insert(listEditBox[i]->nPosCaret, 1, (char)code);
+				listEditBox[i]->moveCaret(1);
+
+				break;
+			}
+		}
+		break;
+	}
 	case WM_KEYDOWN: {
-		//DebugPrintln("%d\t%d", wParam, wParam & 511);
+		//遍历EditBox
+		for (int i = 0; i < listEditBox.size(); ++i) {
+			if (listEditBox[i]->isShowCaret) {//寻找鼠标点击的点所在的EditBox
+				break;//不再响应热键消息
+			}
+		}
+
 		screen_keys[wParam & 511] = 1;
 		break;
 	}
 	case WM_KEYUP: {
+		//遍历EditBox
+		for (int i = 0; i < listEditBox.size(); ++i) {
+			if (listEditBox[i]->isShowCaret) {//寻找鼠标点击的点所在的EditBox
+				switch (wParam)
+				{
+				case VK_LEFT: {
+					listEditBox[i]->moveCaret(-1);
+					break;
+				}
+				case VK_RIGHT: {
+					listEditBox[i]->moveCaret(1);
+					break;
+				}
+				case VK_DELETE: {
+					if (listEditBox[i]->text.length() == 0) {
+						break;
+					}
+					if (listEditBox[i]->nPosCaret < listEditBox[i]->text.length()) {
+						listEditBox[i]->text.erase(listEditBox[i]->nPosCaret, 1);
+					}
+					break;
+				}
+				case VK_BACK: {
+					if (listEditBox[i]->text.length() == 0) {
+						break;
+					}
+					if (listEditBox[i]->nPosCaret>=listEditBox[i]->text.length() ) {
+						listEditBox[i]->text.erase(listEditBox[i]->nPosCaret-1, 1);
+					}
+					break;
+				}
+				default:
+					listEditBox[i]->text.insert(listEditBox[i]->nPosCaret, 1, (char)wParam);
+					listEditBox[i]->moveCaret(1);
+				}
+				break;//不再响应热键消息
+			}
+		}
+		
 		screen_keys[wParam & 511] = 0;
 		break;
 	}
@@ -1036,7 +1223,7 @@ static LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 		tme.dwHoverTime = 1;
 		tme.hwndTrack = hWnd;
 		TrackMouseEvent(&tme);//注册鼠标悬停消息
-		
+
 		//tme.dwFlags = TME_LEAVE;
 		//TrackMouseEvent(&tme);//注册鼠标离开消息  好像没什么用
 		//DebugPrintln("WM_MOUSEMOVE");
@@ -1045,7 +1232,7 @@ static LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 	case WM_MOUSEHOVER: {
 		//判断是否在ROI
 		Point p(lParam & 0x0000ffff, lParam >> 16);
-		
+
 		for (int i = 0; i < listButton.size(); ++i) {
 			if ((*listButton[i]) == p) {//寻找鼠标停留点所在的按钮
 				listButton[i]->currentBackgroundColor = DEFAULT_FOCUS_BC;//悬停在按钮上时  修改背景颜色
@@ -1068,12 +1255,65 @@ static LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 		//DebugPrintln("%d %d", lParam >> 16, lParam & 0x0000ffff);
 		Point p(lParam & 0x0000ffff, lParam >> 16);
 
+		//遍历Button
 		for (int i = 0; i < listButton.size(); ++i) {
 			if ((*listButton[i]) == p) {//寻找鼠标点击的点所在的按钮
 				listButton[i]->isClick = true;
 				listButton[i]->currentBackgroundColor = DEFAULT_DOWN_BC;
 				//DebugPrintln("WM_LBUTTONDOWN");
-				break;
+				//break;
+				return 0;
+			}
+		}
+
+		//遍历EditBox
+		for (int i = 0; i < listEditBox.size(); ++i) {
+			if ((*listEditBox[i]) == p) {//寻找鼠标点击的点所在的EditBox
+				//鼠标点击了 该编辑框 计算光标位置
+				Point pointForRect = p;
+				pointForRect - listEditBox[i]->rect;//相对于RECT的坐标
+
+				HDC hDC = GetDC(hWnd);
+				int strLength = listEditBox[i]->text.length();
+				SIZE size = { 0 };
+				int nPosStr = 0;
+				for (nPosStr = 0; nPosStr < strLength; ++nPosStr) {
+					GetTextExtentPoint(hDC, listEditBox[i]->text.c_str(), nPosStr, &size);//返回当前字符的起始位置
+					if (pointForRect.x < size.cx) {
+						break;
+					}
+				}
+
+				if (nPosStr == 0) {
+					size.cx = 0;
+					size.cy = 16;
+				}
+				else {
+					SIZE size2 = { 0 };
+					GetTextExtentPoint(hDC, listEditBox[i]->text.c_str(), nPosStr, &size2);
+					//判断鼠标点击位置距离哪个字符更近
+					if ((pointForRect.x - size.cx) < (abs(size2.cx - pointForRect.x))) {
+						//前者
+						//SetCaretPos(size.cx, size.cy);
+					}
+					else {
+						//距离后者更近
+						//SetCaretPos(size2.cx, size2.cy);
+						size = size2;
+					}
+				}
+				pointForRect.x = size.cx;
+				pointForRect.y = size.cy;
+				pointForRect + listEditBox[i]->rect;//相对于的坐标
+				
+				listEditBox[i]->nPosCaret = nPosStr;
+				listEditBox[i]->pointCaret = pointForRect;//设置光标位置
+				listEditBox[i]->isShowCaret = true;//显示光标
+
+				ReleaseDC(hWnd, hDC);
+			}
+			else {
+				listEditBox[i]->isShowCaret = false;//隐藏光标
 			}
 		}
 		break;
@@ -1101,6 +1341,7 @@ static LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 		}
 		break;
 	}
+	
 	default: {
 		//DebugPrintln("%x", message);
 		return DefWindowProc(hWnd, message, wParam, lParam);
@@ -1158,6 +1399,8 @@ int _CreateWindow(const char* title, int nWidth, int nHeight) {
 	hBitmapDevice = (HBITMAP)SelectObject(hMemDC, hBitmapBuffer);//选择缓冲区画布到缓冲区画板，并保留原始画布
 	buffer = (BYTE*)ptr;
 	ReleaseDC(hWnd, hDC);
+
+	//CreateCaret(hWnd, NULL, 1, 10);
 
 	ShowWindow(hWnd, SW_NORMAL);
 	UpdateWindow(hWnd);

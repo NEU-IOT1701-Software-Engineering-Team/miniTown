@@ -145,6 +145,7 @@ void initObject()
 }
 Button b;
 Label b2;
+EditBox editBox;
 void func(void) {
 	//MessageBox(NULL, TEXT("Button is click!"), TEXT("ÌבÊ¾"), 0);
 	b.rect.left+=25;
@@ -172,6 +173,11 @@ int main()
 	b2.setBackgroundColor( COLOR_BLACK);
 	//b2.lpClickL = func;
 	AddLabel(&b2);
+
+	
+	editBox.setRect(300, 300, 100, 25);
+	editBox.setText((char*)"Hell");
+	AddEditBox(&editBox);
 
 	if (_CreateWindow(WindowTitle, nScreenWidth, nScreenHeight))
 	{
@@ -339,6 +345,7 @@ void KeyControl()
 		{
 			if (pressR == false)
 			{
+				cout << editBox.getText()<<endl;
 				cout << "Enter Rice Price:";
 				int price;
 				cin >> price;
