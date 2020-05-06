@@ -1,6 +1,6 @@
 #include "miniTown.h"
 
-const char* title = "miniTown";
+const char* WindowTitle = "miniTown";
 int nScreenWidth = SCREEN_WIDTH;
 int nScreenHeight = SCREEN_HEIGHT;
 HWND hWnd = NULL;
@@ -15,6 +15,7 @@ Player player;
 //绘制队列
 std::vector<ObjectPointer> drawList;
 std::vector<Button*> listButton;
+std::vector<Label*> listLabel;
 
 std::list<Player::_Sound*> _listPlay;
 std::vector<Player::_MSG> _listMsg;
@@ -873,17 +874,34 @@ void Draw() {
 	}
 	
 	int nOldBkMode = SetBkMode(hMemDC, TRANSPARENT);//绘制字体时设置透明
-	for (int i = 0; i < listButton.size(); ++i) {
-		DrawRect(listButton[i]->rect, listButton[i]->currentBackgroundColor);//绘制前景
-		COLORREF nOldBkColor = SetTextColor(hMemDC, listButton[i]->getForegroundColor().getColorRef());
-		DrawText(hMemDC, listButton[i]->title, -1, &listButton[i]->rect, DT_VCENTER|DT_CENTER|DT_SINGLELINE);
-		SetTextColor(hMemDC, nOldBkColor);
+	//绘制Button
+	{
+		for (int i = 0; i < listButton.size(); ++i) {
+			DrawRect(listButton[i]->rect, listButton[i]->currentBackgroundColor);//绘制背景
+			COLORREF nOldTextColor = SetTextColor(hMemDC, listButton[i]->getForegroundColor().getColorRef());
+			DrawText(hMemDC, listButton[i]->title, -1, &listButton[i]->rect, DT_VCENTER | DT_CENTER | DT_SINGLELINE);
+			SetTextColor(hMemDC, nOldTextColor);
+		}
+		
 	}
+
+	//绘制Label
+	{
+		for (int i = 0; i < listLabel.size(); ++i) {
+			DrawRect(listLabel[i]->rect, listLabel[i]->currentBackgroundColor);
+			COLORREF nOldTextColor = SetTextColor(hMemDC, listLabel[i]->getForegroundColor().getColorRef());
+			DrawText(hMemDC, listLabel[i]->title, -1, &listLabel[i]->rect, DT_VCENTER | DT_CENTER | DT_SINGLELINE);
+			SetTextColor(hMemDC, nOldTextColor);
+		}
+	}
+
 	SetBkMode(hMemDC, nOldBkMode);//恢复模式
 
+	//从内存设备拷贝到窗口
 	HDC hDC = GetDC(hWnd);
 	BitBlt(hDC, 0, 0, nScreenWidth, nScreenHeight, hMemDC, 0, 0, SRCCOPY);
 	ReleaseDC(hWnd, hDC);
+	
 	getMessage();
 }
 
@@ -956,6 +974,43 @@ void RemoveButton(Button* button)
 	}
 }
 
+//Description:
+//	增加一个标签对象,如果该对象已被加入，则不会重复加入.
+//Paramter: 
+//	Label* label 将要加入对象的地址
+//Return Value:
+//	NONE
+void AddLabel(Label* label)
+{
+	bool isExist = false;
+	for (int i = 0; i < listLabel.size(); ++i) {
+		if (listLabel[i] == label) {
+			isExist = true;
+			break;
+		}
+	}
+	if (!isExist) {
+		listLabel.push_back(label);
+	}
+}
+
+//Description:
+//	从标签对象列表中删掉一个对象。
+//Paramter: 
+//	Label* label 将要删除的对象地址
+//Return Value:
+//	NONE
+void RemoveLabel(Label* label)
+{
+	std::vector<Label*>::iterator it;
+	for (it = listLabel.begin(); it != listLabel.end(); ++it) {
+		if ((*it) == label) {
+			listLabel.erase(it);
+			break;
+		}
+	}
+}
+
 
 
 //处理消息
@@ -978,7 +1033,7 @@ static LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 		TRACKMOUSEEVENT tme;
 		tme.cbSize = sizeof(tme);
 		tme.dwFlags = TME_HOVER;
-		tme.dwHoverTime = 10;
+		tme.dwHoverTime = 1;
 		tme.hwndTrack = hWnd;
 		TrackMouseEvent(&tme);//注册鼠标悬停消息
 		

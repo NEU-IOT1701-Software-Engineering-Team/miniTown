@@ -144,7 +144,7 @@ void initObject()
 
 }
 Button b;
-Button b2;
+Label b2;
 void func(void) {
 	//MessageBox(NULL, TEXT("Button is click!"), TEXT("ÌבÊ¾"), 0);
 	b.rect.left+=25;
@@ -166,14 +166,14 @@ int main()
 	b.lpClickL = func;
 	AddButton(&b);
 
-	b2.title = (char*)"Button2";
+	b2.title = (char*)"Label";
 	b2.setRect(400, 400, 80, 40);
 	b2.setForegroundColor(  { 0,255,0 });
 	b2.setBackgroundColor( COLOR_BLACK);
-	b2.lpClickL = func;
-	AddButton(&b2);
+	//b2.lpClickL = func;
+	AddLabel(&b2);
 
-	if (_CreateWindow(title, nScreenWidth, nScreenHeight))
+	if (_CreateWindow(WindowTitle, nScreenWidth, nScreenHeight))
 	{
 		return -1;
 	}

@@ -18,7 +18,7 @@ class Object;
 class Color;
 class Picture;
 
-extern const char* title;
+extern const char* WindowTitle;
 extern  int nScreenWidth;
 extern  int nScreenHeight;
 extern BYTE screen_keys[512];
@@ -714,12 +714,13 @@ void RemoveDrawObecjt(Object* object);
 void freeSomethingForEngine();
 
 
-struct Button
-{
+
 #define DEFAULT_BC			COLOR_WHITE
 #define DEFAULT_FC			COLOR_BLACK
 #define DEFAULT_FOCUS_BC	{201,218,248}
 #define DEFAULT_DOWN_BC		{109,158,235}
+struct Button
+{
 	char* title;
 	RECT rect;
 	Color currentBackgroundColor;
@@ -851,3 +852,198 @@ void AddButton(Button* button);
 //Return Value:
 //	NONE
 void RemoveButton(Button* button);
+
+
+struct Label {
+	char* title;
+	RECT rect;
+	Color currentBackgroundColor;
+	//暂时不需要响应事件
+
+	bool enabled;//是否可用
+	bool isVisible;//是否可见
+
+	//Description:
+	//	默认构造函数。
+	//Paramter: 
+	//	NONE
+	//Return Value:
+	//	NONE
+	struct Label() {
+		_initALL();
+	}
+	
+	//Description:
+	//	默认构造函数。
+	//Paramter: 
+	//	char* tTitle 标签标题
+	//	RECT tRect 标签大小以及位置
+	//Return Value:
+	//	NONE
+	struct Label(char* tTitle, RECT tRect) {
+		_initALL();
+		title = tTitle;
+		rect = tRect;
+	}
+
+	//Description:
+	//	默认构造函数。
+	//Paramter: 
+	//	char* tTitle 标签标题
+	//	int x, int y 标签位置
+	//	int width, int height 标签大小
+	//Return Value:
+	//	NONE
+	struct Label(char* tTitle, int x, int y, int width, int height) {
+		_initALL();
+		title = tTitle;
+		rect = { x,y,x + width,y + height };
+	}
+
+	//Description:
+	//	默认构造函数。
+	//Paramter: 
+	//	char* tTitle 标签标题
+	//	RECT tRect 标签大小以及位置
+	//	Color tBackgroundColor 背景色
+	//	Color tForegroundColor 前景色（文字颜色）
+	//Return Value:
+	//	NONE
+	struct Label(char* tTitle, RECT tRect, Color tBackgroundColor, Color tForegroundColor) {
+		_initALL();
+		title = tTitle;
+		rect = tRect;
+		backgroundColor = tBackgroundColor;
+		currentBackgroundColor = tBackgroundColor;
+		foregroundColor = tForegroundColor;
+	}
+
+	//Description:
+	//	默认构造函数。
+	//Paramter: 
+	//	char* tTitle 标签标题
+	//	int x, int y 标签位置
+	//	int width, int height 标签大小
+	//	Color tBackgroundColor 背景色
+	//	Color tForegroundColor 前景色（文字颜色）
+	//Return Value:
+	//	NONE
+	struct Label(char* tTitle, int x, int y, int width, int height, Color tBackgroundColor, Color tForegroundColor) {
+		_initALL();
+		title = tTitle;
+		rect = { x,y,x + width,y + height };
+		backgroundColor = tBackgroundColor;
+		currentBackgroundColor = tBackgroundColor;
+		foregroundColor = tForegroundColor;
+	}
+
+	//Description:
+	//	设置背景颜色。
+	//Paramter: 
+	//	Color color 背景颜色
+	//Return Value:
+	//	NONE
+	void setBackgroundColor(Color color) {
+		backgroundColor = color;
+		currentBackgroundColor = color;
+	}
+
+	//Description:
+	//	设置背景颜色。
+	//Paramter: 
+	//	BYTE r, BYTE g, BYTE b 背景颜色
+	//Return Value:
+	//	NONE
+	void setBackgroundColor(BYTE r, BYTE g, BYTE b) {
+		backgroundColor = { r,g,b };
+		currentBackgroundColor = { r,g,b };
+	}
+
+	//Description:
+	//	获取背景颜色。
+	//Paramter: 
+	//	NONE
+	//Return Value:
+	//	Color 背景颜色
+	Color getBackgroundColor() {
+		return backgroundColor;
+	}
+
+	//Description:
+	//	获取前景颜色。
+	//Paramter: 
+	//	NONE
+	//Return Value:
+	//	Color 前景颜色
+	void setForegroundColor(Color color) {
+		foregroundColor = color;
+	}
+
+	//Description:
+	//	设置前景颜色。
+	//Paramter: 
+	//	BYTE r, BYTE g, BYTE b 颜色
+	//Return Value:
+	//	NONE
+	void setForegroundColor(BYTE r, BYTE g, BYTE b) {
+		foregroundColor = { r,g,b };
+	}
+
+	//Description:
+	//	获取前景颜色。
+	//Paramter: 
+	//	NONE
+	//Return Value:
+	//	Color 前景颜色
+	Color getForegroundColor() {
+		return foregroundColor;
+	}
+
+	void setRect(RECT tRect) {
+		rect = tRect;
+	}
+	void setRect(Point point) {
+		rect = { point.x,point.y, rect.right ,rect.bottom };
+	}
+	void setRect(int width, int height) {
+		rect = { rect.left,rect.top,rect.left + width,rect.top + height };
+	}
+	void setRect(int x, int y, int width, int height) {
+		rect = { x,y,x + width,y + height };
+	}
+
+	Point getPoint() {
+		return Point(rect.left, rect.top);
+	}
+	RECT getRect() {
+		return rect;
+	}
+private:
+	Color foregroundColor;
+	Color backgroundColor;
+
+	inline void _initALL() {
+		memset(this, 0, sizeof(*this));
+		currentBackgroundColor = DEFAULT_BC;
+		backgroundColor = DEFAULT_BC;
+		enabled = true;
+		isVisible = true;
+	}
+};
+typedef struct Label Label;
+
+//Description:
+//	增加一个标签对象,如果该对象已被加入，则不会重复加入.
+//Paramter: 
+//	Label* label 将要加入对象的地址
+//Return Value:
+//	NONE
+void AddLabel(Label* label);
+
+//Description:
+//	从标签对象列表中删掉一个对象。
+//Paramter: 
+//	Label* label 将要删除的对象地址
+//Return Value:
+//	NONE
+void RemoveLabel(Label* label);
