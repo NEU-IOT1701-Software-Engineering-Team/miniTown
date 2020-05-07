@@ -1029,6 +1029,12 @@ struct Label {
 	RECT getRect() {
 		return rect;
 	}
+	int getWidth() {
+		return rect.right - rect.left;
+	}
+	int getHeight() {
+		return rect.bottom - rect.top;
+	}
 private:
 	Color foregroundColor;
 	Color backgroundColor;
@@ -1150,6 +1156,7 @@ struct EditBox : public Label
 		text.insert(0,str);
 	}
 	void moveCaret(int nOff) {
+		/*
 		nPosCaret += nOff;
 		if (nPosCaret < 0) {
 			nPosCaret = 0;
@@ -1161,6 +1168,19 @@ struct EditBox : public Label
 		}
 		else {
 			pointCaret.x += 4 * nOff;
+		}
+		*/
+		nPosCaret += nOff;
+		if (nPosCaret < 0) {
+			nPosCaret = 0;
+			//pointCaret.x = 0;
+		}
+		else if (nPosCaret > text.length()) {
+			nPosCaret = text.length();
+			//pointCaret.x = text.length() * 4;
+		}
+		else {
+			//pointCaret.x += 4 * nOff;
 		}
 	}
 

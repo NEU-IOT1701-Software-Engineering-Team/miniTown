@@ -972,8 +972,8 @@ void Draw() {
 				if (listEditBox[i]->stateCaret) {
 					//显示
 					
-					DrawLine(listEditBox[i]->pointCaret.x, listEditBox[i]->pointCaret.y - 16,
-						listEditBox[i]->pointCaret.x, listEditBox[i]->pointCaret.y+8,
+					DrawLine(listEditBox[i]->pointCaret.x, listEditBox[i]->pointCaret.y- listEditBox[i]->getHeight(),
+						listEditBox[i]->pointCaret.x, listEditBox[i]->pointCaret.y,
 						0, 0, 0);
 				}
 				else {
@@ -1200,8 +1200,8 @@ static LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 					if (listEditBox[i]->text.length() == 0) {
 						break;
 					}
-					if (listEditBox[i]->nPosCaret>=listEditBox[i]->text.length() ) {
-						listEditBox[i]->text.erase(listEditBox[i]->nPosCaret-1, 1);
+					if (listEditBox[i]->nPosCaret!=0) {
+						listEditBox[i]->text.erase(--listEditBox[i]->nPosCaret, 1);
 					}
 					break;
 				}
@@ -1209,7 +1209,31 @@ static LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 					listEditBox[i]->text.insert(listEditBox[i]->nPosCaret, 1, (char)wParam);
 					listEditBox[i]->moveCaret(1);
 				}
-				break;//不再响应热键消息
+				//break;//不再响应热键消息
+
+
+				HDC hDC = GetDC(hWnd);
+				int strLength = listEditBox[i]->text.length();
+				SIZE size = { 0 };
+				int nPosStr = 0;
+				for (nPosStr = 0; nPosStr <= strLength; ++nPosStr) {
+					GetTextExtentPoint(hDC, listEditBox[i]->text.c_str(), nPosStr, &size);//返回当前字符的起始位置
+					if (listEditBox[i]->nPosCaret <= nPosStr) {
+						break;
+					}
+				}
+
+				size.cy = listEditBox[i]->getHeight();
+				if (nPosStr == 0) {
+					size.cx = 0;
+				}
+
+				Point newPoint = { size.cx  ,size.cy };
+				newPoint + listEditBox[i]->getRect();
+				listEditBox[i]->pointCaret = newPoint;//设置光标位置
+				//listEditBox[i]->isShowCaret = true;//显示光标
+
+				ReleaseDC(hWnd, hDC);
 			}
 		}
 		
@@ -1280,13 +1304,15 @@ static LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 				for (nPosStr = 0; nPosStr < strLength; ++nPosStr) {
 					GetTextExtentPoint(hDC, listEditBox[i]->text.c_str(), nPosStr, &size);//返回当前字符的起始位置
 					if (pointForRect.x < size.cx) {
+						++nPosStr;
 						break;
 					}
 				}
 
+				size.cy = listEditBox[i]->getHeight();
 				if (nPosStr == 0) {
 					size.cx = 0;
-					size.cy = 16;
+					
 				}
 				else {
 					SIZE size2 = { 0 };
@@ -1294,19 +1320,19 @@ static LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 					//判断鼠标点击位置距离哪个字符更近
 					if ((pointForRect.x - size.cx) < (abs(size2.cx - pointForRect.x))) {
 						//前者
-						//SetCaretPos(size.cx, size.cy);
+						listEditBox[i]->nPosCaret = nPosStr-1;
 					}
 					else {
 						//距离后者更近
-						//SetCaretPos(size2.cx, size2.cy);
-						size = size2;
+						size.cx = size2.cx;
+						listEditBox[i]->nPosCaret = nPosStr ;
 					}
 				}
 				pointForRect.x = size.cx;
 				pointForRect.y = size.cy;
 				pointForRect + listEditBox[i]->rect;//相对于的坐标
 				
-				listEditBox[i]->nPosCaret = nPosStr;
+				
 				listEditBox[i]->pointCaret = pointForRect;//设置光标位置
 				listEditBox[i]->isShowCaret = true;//显示光标
 

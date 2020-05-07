@@ -474,7 +474,7 @@ void KeyControl()
 		{
 			if (pressR == false)
 			{
-				cout << editBox.getText()<<endl;
+				//cout << editBox.getText()<<endl;
 				cout << "Enter Rice Price:";
 				int price;
 				cin >> price;
