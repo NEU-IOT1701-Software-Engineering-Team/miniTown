@@ -237,7 +237,7 @@ public:
 	float x;//为了兼容之前的版本 不推荐使用23333
 	float y;//为了兼容之前的版本 不推荐使用23333
 	Point point;
-
+	int RotationDirection = 0; //走路旋转摇晃的方向
 	/*
 	z值越小，越先绘制
 	z值相同，y越小越先绘制
@@ -249,7 +249,7 @@ public:
 		memset(this, 0, sizeof(Object));
 	}
 
-	void WalkTo(Object* object);
+	bool WalkTo(Object* object);
 
 	//Description:
 	//	设置图片旋转角度

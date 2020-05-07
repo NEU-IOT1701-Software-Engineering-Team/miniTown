@@ -82,8 +82,15 @@ void Farmer::GrowRice()
 
 void Farmer::WalkTo(Object* object)
 {
-	DrawObject->WalkTo(object);
-
+	if (DrawObject->WalkTo(object))
+	{
+		WalkRotation(this->DrawObject);
+	}
+	else if (this->DrawObject->getAngle(233) != 0)
+	{
+		WalkRotationBack(this->DrawObject);
+	}
+	
 	for (int i = 0; i < TakeOnThingSum; i++)
 	{
 		if (TakeOnThing[i] != NULL)
@@ -169,7 +176,14 @@ bool Builder::GetAllRiceToHand()
 
 void Builder::WalkTo(Object* object)
 {
-	DrawObject->WalkTo(object);
+	if (DrawObject->WalkTo(object) == true)
+	{
+		WalkRotation(this->DrawObject);
+	}
+	else if (this->DrawObject->getAngle(233) != 0)
+	{
+		WalkRotationBack(this->DrawObject);
+	}
 	for (int i = 0; i < TakeOnThingSum; i++)
 	{
 		if (TakeOnThing[i] != NULL)
@@ -777,7 +791,8 @@ bool Builder::HouseForMoney()
 //如移速为10pixel每秒 
 //则200帧下，一次移动10/200
 //50帧下，一次移动10/50
-void Object::WalkTo(Object* object)
+//返回true说明有运动
+bool Object::WalkTo(Object* object)
 {
 	int speed = 60;
 	int direction = -1;
@@ -789,19 +804,22 @@ void Object::WalkTo(Object* object)
 			direction = 1;
 			this->x += min(sqrt(2)/2*walkNowStep,abs(object->x-x));
 			this->y += min(sqrt(2)/2*walkNowStep,abs(object->y-y));
+			return true;
 		}
 		else if((int)object->y<y)
 		{
 			direction = 3;
 			this->x +=min( sqrt(2)/2*walkNowStep,abs(object->x-x));
 			this->y -=min( sqrt(2)/2*walkNowStep,abs(object->y-y));
+			return true;
 		}
 		else
 		{
 			direction = 2;
 			this->x += min(walkNowStep,abs(object->x-x));
+			return true;
 		}
-
+		return false;
 	}
 	else if ((int)object->x < x)
 	{
@@ -810,18 +828,22 @@ void Object::WalkTo(Object* object)
 			direction = 7;
 			this->x -= sqrt(2) / 2 * min( walkNowStep,abs(object->x-x));
 			this->y += sqrt(2) / 2 *min( walkNowStep,abs(object->y-y));
+			return true;
 		}
 		else if ((int)object->y < y)
 		{
 			direction = 5;
 			this->x -= sqrt(2) / 2 *min( walkNowStep,abs(object->x-x));
 			this->y -= sqrt(2) / 2 *min( walkNowStep,abs(object->y-y));
+			return true;
 		}
 		else if((int)object->y==y)
 		{
 			direction = 6;
 			this->x -=min( walkNowStep,abs(object->x-x));
+			return true;
 		}
+		return false;
 	}
 	else if ((int)object->x == x)
 	{
@@ -829,38 +851,17 @@ void Object::WalkTo(Object* object)
 		{
 			direction = 0;
 			this->y +=min( walkNowStep,abs(object->y-y));
+			return true;
 		}
 		if ((int)object->y < y)
 		{
 			direction = 4;
 			this->y -=min( walkNowStep,abs(object->y-y));
+			return true;
 		}
+		return false;
 	}
-	/*
-
-	if ((int)object->x > x)
-	{
-		//moveStep是为了解决移动到最后一点距离的时候物体来回晃动而用的
-		float moveStep = min( object->x-x, (float)timeScale * speed * FrameTime);
-		x += moveStep;
-	}
-	else if ((int)object->x < x)
-	{
-		float moveStep = min(x-object->x, (float)timeScale * speed * FrameTime);
-		x -= moveStep;
-	}
-	if ((int)object->y > y)
-	{
-		float moveStep = min(object->y-y, (float)timeScale * speed * FrameTime);
-		y += moveStep;
-	}
-	else if ((int)object->y < y)
-	{
-		float moveStep = min(y - object->y, (float)timeScale * speed * FrameTime);
-		y -= moveStep;
-	}
-	*/
-
+	return false;
 }
 
 
@@ -1308,6 +1309,15 @@ void King::AI()
 {
 	if (this->isDead == false)
 	{
+		if (isMove)
+		{
+			WalkRotation(this->DrawObject);
+			isMove = false;
+		}
+		else if (this->DrawObject->getAngle(233) != 0)
+		{
+			WalkRotationBack(this->DrawObject);
+		}
 		Sleep();
 	}
 }
@@ -1351,6 +1361,8 @@ void King::Sleep()
 
 	}
 }
+
+
 
 void King::MakeMoney(int Sum)
 {
@@ -1551,6 +1563,13 @@ void Child::judgeDead()
 
 void Child::WalkTo(Object* object)
 {
-	DrawObject->WalkTo(object);
+	if (DrawObject->WalkTo(object) == true)
+	{
+		WalkRotation(this->DrawObject);
 
+	}
+	else if (this->DrawObject->getAngle(233) != 0)
+	{
+		WalkRotationBack(this->DrawObject);
+	}
 }

@@ -170,7 +170,7 @@ public:
 	void judgeDead();
 
 	bool SellRiceForMoney();
-
+	bool isMove = false;
 	int LastDaySum=0; //用来计算食欲的临时变量
 	//买水稻用的临时变量
 	bool isTryFeedChild = false;
@@ -224,6 +224,7 @@ public:
 	
 
 	bool HouseForMoney();
+	bool isMove = false;
 	int LastDaySum = 0; //用来计算食欲的临时变量
 	//买水稻用的临时变量
 	bool isTryBuyRice = false;
@@ -250,7 +251,8 @@ public:
 	int HaveEmptyHouseSum=0;
 	void WalkTo(Object* object);
 	int LastDaySum = 0;
-	
+
+	bool isMove = false;
 	void AI();
 	void Eat();
 	void judgeDead();
@@ -288,6 +290,7 @@ public:
 	bool goToFlag = true; //用来判断是否到达散步目的地的变量
 	int AimX = 0;
 	int AimY = 0;
+	bool isMove = false;
 	Object AimObject;
 };
 
@@ -424,3 +427,5 @@ Field* GetANearUnUsedField(Object* man);
 House* FindKingHouse();
 coord GetCoord(Object* object); //获取最接近的坐标
 bool IsCoordUsed(coord point);
+void WalkRotation(Object* object);
+void WalkRotationBack(Object* object);

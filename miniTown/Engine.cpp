@@ -532,27 +532,10 @@ void RemoveDrawObecjt(Object* object)
 //base
 inline void DrawPoint(int nPos, BYTE r, BYTE g, BYTE b, BYTE a = 0) {
 
-	float rate = (float)a / 255;
-	float rate_ = 1 - rate;
-	byte oldR, oldG, oldB;
 
-	oldB = buffer[nPos];
-	oldG = buffer[nPos + 1];
-	oldR = buffer[nPos + 2];
-
-
-	byte Nowb, Nowr, Nowg;
-	Nowb = (oldB * rate) + b * rate_;
-	Nowg = (oldG * rate) + g * rate_;
-	Nowr = (oldR * rate) + r * rate_;
-	
-	
-	//Nowb = ((buffer[nPos] * a) >> 8) + ((b * (255 - a)) >> 8);
-	//Nowg= ((buffer[nPos+1] * a) >> 8) + ((g * (255 - a)) >> 8);
-	//Nowr = ((buffer[nPos+2] * a) >> 8) + ((r * (255 - a)) >> 8);
-	buffer[nPos] = Nowb;
-	buffer[nPos + 1] = Nowg;
-	buffer[nPos + 2] = Nowr;
+	buffer[nPos] = ((buffer[nPos] * a) >> 8) + ((b * (255 - a)) >> 8);;
+	buffer[nPos + 1] = ((buffer[nPos + 1] * a) >> 8) + ((g * (255 - a)) >> 8);
+	buffer[nPos + 2] =((buffer[nPos+2] * a) >> 8) + ((r * (255 - a)) >> 8);
 }
 
 inline void DrawPoint(int nPos, Color c) {

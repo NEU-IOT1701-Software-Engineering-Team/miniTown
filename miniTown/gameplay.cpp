@@ -460,6 +460,72 @@ bool IsCoordUsed(coord Coord)
 	return false;
 }
 
+void WalkRotation(Object* object)
+{
+	//1s旋转1次60°
+	float rotationSize = 45; //摆动的幅度
+	float rotationSpeed = 30;
+
+	float angle = object->getAngle(233);
+
+	if (object->RotationDirection == 0)
+	{
+		if (angle < rotationSize / 2 * PI / 180)
+		{
+			object->setAngle(float(angle + FrameTime * rotationSpeed * PI / 180.0));
+		}
+		else
+		{
+			object->RotationDirection = 1;
+		}
+	}
+	else
+	{
+		if (angle > -rotationSize / 2 * PI / 180)
+		{
+			object->setAngle(float(angle - FrameTime * rotationSpeed * PI / 180.0));
+		}
+		else
+		{
+			object->RotationDirection = 0;
+		}
+	}
+
+}
+
+void WalkRotationBack(Object* object)
+{
+	//1s旋转1次60°
+	float rotationSize = 45; //摆动的幅度
+	float rotationSpeed = 30;
+
+	float angle = object->getAngle(233);
+
+	if (angle < 0)
+	{
+		if (abs(angle) <  FrameTime * rotationSpeed * PI / 180.0)
+		{
+			object->setAngle(float(angle + FrameTime * rotationSpeed * PI / 180.0));
+		}
+		else
+		{
+			object->setAngle(0);
+		}
+	}
+	if (angle > 0)
+	{
+		if (abs(angle) < FrameTime * rotationSpeed * PI / 180.0)
+		{
+			object->setAngle(float(angle - FrameTime * rotationSpeed * PI / 180.0));
+		}
+		else
+		{
+			object->setAngle(0);
+		}
+	}
+
+}
+
 
 void MakeBaby(FamilyTree* familyTree)
 {

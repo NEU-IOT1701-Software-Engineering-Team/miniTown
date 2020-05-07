@@ -440,6 +440,7 @@ void KeyControl()
 			if (king.DrawObject->y + king.DrawObject->pic->getHeight() - 10 > 60)
 			{
 				king.DrawObject->y -= (float)timeScale * speed * FrameTime;
+				king.isMove = true;
 			}
 
 		}
@@ -448,7 +449,7 @@ void KeyControl()
 			if (king.DrawObject->y + king.DrawObject->pic->getHeight() < SCREEN_HEIGHT)
 			{
 				king.DrawObject->y += (float)timeScale * speed * FrameTime;
-
+				king.isMove = true;
 			}
 		}
 		if (screen_keys['A'])
@@ -456,6 +457,7 @@ void KeyControl()
 			if (king.DrawObject->x > 0)
 			{
 				king.DrawObject->x -= (float)timeScale * speed * FrameTime;
+				king.isMove = true;
 			}
 
 		}
@@ -464,7 +466,7 @@ void KeyControl()
 			if (king.DrawObject->x + king.DrawObject->pic->getWidth() < SCREEN_WIDTH)
 			{
 				king.DrawObject->x += (float)timeScale * speed * FrameTime;
-
+				king.isMove = true;
 			}
 		}
 		if (screen_keys['Q']) {
