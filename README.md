@@ -1,5 +1,7 @@
 # miniTown
 
+## 简介
+
 村庄模拟
 2D 种田游戏
 
@@ -13,7 +15,7 @@
 
 
 
-# How to play
+## How to play
 控制村长移动 w/s/a/d 
 
 增加村长金钱 m 跳至命令行输入金额 
