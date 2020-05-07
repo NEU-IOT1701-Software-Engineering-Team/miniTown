@@ -301,7 +301,7 @@ EditBox editBox;
 Label lb2;
 Picture picTest;
 void EBChange() {
-	MessageBox(NULL, TEXT(editBox.getText()), TEXT("提示"), 0);
+	
 }
 //测试 请保留------↑------
 int main()
@@ -316,7 +316,7 @@ int main()
 
 
 	editBox.setRect(300, 300, 100, 25);
-	editBox.setText((char*)"Hell");
+	editBox.setText((char*)"0");
 	editBox.lpValueChange = EBChange;
 	AddEditBox(&editBox);
 
@@ -354,7 +354,7 @@ int main()
 	
 	while (1)
 	{
-
+		
 		KeyControl();
 		//MsgGet();加入到了Draw()
 		Draw();

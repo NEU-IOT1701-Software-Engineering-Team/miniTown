@@ -531,9 +531,28 @@ void RemoveDrawObecjt(Object* object)
 
 //base
 inline void DrawPoint(int nPos, BYTE r, BYTE g, BYTE b, BYTE a = 0) {
-	buffer[nPos++] = ((buffer[nPos] * a) >> 8) + ((b * (255 - a)) >> 8);
-	buffer[nPos++] = ((buffer[nPos] * a) >> 8 )+ ((g * (255 - a)) >> 8);
-	buffer[nPos++] = ((buffer[nPos] * a) >> 8) + ((r * (255 - a)) >> 8);
+
+	float rate = (float)a / 255;
+	float rate_ = 1 - rate;
+	byte oldR, oldG, oldB;
+
+	oldB = buffer[nPos];
+	oldG = buffer[nPos + 1];
+	oldR = buffer[nPos + 2];
+
+
+	byte Nowb, Nowr, Nowg;
+	Nowb = (oldB * rate) + b * rate_;
+	Nowg = (oldG * rate) + g * rate_;
+	Nowr = (oldR * rate) + r * rate_;
+	
+	
+	//Nowb = ((buffer[nPos] * a) >> 8) + ((b * (255 - a)) >> 8);
+	//Nowg= ((buffer[nPos+1] * a) >> 8) + ((g * (255 - a)) >> 8);
+	//Nowr = ((buffer[nPos+2] * a) >> 8) + ((r * (255 - a)) >> 8);
+	buffer[nPos] = Nowb;
+	buffer[nPos + 1] = Nowg;
+	buffer[nPos + 2] = Nowr;
 }
 
 inline void DrawPoint(int nPos, Color c) {
@@ -761,9 +780,11 @@ inline void DrawObject(Object* obj) {
 		DrawPic(obj->point.x, obj->point.y, obj->pic);
 	}
 	else {
+		
 
 		int nWidth = obj->pic->getWidth();
 		int nHeight = obj->pic->getHeight();
+
 
 		int count = 0;
 		int size = nWidth * nHeight;
@@ -817,6 +838,7 @@ inline void DrawObject(Object* obj) {
 					float valueTempR;
 					float valueTempG;
 					float valueTempB;
+					float valueTempA;
 
 					Point DrawNowPoint = Point(x, y);
 					DrawNowPoint += obj->point;
@@ -834,51 +856,40 @@ inline void DrawObject(Object* obj) {
 					a3 = (xSmall >= 0 && yBig < nHeight ? obj->pic->pChannelG[yBig * nWidth + xSmall] : 0);
 					a4 = (xBig < nWidth&& yBig < nHeight ? obj->pic->pChannelG[yBig * nWidth + xBig] : 0);
 
-					valueTempG = (1 - ux) * (1 - uy) * a1 + (1 - ux) * uy * a3 + (1 - uy) * ux * a2 + ux * uy * a4;
+					valueTempG = (1 - ux) * (1 - uy) * a1 + (1 - ux) * uy * a3 + (1 - uy) * ux * a2 + ux * uy * a4+1; //四舍五入
 
 					a1 = (xSmall >= 0 && ySmall >= 0 ? obj->pic->pChannelB[ySmall * nWidth + xSmall] : 0);
 					a2 = (xBig < nWidth&& ySmall >= 0 ? obj->pic->pChannelB[ySmall * nWidth + xBig] : 0);
 					a3 = (xSmall >= 0 && yBig < nHeight ? obj->pic->pChannelB[yBig * nWidth + xSmall] : 0);
 					a4 = (xBig < nWidth&& yBig < nHeight ? obj->pic->pChannelB[yBig * nWidth + xBig] : 0);
 
-					valueTempB = (1 - ux) * (1 - uy) * a1 + (1 - ux) * uy * a3 + (1 - uy) * ux * a2 + ux * uy * a4;
+					valueTempB = (1 - ux) * (1 - uy) * a1 + (1 - ux) * uy * a3 + (1 - uy) * ux * a2 + ux * uy * a4+1; //四舍五入
 
-					Color c = Color(valueTempR, valueTempG, valueTempB);
+					a1 = (xSmall >= 0 && ySmall >= 0 ? obj->pic->pChannelA[ySmall * nWidth + xSmall] : 0);
+					a2 = (xBig < nWidth && ySmall >= 0 ? obj->pic->pChannelA[ySmall * nWidth + xBig] : 0);
+					a3 = (xSmall >= 0 && yBig < nHeight ? obj->pic->pChannelA[yBig * nWidth + xSmall] : 0);
+					a4 = (xBig < nWidth && yBig < nHeight ? obj->pic->pChannelA[yBig * nWidth + xBig] : 0);
+
+					if (a1 == 255 || a2 == 255 || a3 == 255 || a4 == 255)
+					{
+						valueTempA = 255;
+					}
+					else
+					{
+						valueTempA = (1 - ux) * (1 - uy) * a1 + (1 - ux) * uy * a3 + (1 - uy) * ux * a2 + ux * uy * a4; //四舍五入
+
+					}
+
+					Color c = Color(valueTempR, valueTempG, valueTempB,valueTempA);
+					//std::cout << valueTempA << std::endl;
+
 					//c = Color(50, 50, 50);
 					//std::cout << "DrawPos x" << DrawNowPoint.x << " y " << DrawNowPoint.y << std::endl;
 					DrawPoint(DrawNowPointMemLocation, c);
 				}
 			}
 		}
-
-
-		//遍历图像
-		for (int i = 0; i < nHeight; ++i) {
-			for (int j = 0; j < nWidth; ++j) {
-				//计算旋转后坐标
-				Point p_;
-
-				//这样计算得到的p_是以当前对象左上角为原点的坐标系 需要映射到窗口坐标系中
-				spin({ j,i }, obj->pic->centerPoint, obj->getAngle(1), p_);
-
-				//映射
-				p_ += obj->point;
-
-				if (p_.x < 0 || p_.y < 0) {
-					continue;//将旋转到窗体外的点抛弃
-				}
-				else if (p_.x > nScreenWidth || p_.y > nScreenHeight) {
-					continue;//将旋转到窗体外的点抛弃
-				}
-				int posBuffer = (p_.y * nScreenWidth + p_.x) * 4;
-				int posPic = i * nWidth + j;
-
-				++count;
-				DrawPoint(posBuffer, obj->pic->pChannelR[posPic], obj->pic->pChannelG[posPic], obj->pic->pChannelB[posPic]);
-				posBuffer += 4;
-				++posPic;
-			}
-		}
+		
 		count = size;
 
 	}
