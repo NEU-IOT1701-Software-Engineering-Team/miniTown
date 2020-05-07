@@ -219,7 +219,9 @@ void SetAField()
 {
 	king.SetAField();
 }
-
+void EBChange() {
+	MessageBox(NULL,TEXT(editBox.getText()), TEXT("ÌבÊ¾"), 0);
+}
 void AddUI() {
 	int ButtonWidth = 100;
 	int ButtonHeight = 50;
@@ -305,6 +307,7 @@ int main()
 	
 	editBox.setRect(300, 300, 100, 25);
 	editBox.setText((char*)"Hell");
+	editBox.lpValueChange = EBChange;
 	AddEditBox(&editBox);
 
 	editBox2.setRect(300, 150, 100, 25);

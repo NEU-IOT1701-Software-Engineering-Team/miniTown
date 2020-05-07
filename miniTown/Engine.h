@@ -1080,6 +1080,7 @@ struct EditBox : public Label
 
 #define EB_IT_RANGE		2//不使用
 	int inputType;
+	void (*lpValueChange)(void);//当编辑框内容改变时 调用
 	//Description:
 	//	默认构造函数。
 	//Paramter: 
@@ -1199,11 +1200,12 @@ struct EditBox : public Label
 	}
 private:
 	void _initAll() {
-		nPosCaret = 0;
-		sumFPS = 0;
-		isShowCaret = false;
-		stateCaret = false;
-		inputType = EB_IT_TEXT;
+		nPosCaret=0;//光标位置
+		isShowCaret=true;//是否显示光标
+		sumFPS=0;//光标闪烁
+		stateCaret=false;//光标当前状态
+		inputType=0;
+		lpValueChange=NULL;
 	}
 };
 typedef struct EditBox EditBox;

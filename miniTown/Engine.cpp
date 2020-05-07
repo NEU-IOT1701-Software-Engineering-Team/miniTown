@@ -1214,6 +1214,9 @@ static LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 						if (wParam <= 'Z' && wParam >= 'A') {
 							listEditBox[i]->text.insert(listEditBox[i]->nPosCaret, 1, (char)wParam);
 							listEditBox[i]->moveCaret(1);
+							if (listEditBox[i]->lpValueChange != NULL) {
+								listEditBox[i]->lpValueChange();
+							}
 						}
 					}
 					case EB_IT_NUMBER: {
@@ -1221,6 +1224,9 @@ static LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 						if (wParam <= '9' && wParam >= '0') {
 							listEditBox[i]->text.insert(listEditBox[i]->nPosCaret, 1, (char)wParam);
 							listEditBox[i]->moveCaret(1);
+							if (listEditBox[i]->lpValueChange != NULL) {
+								listEditBox[i]->lpValueChange();
+							}
 						}
 					}
 					default:
