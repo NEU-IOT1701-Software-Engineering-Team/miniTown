@@ -14,6 +14,7 @@ Player player;
 //Object* drawList[MaxDrawObjectSum];
 //绘制队列
 std::vector<ObjectPointer> drawList;
+//std::vector<BaseUI*> listBaseUI;
 std::vector<Button*> listButton;
 std::vector<Label*> listLabel;
 std::vector<EditBox*> listEditBox;
@@ -555,7 +556,7 @@ inline void DrawPoint(int x, int y, Color c) {
 }
 
 //base
-inline void DrawLine(int x1, int y1, int x2, int y2, BYTE r, BYTE g, BYTE b, BYTE a = 0) {
+inline void DrawLine(int x1, int y1, int x2, int y2, BYTE r, BYTE g, BYTE b, BYTE a=0 ) {
 	int x, y, dx, dy;
 	float k, e;
 	if (x1 > x2) {
@@ -942,62 +943,21 @@ void Draw() {
 		DrawObject(drawList[i].pObject);
 	}
 
-	int nOldBkMode = SetBkMode(hMemDC, TRANSPARENT);//绘制字体时设置透明
-	//绘制Button
-	{
-		for (int i = 0; i < listButton.size(); ++i) {
-			//EDGE_ETCHED
-			DrawRect(listButton[i]->rect, listButton[i]->currentBackgroundColor);//绘制背景
-			DrawEdge(hMemDC, &listButton[i]->rect, EDGE_ETCHED, BF_RECT);//传统按钮风格
-			COLORREF nOldTextColor = SetTextColor(hMemDC, listButton[i]->getForegroundColor().getColorRef());
-			DrawText(hMemDC, listButton[i]->title, -1, &listButton[i]->rect, DT_VCENTER | DT_CENTER | DT_SINGLELINE);
-			SetTextColor(hMemDC, nOldTextColor);
-		}
-
+	//绘制UI
+	/*
+	for (int i = 0; i < listBaseUI.size(); ++i) {
+		listBaseUI[i]->Draw();
+	}*/  //暂不成熟
+	for (int i = 0; i < listButton.size(); ++i) {
+		listButton[i]->Draw(hMemDC);
+	}
+	for (int i = 0; i < listLabel.size(); ++i) {
+		listLabel[i]->Draw(hMemDC);
+	}
+	for (int i = 0; i < listEditBox.size(); ++i) {
+		listEditBox[i]->Draw(hMemDC);
 	}
 
-	//绘制Label
-	{
-		for (int i = 0; i < listLabel.size(); ++i) {
-			DrawRect(listLabel[i]->rect, listLabel[i]->currentBackgroundColor);
-			COLORREF nOldTextColor = SetTextColor(hMemDC, listLabel[i]->getForegroundColor().getColorRef());
-			//DrawTextEx(hMemDC, listLabel[i]->title, -1, &listLabel[i]->rect, DT_CENTER, NULL);
-			DrawText(hMemDC, listLabel[i]->title, -1, &listLabel[i]->rect, DT_CENTER | DT_EXPANDTABS );
-			SetTextColor(hMemDC, nOldTextColor);
-		}
-	}
-
-	//绘制EditBox
-	{
-		for (int i = 0; i < listEditBox.size(); ++i) {
-			DrawRect(listEditBox[i]->rect, listEditBox[i]->currentBackgroundColor);
-			DrawEdge(hMemDC, &listEditBox[i]->rect, EDGE_SUNKEN, BF_RECT);//传统编辑框风格
-
-			COLORREF nOldTextColor = SetTextColor(hMemDC, listEditBox[i]->getForegroundColor().getColorRef());
-			DrawText(hMemDC, listEditBox[i]->text.c_str(), -1, &listEditBox[i]->rect, DT_VCENTER | DT_SINGLELINE);
-			SetTextColor(hMemDC, nOldTextColor);
-
-			//判断是否需要绘制光标
-			if (listEditBox[i]->isShowCaret) {
-				if ((listEditBox[i]->sumFPS++) > (frame * 5)) {
-					listEditBox[i]->stateCaret = !listEditBox[i]->stateCaret;
-				}
-				//光标闪烁
-				if (listEditBox[i]->stateCaret) {
-					//显示
-					
-					DrawLine(listEditBox[i]->pointCaret.x, listEditBox[i]->pointCaret.y- listEditBox[i]->getHeight(),
-						listEditBox[i]->pointCaret.x, listEditBox[i]->pointCaret.y,
-						0, 0, 0);
-				}
-				else {
-					//
-				}
-			}
-		}
-	}
-
-	SetBkMode(hMemDC, nOldBkMode);//恢复模式
 
 	//从内存设备拷贝到窗口
 	HDC hDC = GetDC(hWnd);
@@ -1041,6 +1001,16 @@ void freeSomethingForEngine() {
 
 //UI Button
 
+void Button:: Draw(HDC hMemDC) {
+	int nOldBkMode = SetBkMode(hMemDC, TRANSPARENT);//绘制字体时设置透明
+	DrawRect(rect, currentBackgroundColor);//绘制背景
+	DrawEdge(hMemDC, &rect, EDGE_ETCHED, BF_RECT);//传统按钮风格
+	COLORREF nOldTextColor = SetTextColor(hMemDC, getForegroundColor().getColorRef());
+	DrawText(hMemDC, title.c_str(), -1, &rect, DT_VCENTER | DT_CENTER | DT_SINGLELINE);
+	SetTextColor(hMemDC, nOldTextColor);
+	SetBkMode(hMemDC, nOldBkMode);//恢复模式
+}
+
 //Description:
 //	增加一个按钮对象,如果该对象已被加入，则不会重复加入.
 //Paramter: 
@@ -1075,6 +1045,17 @@ void RemoveButton(Button* button)
 			break;
 		}
 	}
+}
+
+//UI Label
+
+void Label::Draw(HDC hMemDC) {
+	int nOldBkMode = SetBkMode(hMemDC, TRANSPARENT);//绘制字体时设置透明
+	DrawRect(rect, currentBackgroundColor);
+	COLORREF nOldTextColor = SetTextColor(hMemDC, getForegroundColor().getColorRef());
+	DrawText(hMemDC, title.c_str(), -1, &rect, DT_CENTER | DT_EXPANDTABS);
+	SetTextColor(hMemDC, nOldTextColor);
+	SetBkMode(hMemDC, nOldBkMode);//恢复模式
 }
 
 //Description:
@@ -1114,6 +1095,36 @@ void RemoveLabel(Label* label)
 	}
 }
 
+
+//UI EditBox
+
+void EditBox::Draw(HDC hMemDC) {
+	int nOldBkMode = SetBkMode(hMemDC, TRANSPARENT);//绘制字体时设置透明
+	DrawRect(rect, currentBackgroundColor);
+	DrawEdge(hMemDC, &rect, EDGE_SUNKEN, BF_RECT);//传统编辑框风格
+
+	COLORREF nOldTextColor = SetTextColor(hMemDC, getForegroundColor().getColorRef());
+	DrawText(hMemDC, text.c_str(), -1, &rect, DT_VCENTER | DT_SINGLELINE);
+	SetTextColor(hMemDC, nOldTextColor);
+
+	//判断是否需要绘制光标
+	if (isShowCaret) {
+		if ((sumFPS++) > (frame * 5)) {
+			stateCaret = !stateCaret;
+		}
+		//光标闪烁
+		if (stateCaret) {
+			//显示
+			DrawLine(pointCaret.x, pointCaret.y - getHeight(),
+				pointCaret.x, pointCaret.y,
+				0, 0, 0);
+		}
+		else {
+			//
+		}
+	}
+	SetBkMode(hMemDC, nOldBkMode);//恢复模式
+}
 //Description:
 //	增加一个编辑框对象,如果该对象已被加入，则不会重复加入.
 //Paramter: 

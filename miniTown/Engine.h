@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <Digitalv.h>
 #include "Debug.h"
+extern int frame; //当前的帧率
 #pragma comment(lib, "WINMM.LIB")
 
 struct Point;
@@ -24,7 +25,6 @@ extern  int nScreenWidth;
 extern  int nScreenHeight;
 extern BYTE screen_keys[512];
 extern HWND hWnd;
-
 
 //extern Object* drawList[MaxDrawObjectSum];
 extern int drawSum;
@@ -854,37 +854,36 @@ void AddDrawObject(Object* object);
 void RemoveDrawObecjt(Object* object);
 
 
+
 #define DEFAULT_BC			COLOR_WHITE
 #define DEFAULT_FC			COLOR_BLACK
 #define DEFAULT_FOCUS_BC	{201,218,248}
 #define DEFAULT_DOWN_BC		{109,158,235}
-//UI 按钮
-struct Button
-{
-	char* title;
+
+class BaseUI {
+public:
+	std::string title;
 	RECT rect;
 	Color currentBackgroundColor;
-	void (*lpDoubleClickL)(void);
-	void (*lpClickL)(void);
-	void (*lpClickR)(void);
-	bool isClick;
-	bool enabled;//按钮是否可用
-	bool isVisible;//按钮是否可用
 
-	Button() {
+	bool enabled;//UI是否可用
+	bool isVisible;//UI是否可用
+
+	BaseUI() {
 		_initALL();
 	}
-	Button(char* tTitle, int x,int y,int width,int height) {
+
+	BaseUI(char* tTitle, int x, int y, int width, int height) {
 		_initALL();
 		title = tTitle;
 		rect = { x,y,x + width,y + height };
 	}
-	Button(char* tTitle, RECT tRect) {
+	BaseUI(char* tTitle, RECT tRect) {
 		_initALL();
 		title = tTitle;
 		rect = tRect;
 	}
-	Button(char* tTitle, RECT tRect, Color tBackgroundColor, Color tForegroundColor) {
+	BaseUI(char* tTitle, RECT tRect, Color tBackgroundColor, Color tForegroundColor) {
 		_initALL();
 		title = tTitle;
 		rect = tRect;
@@ -892,7 +891,7 @@ struct Button
 		currentBackgroundColor = tBackgroundColor;
 		foregroundColor = tForegroundColor;
 	}
-	Button(char* tTitle, int x, int y, int width, int height, Color tBackgroundColor, Color tForegroundColor) {
+	BaseUI(char* tTitle, int x, int y, int width, int height, Color tBackgroundColor, Color tForegroundColor) {
 		_initALL();
 		title = tTitle;
 		rect = { x,y,x + width,y + height };
@@ -900,180 +899,88 @@ struct Button
 		currentBackgroundColor = tBackgroundColor;
 		foregroundColor = tForegroundColor;
 	}
-	Button(char* tTitle, RECT tRect, Color tBackgroundColor, Color tForegroundColor, void (*tlpClickL)(void)) {
-		_initALL();
-		title = tTitle;
-		rect = tRect;
-		backgroundColor = tBackgroundColor;
-		currentBackgroundColor = tBackgroundColor;
-		foregroundColor = tForegroundColor;
-		lpClickL = tlpClickL;
-	}
 
-	void setBackgroundColor(Color color) {
-		backgroundColor = color;
-		currentBackgroundColor = color;
-	}
-	void setBackgroundColor(BYTE r,BYTE g ,BYTE b) {
-		backgroundColor = { r,g,b };
-		currentBackgroundColor = {r,g,b};
-	}
-	Color getBackgroundColor() {
-		return backgroundColor;
-	}
-
-	void setForegroundColor(Color color) {
-		foregroundColor = color;
-	}
-	void setForegroundColor(BYTE r, BYTE g, BYTE b) {
-		foregroundColor = { r,g,b };
-	}
-	Color getForegroundColor() {
-		return foregroundColor;
-	}
-
-	//修改按钮位置
-	void setRect(RECT tRect) {
-		rect = tRect;
-	}
-	void setRect(Point point) {
-		rect = { point.x,point.y, rect.right ,rect.bottom };
-	}
-	void setRect(int width, int height) {
-		rect = { rect.left,rect.top,rect.left + width,rect.top + height };
-	}
-	void setRect(int x, int y, int width, int height) {
-		rect = { x,y,x + width,y + height };
-	}
-
-	Point getPoint() {
-		return Point(rect.left, rect.top);
-	}
-	RECT getRect() {
-		return rect;
-	}
-
-	//判断被点击的点是否再rect内
-	bool operator==(Point point) {
-		return point.x <= rect.right && point.x >= rect.left && point.y <= rect.bottom && point.y >= rect.top;
-	}
-
-private:
-	Color foregroundColor;
-	Color backgroundColor;
-
-	inline void _initALL() {
-		memset(this, 0, sizeof(*this));
-		currentBackgroundColor = DEFAULT_BC;
-		backgroundColor = DEFAULT_BC;
-		lpDoubleClickL = NULL;
-		lpClickL = NULL;
-		lpClickR = NULL;
-		enabled = true;
-		isVisible = true;
-	}
-};
-typedef struct Button Button;
-
-//Description:
-//	增加一个按钮对象,如果该对象已被加入，则不会重复加入.
-//Paramter: 
-//	Button * button 将要加入对象的地址
-//Return Value:
-//	NONE
-void AddButton(Button* button);
-
-//Description:
-//	从按钮对象列表中删掉一个对象。
-//Paramter: 
-//	Button * button 将要删除的对象地址
-//Return Value:
-//	NONE
-void RemoveButton(Button* button);
-
-
-//UI 标签
-struct Label {
-	char* title;
-	RECT rect;
-	Color currentBackgroundColor;
-	//暂时不需要响应事件
-
-	bool enabled;//是否可用
-	bool isVisible;//是否可见
 
 	//Description:
-	//	默认构造函数。
+	//	设置设置UI标题,如果字符串以\0结束则可以忽略参数int length
 	//Paramter: 
-	//	NONE
+	//	char * szTitle	字符串首地址
+	//	int length=-1	字符串长度
 	//Return Value:
 	//	NONE
-	struct Label() {
-		_initALL();
+	void setTitle(char * szTitle,int length=-1) {
+		if (szTitle == NULL) {
+			return;
+		}
+		title.clear();
+		if (length != -1) {
+			title.append(szTitle, length);
+		}
+		else {
+			title.append(szTitle);
+		}
 	}
-	
 	//Description:
-	//	默认构造函数。
+	//	设置设置UI标题,如果字符串以\0结束则可以忽略参数int length
 	//Paramter: 
-	//	char* tTitle 标签标题
-	//	RECT tRect 标签大小以及位置
+	//	const char * szTitle	字符串首地址
+	//	int length=-1	字符串长度
 	//Return Value:
 	//	NONE
-	struct Label(char* tTitle, RECT tRect) {
-		_initALL();
-		title = tTitle;
-		rect = tRect;
+	void setTitle(const char* szTitle, int length = -1) {
+		setTitle((char*)szTitle, length);
 	}
 
 	//Description:
-	//	默认构造函数。
+	//	获取UI标题 返回指向字符串的首地址
 	//Paramter: 
-	//	char* tTitle 标签标题
-	//	int x, int y 标签位置
-	//	int width, int height 标签大小
-	//Return Value:
 	//	NONE
-	struct Label(char* tTitle, int x, int y, int width, int height) {
-		_initALL();
-		title = tTitle;
-		rect = { x,y,x + width,y + height };
+	//Return Value:
+	//	const char *
+	const char* getTitle() {
+		return title.c_str();
 	}
 
 	//Description:
-	//	默认构造函数。
+	//	获取UI标题 通过参数返回指向字符串的首地址
 	//Paramter: 
-	//	char* tTitle 标签标题
-	//	RECT tRect 标签大小以及位置
-	//	Color tBackgroundColor 背景色
-	//	Color tForegroundColor 前景色（文字颜色）
+	//	char** pTitle
 	//Return Value:
-	//	NONE
-	struct Label(char* tTitle, RECT tRect, Color tBackgroundColor, Color tForegroundColor) {
-		_initALL();
-		title = tTitle;
-		rect = tRect;
-		backgroundColor = tBackgroundColor;
-		currentBackgroundColor = tBackgroundColor;
-		foregroundColor = tForegroundColor;
+	//	int 标题长度
+	int getTitle(char** pTitle) {
+		*pTitle = (char*)title.c_str();
+		return title.length();
 	}
 
 	//Description:
-	//	默认构造函数。
+	//	获取UI标题 事先已分配好地址
 	//Paramter: 
-	//	char* tTitle 标签标题
-	//	int x, int y 标签位置
-	//	int width, int height 标签大小
-	//	Color tBackgroundColor 背景色
-	//	Color tForegroundColor 前景色（文字颜色）
+	//	char* szTitle 分配的首地址
+	//	int length 分配的长度
 	//Return Value:
+	//	int 实际复制字符串长度
+	int getTitle(char* szTitle, int length) {
+		if (length >= title.length()) {
+			//传入地址的长度足够
+			memcpy(szTitle, title.c_str(), title.length() * sizeof(char));
+			return  title.length();
+		}
+		else {
+			//不足
+			memcpy(szTitle, title.c_str(), length * sizeof(char));
+			return  length;
+		}
+
+	}
+
+	//Description:
+	//	获取UI标题长度
+	//Paramter: 
 	//	NONE
-	struct Label(char* tTitle, int x, int y, int width, int height, Color tBackgroundColor, Color tForegroundColor) {
-		_initALL();
-		title = tTitle;
-		rect = { x,y,x + width,y + height };
-		backgroundColor = tBackgroundColor;
-		currentBackgroundColor = tBackgroundColor;
-		foregroundColor = tForegroundColor;
+	//Return Value:
+	//	int 长度
+	int getTitleLength() {
+		return  title.length();
 	}
 
 	//Description:
@@ -1138,11 +1045,15 @@ struct Label {
 		return foregroundColor;
 	}
 
+	void setPoint(Point point) {
+		rect = { point.x,point.y, rect.right ,rect.bottom };
+	}
+	Point getPoint() {
+		return Point(rect.left, rect.top);
+	}
+
 	void setRect(RECT tRect) {
 		rect = tRect;
-	}
-	void setRect(Point point) {
-		rect = { point.x,point.y, rect.right ,rect.bottom };
 	}
 	void setRect(int width, int height) {
 		rect = { rect.left,rect.top,rect.left + width,rect.top + height };
@@ -1150,32 +1061,180 @@ struct Label {
 	void setRect(int x, int y, int width, int height) {
 		rect = { x,y,x + width,y + height };
 	}
-
-	Point getPoint() {
-		return Point(rect.left, rect.top);
-	}
 	RECT getRect() {
 		return rect;
+	}
+	
+	void setWidth(int width) {
+		rect.right = rect.left + width;
 	}
 	int getWidth() {
 		return rect.right - rect.left;
 	}
+
+	void setHeight(int height) {
+		rect.bottom = rect.top + height;
+	}
 	int getHeight() {
 		return rect.bottom - rect.top;
 	}
+
+	virtual void Draw(HDC hMemDC) {
+		;
+	}
+
+	//判断被点击的点是否再rect内
+	bool operator==(Point point) {
+		return point.x <= rect.right && point.x >= rect.left && point.y <= rect.bottom && point.y >= rect.top;
+	}
+
 private:
 	Color foregroundColor;
 	Color backgroundColor;
 
 	inline void _initALL() {
-		memset(this, 0, sizeof(*this));
+		//memset(this, 0, sizeof(*this));
 		currentBackgroundColor = DEFAULT_BC;
+		foregroundColor = DEFAULT_FC;
 		backgroundColor = DEFAULT_BC;
 		enabled = true;
 		isVisible = true;
+		rect = { 0,0,100,50 };
 	}
 };
-typedef struct Label Label;
+
+//UI:按钮
+class Button :public BaseUI{
+public:
+	void (*lpDoubleClickL)(void);
+	void (*lpClickL)(void);//左键单击事件
+	void (*lpClickR)(void);
+	bool isClick;
+
+	Button() {
+		_initALL();
+	}
+	Button(char* tTitle, int x, int y, int width, int height) :
+		BaseUI(tTitle,x,y,width, height){
+		_initALL();
+	}
+	Button(char* tTitle, RECT tRect):
+		BaseUI(tTitle,tRect) {
+		_initALL();
+	}
+	Button(char* tTitle, RECT tRect, Color tBackgroundColor, Color tForegroundColor) :
+		BaseUI(tTitle, tRect, tBackgroundColor, tForegroundColor){
+		_initALL();
+	}
+	Button(char* tTitle, int x, int y, int width, int height, Color tBackgroundColor, Color tForegroundColor):
+		BaseUI(tTitle,x, y, width, height, tBackgroundColor, tForegroundColor) {
+		_initALL();
+	}
+	Button(char* tTitle, RECT tRect, Color tBackgroundColor, Color tForegroundColor, void (*tlpClickL)(void)):
+		BaseUI(tTitle, tRect, tBackgroundColor, tForegroundColor) {
+		_initALL();
+		lpClickL = tlpClickL;
+	}
+
+	void Draw(HDC hMemDC);
+private:
+
+	inline void _initALL() {
+		lpDoubleClickL = NULL;
+		lpClickL = NULL;
+		lpClickR = NULL;
+		isClick = false;
+	}
+};
+
+//Description:
+//	增加一个按钮对象,如果该对象已被加入，则不会重复加入.
+//Paramter: 
+//	Button * button 将要加入对象的地址
+//Return Value:
+//	NONE
+void AddButton(Button* button);
+
+//Description:
+//	从按钮对象列表中删掉一个对象。
+//Paramter: 
+//	Button * button 将要删除的对象地址
+//Return Value:
+//	NONE
+void RemoveButton(Button* button);
+
+//UI: 标签
+class Label : public BaseUI {
+public :
+	//Description:
+	//	默认构造函数。
+	//Paramter: 
+	//	NONE
+	//Return Value:
+	//	NONE
+	Label() {
+		_initALL();
+	}
+
+	//Description:
+	//	默认构造函数。
+	//Paramter: 
+	//	char* tTitle 标签标题
+	//	RECT tRect 标签大小以及位置
+	//Return Value:
+	//	NONE
+	Label(char* tTitle, RECT tRect) :
+		BaseUI(tTitle, tRect) {
+		_initALL();
+	}
+
+	//Description:
+	//	默认构造函数。
+	//Paramter: 
+	//	char* tTitle 标签标题
+	//	int x, int y 标签位置
+	//	int width, int height 标签大小
+	//Return Value:
+	//	NONE
+	Label(char* tTitle, int x, int y, int width, int height) :
+		BaseUI(tTitle, x, y, width, height) {
+		_initALL();
+	}
+
+	//Description:
+	//	默认构造函数。
+	//Paramter: 
+	//	char* tTitle 标签标题
+	//	RECT tRect 标签大小以及位置
+	//	Color tBackgroundColor 背景色
+	//	Color tForegroundColor 前景色（文字颜色）
+	//Return Value:
+	//	NONE
+	Label(char* tTitle, RECT tRect, Color tBackgroundColor, Color tForegroundColor) :
+		BaseUI(tTitle, tRect, tBackgroundColor, tForegroundColor) {
+		_initALL();
+	}
+
+	//Description:
+	//	默认构造函数。
+	//Paramter: 
+	//	char* tTitle 标签标题
+	//	int x, int y 标签位置
+	//	int width, int height 标签大小
+	//	Color tBackgroundColor 背景色
+	//	Color tForegroundColor 前景色（文字颜色）
+	//Return Value:
+	//	NONE
+	Label(char* tTitle, int x, int y, int width, int height, Color tBackgroundColor, Color tForegroundColor) :
+		BaseUI(tTitle, x, y, width, height, tBackgroundColor, tForegroundColor) {
+		_initALL();
+	}
+	void Draw(HDC hMemDC);
+private:
+	inline void _initALL() {
+		;
+	}
+};
 
 //Description:
 //	增加一个标签对象,如果该对象已被加入，则不会重复加入.
@@ -1193,11 +1252,12 @@ void AddLabel(Label* label);
 //	NONE
 void RemoveLabel(Label* label);
 
+constexpr auto EB_DEFAULT_TITLE = "EditBox";
 
-//UI 编辑框
-struct EditBox : public Label
-{
-	std::string text;
+//UI: 编辑框
+class EditBox :public BaseUI {
+public :
+	std::string text;//编辑框内容
 	int nPosCaret;//光标位置
 	Point pointCaret;//光标坐标
 	bool isShowCaret;//是否显示光标
@@ -1209,6 +1269,7 @@ struct EditBox : public Label
 #define EB_IT_RANGE		2//不使用
 	int inputType;
 	void (*lpValueChange)(void);//当编辑框内容改变时 调用
+	
 	//Description:
 	//	默认构造函数。
 	//Paramter: 
@@ -1216,7 +1277,72 @@ struct EditBox : public Label
 	//Return Value:
 	//	NONE
 	EditBox() {
-		_initAll();
+		_initALL();
+	}
+
+	//Description:
+	//	默认构造函数。
+	//Paramter: 
+	//	RECT tRect UI大小以及位置
+	//Return Value:
+	//	NONE
+	EditBox(RECT tRect) :
+		BaseUI((char*)EB_DEFAULT_TITLE, tRect) {
+		_initALL();
+	}
+
+	//Description:
+	//	默认构造函数。
+	//Paramter: 
+	//	int x, int y UI位置
+	//	int width, int height UI大小
+	//Return Value:
+	//	NONE
+	EditBox( int x, int y, int width, int height) :
+		BaseUI((char*)EB_DEFAULT_TITLE, x, y, width, height) {
+		_initALL();
+	}
+
+	//Description:
+	//	默认构造函数。
+	//Paramter: 
+	//	RECT tRect UI大小以及位置
+	//	Color tBackgroundColor 背景色
+	//	Color tForegroundColor 前景色（文字颜色）
+	//Return Value:
+	//	NONE
+	EditBox( RECT tRect, Color tBackgroundColor, Color tForegroundColor) :
+		BaseUI((char*)EB_DEFAULT_TITLE, tRect, tBackgroundColor, tForegroundColor) {
+		_initALL();
+	}
+
+	//Description:
+	//	默认构造函数。
+	//Paramter: 
+	//	int x, int y UI位置
+	//	int width, int height UI大小
+	//	Color tBackgroundColor 背景色
+	//	Color tForegroundColor 前景色（文字颜色）
+	//Return Value:
+	//	NONE
+	EditBox( int x, int y, int width, int height, Color tBackgroundColor, Color tForegroundColor) :
+		BaseUI((char*)EB_DEFAULT_TITLE, x, y, width, height, tBackgroundColor, tForegroundColor) {
+		_initALL();
+	}
+
+	//Description:
+	//	默认构造函数。
+	//Paramter: 
+	//	RECT tRect UI大小以及位置
+	//	Color tBackgroundColor 背景色
+	//	Color tForegroundColor 前景色（文字颜色）
+	//	void (*tlpValueChange)(void) UI事件
+	//Return Value:
+	//	NONE
+	EditBox(RECT tRect, Color tBackgroundColor, Color tForegroundColor, void (*tlpValueChange)(void)) :
+		BaseUI((char*)EB_DEFAULT_TITLE, tRect, tBackgroundColor, tForegroundColor) {
+		_initALL();
+		lpValueChange = tlpValueChange;
 	}
 
 	//Description:
@@ -1247,7 +1373,7 @@ struct EditBox : public Label
 	//	NONE
 	//Return Value:
 	//	const char *
-	const char * getText() {
+	const char* getText() {
 		return text.c_str();
 	}
 
@@ -1257,7 +1383,7 @@ struct EditBox : public Label
 	//	char ** pValue
 	//Return Value:
 	//	int 字符串长度
-	int getText(char ** pValue) {
+	int getText(char** pValue) {
 		*pValue = (char*)text.c_str();
 		return text.length();
 	}
@@ -1272,7 +1398,7 @@ struct EditBox : public Label
 	int getText(char* value, int length) {
 		if (length >= text.length()) {
 			//传入地址的长度足够
-			memcpy(value, text.c_str(), text.length() *sizeof(char));
+			memcpy(value, text.c_str(), text.length() * sizeof(char));
 			return  text.length();
 		}
 		else {
@@ -1280,7 +1406,7 @@ struct EditBox : public Label
 			memcpy(value, text.c_str(), length * sizeof(char));
 			return  length;
 		}
-		
+
 	}
 
 	//Description:
@@ -1289,7 +1415,7 @@ struct EditBox : public Label
 	//	NONE
 	//Return Value:
 	//	int 长度
-	int getLength() {
+	int getTextLength() {
 		return  text.length();
 	}
 
@@ -1308,7 +1434,11 @@ struct EditBox : public Label
 
 	void setText(char* str) {
 		text.clear();
-		text.insert(0,str);
+		text.append(str);
+	}
+	void setText(const char* str) {
+		text.clear();
+		text.append(str);
 	}
 	void moveCaret(int nOff) {
 		nPosCaret += nOff;
@@ -1318,25 +1448,21 @@ struct EditBox : public Label
 		}
 		else if (nPosCaret > text.length()) {
 			nPosCaret = text.length();
-			
 		}
 	}
 
-	//判断被点击的点是否再rect内
-	bool operator==(Point point) {
-		return point.x <= rect.right && point.x >= rect.left && point.y <= rect.bottom && point.y >= rect.top;
-	}
+	void Draw(HDC hMemDC);
 private:
-	void _initAll() {
-		nPosCaret=0;//光标位置
-		isShowCaret=true;//是否显示光标
-		sumFPS=0;//光标闪烁
-		stateCaret=false;//光标当前状态
-		inputType=0;
-		lpValueChange=NULL;
+	void _initALL() {
+		nPosCaret = 0;//光标位置
+		isShowCaret = true;//是否显示光标
+		sumFPS = 0;//光标闪烁
+		stateCaret = false;//光标当前状态
+		inputType = 0;
+		lpValueChange = NULL;
 	}
 };
-typedef struct EditBox EditBox;
+
 
 //Description:
 //	增加一个编辑框对象,如果该对象已被加入，则不会重复加入.

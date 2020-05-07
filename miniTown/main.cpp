@@ -223,11 +223,12 @@ void GetResourceCount()
 	string str;
 	ResourceCount(str);
 	//char* cstr = new char(str.size()+1);
-	char* cstr = new char[str.size() + 1];
-	memset(cstr, 0, str.size()+1);
-	str.copy(cstr, str.size()+1, 0);
+	//char* cstr = new char[str.size() + 1];
+	//memset(cstr, 0, str.size()+1);
+	//str.copy(cstr, str.size()+1, 0);
 	
-	ResourceCountLable.title = cstr;
+	ResourceCountLable.title = str.c_str();
+	//ResourceCountLable.setTitle(str.c_str());//推荐使用这种写法
 
 	//ResourceCountLable.title=(char*)"ResourceCount\n";
 }
