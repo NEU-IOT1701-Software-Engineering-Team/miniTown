@@ -29,10 +29,13 @@ const bool DebugShowGrowTimeFlag = false;  //输出田和树木的生长、砍伐时间
 // 游戏引擎部分
 
 //用于显示窗体的全局变量
-const int SCREEN_WIDTH = 600;
-const int SCREEN_HEIGHT = 600;
+const int GAME_SHOW_WIDTH = 600; //游戏显示界面宽度
+const int GAME_SHOW_HEIGHT = 600; //游戏显示界面高度
+const int SCREEN_WIDTH = 1000;  //游戏窗体宽度
+const int SCREEN_HEIGHT = 600; //游戏窗体高度
+
 const int bits = 24;
-//extern BYTE buffer[SCREEN_WIDTH * SCREEN_HEIGHT * bits / 8];
+//extern BYTE buffer[GAME_SHOW_WIDTH * GAME_SHOW_HEIGHT * bits / 8];
 extern int BackgroundMusicVolume;
 extern int SoundVolume;
 const int SoundOn = false;
@@ -387,7 +390,7 @@ const float AgeAddEveryDay = 1;
 const float GrownUpAge = 5; //小孩到成年的年龄
 const int FieldProduceRiceSum = 4;
 const int MaxWantFoodLevel = 5;
-const int HouseRequireBuildTime = 15;
+const int HouseRequireBuildTime = 15; 
 const int HouseRequireWood = 3;
 
 

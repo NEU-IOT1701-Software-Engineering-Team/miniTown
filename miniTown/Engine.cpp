@@ -834,7 +834,7 @@ inline void DrawObject(Object* obj) {
 void Draw() {
 	void getMessage();
 
-	DrawRect(0, 0, nScreenWidth, nScreenHeight, 192, 224, 0);
+	DrawRect(0, 0, GAME_SHOW_WIDTH, GAME_SHOW_HEIGHT, 192, 224, 0);
 
 	/*
 	Object obj;
@@ -871,7 +871,7 @@ void Draw() {
 		drawList[i].pObject->updatePoint();
 		DrawObject(drawList[i].pObject);
 	}
-	
+	DrawRect(GAME_SHOW_WIDTH, 0, SCREEN_WIDTH-GAME_SHOW_WIDTH, SCREEN_HEIGHT, 86, 108, 115);
 	int nOldBkMode = SetBkMode(hMemDC, TRANSPARENT);//绘制字体时设置透明
 	for (int i = 0; i < listButton.size(); ++i) {
 		DrawRect(listButton[i]->rect, listButton[i]->currentBackgroundColor);//绘制前景
@@ -879,8 +879,9 @@ void Draw() {
 		DrawText(hMemDC, listButton[i]->title, -1, &listButton[i]->rect, DT_VCENTER|DT_CENTER|DT_SINGLELINE);
 		SetTextColor(hMemDC, nOldBkColor);
 	}
-	SetBkMode(hMemDC, nOldBkMode);//恢复模式
 
+	SetBkMode(hMemDC, nOldBkMode);//恢复模式
+	
 	HDC hDC = GetDC(hWnd);
 	BitBlt(hDC, 0, 0, nScreenWidth, nScreenHeight, hMemDC, 0, 0, SRCCOPY);
 	ReleaseDC(hWnd, hDC);

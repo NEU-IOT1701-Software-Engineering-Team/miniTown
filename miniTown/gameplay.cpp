@@ -402,19 +402,19 @@ void ShowSky()
 	
 	if (DayTimeNowRate > 0.75)
 	{
-		objMoon.x=(DayTimeNowRate-0.75) *2 * nScreenWidth;
+		objMoon.x=(DayTimeNowRate-0.75) *2 * GAME_SHOW_WIDTH;
 		objBackground.pic = &picBackground1;
 		objSun.x = -objSun.pic->getWidth();
 	}
 	else if (DayTimeNowRate < 0.25)
 	{
-		objMoon.x = (DayTimeNowRate*2 + 0.5) * nScreenWidth;
+		objMoon.x = (DayTimeNowRate*2 + 0.5) * GAME_SHOW_WIDTH;
 		objBackground.pic = &picBackground1;
 		objSun.x = -objSun.pic->getWidth();
 	}
 	else
 	{
-		objSun.x = (DayTimeNowRate - 0.25)* 2 * nScreenWidth;
+		objSun.x = (DayTimeNowRate - 0.25)* 2 * GAME_SHOW_WIDTH;
 		objBackground.pic = &picBackground;
 		objMoon.x = -objMoon.pic->getWidth();
 	}

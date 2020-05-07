@@ -1433,8 +1433,8 @@ void Child::Walk()
 {
 	if (goToFlag == true)
 	{
-		AimX = (rand() %SCREEN_WIDTH/60)*60;
-		AimY = ((rand() % (SCREEN_HEIGHT / 60 - 1) + 1) * 60);
+		AimX = (rand() %GAME_SHOW_WIDTH/60)*60;
+		AimY = ((rand() % (GAME_SHOW_HEIGHT / 60 - 1) + 1) * 60);
 		goToFlag = false;
 	}
 
