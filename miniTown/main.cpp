@@ -143,15 +143,147 @@ void initObject()
 	objLove.y = 0;
 
 }
-Button b;
-Label b2;
+
+Label lb2;
 EditBox editBox;
 void func(void) {
 	//MessageBox(NULL, TEXT("Button is click!"), TEXT("ÌבÊ¾"), 0);
-	b.rect.left+=25;
-	b.rect.right += 25;
-	b2.rect.top+=25;
-	b2.rect.bottom += 25;
+	lb2.rect.left+=25;
+	lb2.rect.right += 25;
+	lb2.rect.top+=25;
+	lb2.rect.bottom += 25;
+}
+
+
+Button b;
+Button b2;
+Button b3;
+Button b4;
+Button b5;
+Button b6;
+Button b7;
+Button b8;
+Button b9;
+
+void MakeMoney()
+{
+	cout << "Enter Sum of the Money Add:";
+	int sum;
+	cin >> sum;
+	king.MakeMoney(sum);
+}
+
+void SetRicePrice()
+{
+	cout << "Enter Rice Price:";
+	int price;
+	cin >> price;
+	king.SetRicePrice(price);
+}
+
+void SetHousePrice()
+{
+	cout << "Enter House Price:";
+	int price;
+	cin >> price;
+	king.SetHousePrice(price);
+}
+
+void DestoryMoney()
+{
+	cout << "Enter Sum of the Money Destory:";
+	int sum;
+	cin >> sum;
+	king.DestoryMoney(sum);
+}
+
+void Eat()
+{
+	king.Eat();
+}
+
+void SetUnFinishHouseMark()
+{
+	king.SetUnFinishHouseMark();
+}
+
+
+void SetATree()
+{
+	king.SetATree();
+}
+
+
+void SetAField()
+{
+	king.SetAField();
+}
+
+void AddUI() {
+	int ButtonWidth = 100;
+	int ButtonHeight = 50;
+	b.title = (char*)"ResourceCount";
+	b.setRect(GAME_SHOW_WIDTH, 0, ButtonWidth, ButtonHeight);
+	b.setForegroundColor({ 255,0,0 });
+	b.lpClickL = ResourceCount;
+	AddButton(&b);
+
+	b2.title = (char*)"AddMoney";
+	b2.setRect(GAME_SHOW_WIDTH, ButtonHeight, ButtonWidth, ButtonHeight);
+	b2.setForegroundColor({ 0,255,0 });
+	b2.setBackgroundColor(COLOR_BLACK);
+	b2.lpClickL = MakeMoney;
+	AddButton(&b2);
+
+	b3.title = (char*)"Eat";
+	b3.setRect(GAME_SHOW_WIDTH, ButtonHeight * 2, ButtonWidth, ButtonHeight);
+	b3.setForegroundColor({ 255,0,0 });
+	b2.setBackgroundColor(COLOR_BLACK);
+	b3.lpClickL = Eat;
+	AddButton(&b3);
+
+	b4.title = (char*)"SetRicePrice";
+	b4.setRect(GAME_SHOW_WIDTH, ButtonHeight * 3, ButtonWidth, ButtonHeight);
+	b4.setForegroundColor({ 255,0,0 });
+	b4.setBackgroundColor(COLOR_BLACK);
+	b4.lpClickL = SetRicePrice;
+	AddButton(&b4);
+
+	b5.title = (char*)"SetHousePrice";
+	b5.setRect(GAME_SHOW_WIDTH, ButtonHeight * 4, ButtonWidth, ButtonHeight);
+	b5.setForegroundColor({ 255,0,0 });
+	b5.setBackgroundColor(COLOR_BLACK);
+	b5.lpClickL = SetHousePrice;
+	AddButton(&b5);
+
+	b6.title = (char*)"DestoryMoney";
+	b6.setRect(GAME_SHOW_WIDTH, ButtonHeight * 5, ButtonWidth, ButtonHeight);
+	b6.setForegroundColor({ 255,0,0 });
+	b6.setBackgroundColor(COLOR_BLACK);
+	b6.lpClickL = DestoryMoney;
+	AddButton(&b6);
+
+
+	b7.title = (char*)"SetUnFinishHouseMark";
+	b7.setRect(GAME_SHOW_WIDTH, ButtonHeight * 6, ButtonWidth, ButtonHeight);
+	b7.setForegroundColor({ 255,0,0 });
+	b7.setBackgroundColor(COLOR_BLACK);
+	b7.lpClickL = SetUnFinishHouseMark;
+	AddButton(&b7);
+
+	b8.title = (char*)"SetATree";
+	b8.setRect(GAME_SHOW_WIDTH, ButtonHeight * 7, ButtonWidth, ButtonHeight);
+	b8.setForegroundColor({ 255,0,0 });
+	b8.setBackgroundColor(COLOR_BLACK);
+	b8.lpClickL = SetATree;
+	AddButton(&b8);
+
+	b9.title = (char*)"SetAField";
+	b9.setRect(GAME_SHOW_WIDTH, ButtonHeight * 8, ButtonWidth, ButtonHeight);
+	b9.setForegroundColor({ 255,0,0 });
+	b9.setBackgroundColor(COLOR_BLACK);
+	b9.lpClickL = SetAField;
+	AddButton(&b9);
 }
 int main()
 {
@@ -161,23 +293,20 @@ int main()
 		player.playSoundLoop("sound/01 Bloom.mp3", BackgroundMusicVolume);
 	}
 
-	b.title = (char*)"Button";
-	b.setRect(100, 100, 80, 40);
-	b.setForegroundColor ( { 255,0,0 });
-	b.lpClickL = func;
-	AddButton(&b);
 
-	b2.title = (char*)"Label";
-	b2.setRect(400, 400, 80, 40);
-	b2.setForegroundColor(  { 0,255,0 });
-	b2.setBackgroundColor( COLOR_BLACK);
+	lb2.title = (char*)"Label";
+	lb2.setRect(400, 400, 80, 40);
+	lb2.setForegroundColor(  { 0,255,0 });
+	lb2.setBackgroundColor( COLOR_BLACK);
 	//b2.lpClickL = func;
-	AddLabel(&b2);
+	AddLabel(&lb2);
 
 	
 	editBox.setRect(300, 300, 100, 25);
 	editBox.setText((char*)"Hell");
 	AddEditBox(&editBox);
+
+	AddUI();
 
 	if (_CreateWindow(WindowTitle, nScreenWidth, nScreenHeight))
 	{

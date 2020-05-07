@@ -38,7 +38,7 @@ const int bits = 24;
 //extern BYTE buffer[GAME_SHOW_WIDTH * GAME_SHOW_HEIGHT * bits / 8];
 extern int BackgroundMusicVolume;
 extern int SoundVolume;
-const int SoundOn = false;
+const int SoundOn = true;
 
 
 class coord //以60*60为单位标记坐标
