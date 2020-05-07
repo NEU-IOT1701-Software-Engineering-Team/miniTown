@@ -528,45 +528,32 @@ void RemoveDrawObecjt(Object* object)
 	}
 }
 
-inline void DrawPoint(int nPos, Color c) {
-	if (!c.isTransparent()) {
-		buffer[nPos++] = c.b;
-		buffer[nPos++] = c.g;
-		buffer[nPos++] = c.r;
-	}
-}
 
+//base
 inline void DrawPoint(int nPos, BYTE r, BYTE g, BYTE b, BYTE a = 0) {
-	if (!(r == 255 && g == 255 && b == 255)) {
-		buffer[nPos++] = b;
-		buffer[nPos++] = g;
-		buffer[nPos++] = r;
-	}
+	buffer[nPos++] = ((buffer[nPos] * a) >> 8) + ((b * (255 - a)) >> 8);
+	buffer[nPos++] = ((buffer[nPos] * a) >> 8 )+ ((g * (255 - a)) >> 8);
+	buffer[nPos++] = ((buffer[nPos] * a) >> 8) + ((r * (255 - a)) >> 8);
 }
 
-inline void DrawPoint(int x, int y, Color c) {
-	if (!c.isTransparent()) {
-		int nPos = (y * nScreenWidth + x) * 4;
-		buffer[nPos++] = c.b;
-		buffer[nPos++] = c.g;
-		buffer[nPos++] = c.r;
-	}
+inline void DrawPoint(int nPos, Color c) {
+	DrawPoint(nPos, c.r, c.g, c.b, c.a);
 }
 
-inline void DrawPoint(int x, int y, BYTE r, BYTE g, BYTE b) {
+inline void DrawPoint(int x, int y, BYTE r, BYTE g, BYTE b, BYTE a = 0) {
 	if (x > nScreenWidth || x<0 || y>nScreenHeight || y < 0) {
 		return;
 	}
-	if (!(r == 255 && g == 255 && b == 255)) {
-		int nPos = (y * nScreenWidth + x) * 4;
-		buffer[nPos++] = b;
-		buffer[nPos++] = g;
-		buffer[nPos++] = r;
-	}
+	int nPos = (y * nScreenWidth + x) * 4;
+	DrawPoint(nPos, r, g, b, a);
+}
+
+inline void DrawPoint(int x, int y, Color c) {
+	DrawPoint(x,y, c.r, c.g, c.b, c.a);
 }
 
 //base
-inline void DrawLine(int x1, int y1, int x2, int y2, BYTE r, BYTE g, BYTE b) {
+inline void DrawLine(int x1, int y1, int x2, int y2, BYTE r, BYTE g, BYTE b, BYTE a = 0) {
 	int x, y, dx, dy;
 	float k, e;
 	if (x1 > x2) {
@@ -579,7 +566,7 @@ inline void DrawLine(int x1, int y1, int x2, int y2, BYTE r, BYTE g, BYTE b) {
 		}
 		x = x1;
 		for (y = y1; y < y2; ++y) {
-			DrawPoint(x, y, r, g, b);
+			DrawPoint(x, y, r, g, b, a);
 		}
 		return ;
 	}
@@ -604,28 +591,16 @@ inline void DrawLine(int x1, int y1, int x2, int y2, BYTE r, BYTE g, BYTE b) {
 	}
 }
 
-inline void DrawLine(Point p1, Point p2, BYTE r, BYTE g, BYTE b) {
-	DrawLine(p1.x, p1.y, p2.x, p2.y, r, g, b);
+inline void DrawLine(Point p1, Point p2, BYTE r, BYTE g, BYTE b, BYTE a = 0) {
+	DrawLine(p1.x, p1.y, p2.x, p2.y, r, g, b,a);
 }
 
 inline void DrawLine(Point p1, Point p2, Color color) {
-	DrawLine(p1.x, p1.y, p2.x, p2.y, color.r,color.g,color.b);
+	DrawLine(p1.x, p1.y, p2.x, p2.y, color.r, color.g, color.b, color.a);
 }
 
-inline void DrawRect(RECT rect, Color color) {
-	int width = rect.right - rect.left;
-	int height = rect.bottom - rect.top;
-
-	for (int i = 0; i < height; ++i) {
-		int posBuffer = (nScreenWidth * (rect.top + i) + rect.left) * 4;//计算每行的起点
-		for (int j = 0; j < width; ++j) {
-			DrawPoint(posBuffer, color);
-			posBuffer += 4;
-		}
-	}
-}
-
-inline void DrawRect(int x, int y, int width, int height, BYTE r, BYTE g, BYTE b) {
+//base
+inline void DrawRect(int x, int y, int width, int height, BYTE r, BYTE g, BYTE b, BYTE a = 0) {
 	for (int i = 0; i < height; ++i) {
 		int posBuffer = (nScreenWidth * (y + i) + x) * 4;//计算每行的起点
 		for (int j = 0; j < width; ++j) {
@@ -634,6 +609,15 @@ inline void DrawRect(int x, int y, int width, int height, BYTE r, BYTE g, BYTE b
 		}
 	}
 }
+
+inline void DrawRect(RECT rect, Color color) {
+	int width = rect.right - rect.left;
+	int height = rect.bottom - rect.top;
+
+	DrawRect(rect.left, rect.top, width, height, color.r, color.g, color.b, color.a);
+}
+
+
 
 //uncheck
 inline void DrawPic(int x, int y, Picture* pic, RECT rect) {
@@ -644,7 +628,27 @@ inline void DrawPic(int x, int y, Picture* pic, RECT rect) {
 		int posBuffer = (nScreenWidth * (y + yBuffer++) + x) * 4;
 		for (xPic = rect.left; xPic < rect.right; ++xPic) {
 			int posPic = pic->getWidth() * yPic + xPic;
+
 			DrawPoint(posBuffer, pic->pChannelR[posPic], pic->pChannelG[posPic], pic->pChannelB[posPic]);
+
+			posBuffer += 4;
+			++posPic;
+		}
+	}
+}
+
+//uncheck
+inline void DrawPicA(int x, int y, Picture* pic, RECT rect) {
+	int xBuffer = 0, yBuffer = 0;
+	int xPic, yPic;
+
+	for (yPic = rect.top; yPic < rect.bottom; ++yPic) {
+		int posBuffer = (nScreenWidth * (y + yBuffer++) + x) * 4;
+		for (xPic = rect.left; xPic < rect.right; ++xPic) {
+			int posPic = pic->getWidth() * yPic + xPic;
+
+			DrawPoint(posBuffer, pic->pChannelR[posPic], pic->pChannelG[posPic], pic->pChannelB[posPic], pic->pChannelA[posPic]);
+			
 			posBuffer += 4;
 			++posPic;
 		}
@@ -718,8 +722,13 @@ inline void DrawPic(int x, int y, Picture* pic) {
 		//不绘制
 		return;
 	}
-
-	DrawPic(_x, _y, pic, rect);
+	if (pic->isIncludeAlpha()) {
+		DrawPicA(_x, _y, pic, rect);
+	}
+	else {
+		DrawPic(_x, _y, pic, rect);
+	}
+	
 }
 
 //Description:
@@ -893,6 +902,16 @@ void Draw() {
 	//DrawLine(300,300, 600, 600, 255, 0, 0);
 	//DrawLine(300, 300, 0, 600, 255, 0, 0);
 
+	/*
+	Object obj;
+	obj.x = 50;
+	obj.y = 50;
+	obj.z = 1;
+	//obj.setAngle(20);
+	obj.pic = &picTest;
+	drawList.clear();
+	AddDrawObject(&obj);
+	*/
 	/*
 	Object obj;
 	obj.point.x = 10;
@@ -1444,10 +1463,12 @@ int _CreateWindow(const char* title, int nWidth, int nHeight) {
 	//创建内存缓冲画板
 	HDC hDC = GetDC(hWnd);
 	hMemDC = CreateCompatibleDC(hDC);//创建与窗口兼容的内存设备上下文环境(创建内存缓冲画板)
-	BITMAPINFO bi = { { sizeof(BITMAPINFOHEADER), nWidth, -nHeight, 1, 32, BI_RGB,
+	BITMAPINFO bi = { { sizeof(BITMAPINFOHEADER), nWidth, -nHeight, 1, 32, BI_RGB,//BI_BITFIELDS 无法使用
 		nWidth * nHeight * 4, 0, 0, 0, 0 } };
 	LPVOID ptr;
 	hBitmapBuffer = CreateDIBSection(hMemDC, &bi, DIB_RGB_COLORS, &ptr, 0, 0);//创建缓冲区画布
+	DebugPrintln("%d",GetLastError());
+
 	hBitmapDevice = (HBITMAP)SelectObject(hMemDC, hBitmapBuffer);//选择缓冲区画布到缓冲区画板，并保留原始画布
 	buffer = (BYTE*)ptr;
 	ReleaseDC(hWnd, hDC);

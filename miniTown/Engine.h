@@ -411,9 +411,10 @@ public:
 	Color(int R, int G, int B, int A = 0) {
 		r = R, g = G, b = B, a = A;
 	}
+	/*
 	bool isTransparent() {
 		return (r == 255 && g == 255 && b == 255);
-	}
+	}*/
 	COLORREF getColorRef() {
 		return RGB(r, g, b);
 	}
@@ -427,7 +428,7 @@ public:
 	int nWidth = 0;
 	int nHeight = 0;
 	int nWidthBytes = 0;//每行字节数
-	int nBitsPixel = 0;//每个像素所占位数
+	int nBitCount = 0;//每个像素所占比特数
 	bool isBackward = true;
 	Point centerPoint;
 
@@ -504,13 +505,17 @@ public:
 		return nHeight;
 	}
 	int getBitsPixel() {
-		return nBitsPixel;
+		return nBitCount;
 	}
 	int getWidthBytes() {
 		return nWidthBytes;
 	}
 	int getErrorCode() {
 		return nErrorCode;
+	}
+
+	bool isIncludeAlpha() {
+		return pChannelA != NULL;
 	}
 
 #define Ch_R 0
@@ -597,59 +602,122 @@ private:
 		centerPoint.x = nWidth / 2;
 		centerPoint.y = nHeight / 2;
 
+		nBitCount = infoHeader.biBitCount;
+
+		nImgSize = nWidth * nHeight;
+
+		nWidthBytes = (((nWidth * nBitCount) + 31) >> 5) << 2;
+
 		switch (infoHeader.biCompression) {
 		case BI_RGB: {
 			//不压缩
-			//nDataSize = nWidth * nHeight * 4;
-			nImgSize = nWidth * nHeight;
-			nWidthBytes = ((nWidth * 3 + 3) / 4 * 4);
-			//pData = new BYTE[nDataSize];
-			pChannelR = new BYTE[nImgSize];
-			pChannelG = new BYTE[nImgSize];
-			pChannelB = new BYTE[nImgSize];
-			//pChannelA = new BYTE[nImgSize];
-			if (pChannelR == NULL || pChannelG == NULL || pChannelB == NULL /*|| pChannelA==NULL*/) {
-				fclose(fp);
-				nErrorCode = -4;
-				return nErrorCode;
-			}
-			if (isBackward) {
-				//倒立
-				for (int i = nHeight - 1; i >= 0; --i) {
-					for (int j = 0; j < nWidth; ++j) {
-						if (fread(&pChannelB[i * nWidth + j], sizeof(BYTE), 1, fp) != 1) {
-							nErrorCode = -5;
-							return nErrorCode;
+			if (nBitCount == 24) {
+				pChannelR = new BYTE[nImgSize];
+				pChannelG = new BYTE[nImgSize];
+				pChannelB = new BYTE[nImgSize];
+				//pChannelA = new BYTE[nImgSize];
+				if (pChannelR == NULL || pChannelG == NULL || pChannelB == NULL /*|| pChannelA==NULL*/) {
+					fclose(fp);
+					nErrorCode = -4;
+					return nErrorCode;
+				}
+				if (isBackward) {
+					//倒立
+					for (int i = nHeight - 1; i >= 0; --i) {
+						for (int j = 0; j < nWidth; ++j) {
+							if (fread(&pChannelB[i * nWidth + j], sizeof(BYTE), 1, fp) != 1) {
+								nErrorCode = -5;
+								return nErrorCode;
+							}
+							if (fread(&pChannelG[i * nWidth + j], sizeof(BYTE), 1, fp) != 1) {
+								nErrorCode = -5;
+								return nErrorCode;
+							}
+							if (fread(&pChannelR[i * nWidth + j], sizeof(BYTE), 1, fp) != 1) {
+								nErrorCode = -5;
+								return nErrorCode;
+							}
 						}
-						if (fread(&pChannelG[i * nWidth + j], sizeof(BYTE), 1, fp) != 1) {
-							nErrorCode = -5;
-							return nErrorCode;
-						}
-						if (fread(&pChannelR[i * nWidth + j], sizeof(BYTE), 1, fp) != 1) {
-							nErrorCode = -5;
-							return nErrorCode;
-						}
+						fseek(fp, nWidthBytes - nWidth * nBitCount / 8, SEEK_CUR);
 					}
-					fseek(fp, nWidthBytes - nWidth * 3, SEEK_CUR);
+				}
+				else {
+					for (int i = 0; i < nHeight; ++i) {
+						for (int j = 0; j < nWidth; ++j) {
+							if (fread(&pChannelB[i * nWidth + j], sizeof(BYTE), 1, fp) != 1) {
+								nErrorCode = -5;
+								return nErrorCode;
+							}
+							if (fread(&pChannelG[i * nWidth + j], sizeof(BYTE), 1, fp) != 1) {
+								nErrorCode = -5;
+								return nErrorCode;
+							}
+							if (fread(&pChannelR[i * nWidth + j], sizeof(BYTE), 1, fp) != 1) {
+								nErrorCode = -5;
+								return nErrorCode;
+							}
+						}
+						fseek(fp, nWidthBytes - nWidth * nBitCount / 8, SEEK_CUR);
+					}
 				}
 			}
 			else {
-				for (int i = 0; i < nHeight; ++i) {
-					for (int j = 0; j < nWidth; ++j) {
-						if (fread(&pChannelB[i * nWidth + j], sizeof(BYTE), 1, fp) != 1) {
-							nErrorCode = -5;
-							return nErrorCode;
+				//32bit
+				pChannelR = new BYTE[nImgSize];
+				pChannelG = new BYTE[nImgSize];
+				pChannelB = new BYTE[nImgSize];
+				pChannelA = new BYTE[nImgSize];
+				if (pChannelR == NULL || pChannelG == NULL || pChannelB == NULL || pChannelA == NULL) {
+					fclose(fp);
+					nErrorCode = -4;
+					return nErrorCode;
+				}
+				if (isBackward) {
+					//倒立
+					for (int i = nHeight - 1; i >= 0; --i) {
+						for (int j = 0; j < nWidth; ++j) {
+							if (fread(&pChannelB[i * nWidth + j], sizeof(BYTE), 1, fp) != 1) {
+								nErrorCode = -5;
+								return nErrorCode;
+							}
+							if (fread(&pChannelG[i * nWidth + j], sizeof(BYTE), 1, fp) != 1) {
+								nErrorCode = -5;
+								return nErrorCode;
+							}
+							if (fread(&pChannelR[i * nWidth + j], sizeof(BYTE), 1, fp) != 1) {
+								nErrorCode = -5;
+								return nErrorCode;
+							}
+							if (fread(&pChannelA[i * nWidth + j], sizeof(BYTE), 1, fp) != 1) {
+								nErrorCode = -5;
+								return nErrorCode;
+							}
 						}
-						if (fread(&pChannelG[i * nWidth + j], sizeof(BYTE), 1, fp) != 1) {
-							nErrorCode = -5;
-							return nErrorCode;
-						}
-						if (fread(&pChannelR[i * nWidth + j], sizeof(BYTE), 1, fp) != 1) {
-							nErrorCode = -5;
-							return nErrorCode;
-						}
+						fseek(fp, nWidthBytes - nWidth * nBitCount / 8, SEEK_CUR);
 					}
-					fseek(fp, nWidthBytes - nWidth * 3, SEEK_CUR);
+				}
+				else {
+					for (int i = 0; i < nHeight; ++i) {
+						for (int j = 0; j < nWidth; ++j) {
+							if (fread(&pChannelB[i * nWidth + j], sizeof(BYTE), 1, fp) != 1) {
+								nErrorCode = -5;
+								return nErrorCode;
+							}
+							if (fread(&pChannelG[i * nWidth + j], sizeof(BYTE), 1, fp) != 1) {
+								nErrorCode = -5;
+								return nErrorCode;
+							}
+							if (fread(&pChannelR[i * nWidth + j], sizeof(BYTE), 1, fp) != 1) {
+								nErrorCode = -5;
+								return nErrorCode;
+							}
+							if (fread(&pChannelA[i * nWidth + j], sizeof(BYTE), 1, fp) != 1) {
+								nErrorCode = -5;
+								return nErrorCode;
+							}
+						}
+						fseek(fp, nWidthBytes - nWidth * nBitCount / 8, SEEK_CUR);
+					}
 				}
 			}
 			break;
@@ -666,6 +734,66 @@ private:
 		}
 		case BI_BITFIELDS: {
 			//比特域用于16/32位
+			if (nBitCount == 32) {
+				//32bit B8 G8 R8 A8
+				pChannelR = new BYTE[nImgSize];
+				pChannelG = new BYTE[nImgSize];
+				pChannelB = new BYTE[nImgSize];
+				pChannelA = new BYTE[nImgSize];
+				if (pChannelR == NULL || pChannelG == NULL || pChannelB == NULL || pChannelA == NULL) {
+					fclose(fp);
+					nErrorCode = -4;
+					return nErrorCode;
+				}
+				if (isBackward) {
+					//倒立
+					for (int i = nHeight - 1; i >= 0; --i) {
+						for (int j = 0; j < nWidth; ++j) {
+							if (fread(&pChannelB[i * nWidth + j], sizeof(BYTE), 1, fp) != 1) {
+								nErrorCode = -5;
+								return nErrorCode;
+							}
+							if (fread(&pChannelG[i * nWidth + j], sizeof(BYTE), 1, fp) != 1) {
+								nErrorCode = -5;
+								return nErrorCode;
+							}
+							if (fread(&pChannelR[i * nWidth + j], sizeof(BYTE), 1, fp) != 1) {
+								nErrorCode = -5;
+								return nErrorCode;
+							}
+							if (fread(&pChannelA[i * nWidth + j], sizeof(BYTE), 1, fp) != 1) {
+								nErrorCode = -5;
+								return nErrorCode;
+							}
+						}
+						fseek(fp, nWidthBytes - nWidth * nBitCount / 8, SEEK_CUR);
+					}
+				}
+				else {
+					for (int i = 0; i < nHeight; ++i) {
+						for (int j = 0; j < nWidth; ++j) {
+							if (fread(&pChannelB[i * nWidth + j], sizeof(BYTE), 1, fp) != 1) {
+								nErrorCode = -5;
+								return nErrorCode;
+							}
+							if (fread(&pChannelG[i * nWidth + j], sizeof(BYTE), 1, fp) != 1) {
+								nErrorCode = -5;
+								return nErrorCode;
+							}
+							if (fread(&pChannelR[i * nWidth + j], sizeof(BYTE), 1, fp) != 1) {
+								nErrorCode = -5;
+								return nErrorCode;
+							}
+							if (fread(&pChannelA[i * nWidth + j], sizeof(BYTE), 1, fp) != 1) {
+								nErrorCode = -5;
+								return nErrorCode;
+							}
+						}
+						fseek(fp, nWidthBytes - nWidth * nBitCount / 8, SEEK_CUR);
+					}
+				}
+			}
+			
 			break;
 		}
 		case BI_JPEG: {

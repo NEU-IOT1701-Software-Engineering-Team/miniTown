@@ -299,6 +299,7 @@ void AddUI() {
 //≤‚ ‘ «Î±£¡Ù------°˝------
 EditBox editBox;
 Label lb2;
+Picture picTest;
 void EBChange() {
 	MessageBox(NULL, TEXT(editBox.getText()), TEXT("Ã· æ"), 0);
 }
@@ -318,6 +319,9 @@ int main()
 	editBox.setText((char*)"Hell");
 	editBox.lpValueChange = EBChange;
 	AddEditBox(&editBox);
+
+	
+	picTest.loadImage("pic\\test3.bmp");
 
 	//≤‚ ‘  «Î±£¡Ù------°¸------
 

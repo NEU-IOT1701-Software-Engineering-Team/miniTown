@@ -336,6 +336,7 @@ extern Picture picMoon;
 extern Picture picKingHouse;
 extern Picture picLove;
 extern Picture picChild;
+extern Picture picTest;
 
 
 extern int NowHouseSum;
