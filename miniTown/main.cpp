@@ -157,7 +157,6 @@ Button b6;
 Button b7;
 Button b8;
 Button b9;
-Label lb2;
 Label lb3;
 
 EditBox ricePriceEditBox;
@@ -217,9 +216,7 @@ void SetAField()
 {
 	king.SetAField();
 }
-void EBChange() {
-	MessageBox(NULL,TEXT(editBox.getText()), TEXT("提示"), 0);
-}
+
 void AddUI() {
 	int ButtonWidth = 100;
 	int ButtonHeight = 50;
@@ -297,19 +294,15 @@ void AddUI() {
 	b9.setBackgroundColor(COLOR_BLACK);
 	b9.lpClickL = SetAField;
 	AddButton(&b9);
-
-	lb2.title = (char*)"Label";
-	lb2.setRect(400, 400, 80, 40);
-	lb2.setForegroundColor({ 0,255,0 });
-	lb2.setBackgroundColor(COLOR_BLACK);
-	//b2.lpClickL = func;
-	AddLabel(&lb2);
-
-
-
-
-	
 }
+
+//测试UI 请保留------------
+EditBox editBox;
+Label lb2;
+void EBChange() {
+	MessageBox(NULL, TEXT(editBox.getText()), TEXT("提示"), 0);
+}
+//测试UI 请保留------------
 int main()
 {
 	
@@ -332,9 +325,6 @@ int main()
 	editBox.lpValueChange = EBChange;
 	AddEditBox(&editBox);
 
-	editBox2.setRect(300, 150, 100, 25);
-	editBox2.setText((char*)"H123l");
-	AddEditBox(&editBox2);
 
 	AddUI();
 
