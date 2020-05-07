@@ -13,10 +13,12 @@
 #include<iostream>
 #include<time.h>
 #include<tchar.h>
+#include<xstring>
+#include<string>
 #include"Debug.h"
 #include"Engine.h"
 
-
+using namespace std;
 
 //----------------------------------
 //调试使用的全局变量
@@ -417,6 +419,8 @@ bool IsTheHouseHasOwner(House* house); //判断这个房子是不是被人买了
 void ShowSky();
 
 
+
+void ResourceCount(string& Str);
 void ResourceCount();//对村民拥有的资源进行统计
 
 bool IsCloseTo(Object* A, Object* B);  //判断两个Object是否靠近

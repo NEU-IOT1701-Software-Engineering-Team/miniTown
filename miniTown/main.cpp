@@ -158,6 +158,7 @@ Button b7;
 Button b8;
 Button b9;
 Label lb3;
+Label ResourceCountLable;
 
 EditBox ricePriceEditBox;
 EditBox housePriceEditBox;
@@ -217,14 +218,32 @@ void SetAField()
 	king.SetAField();
 }
 
+void GetResourceCount()
+{
+	string str;
+	ResourceCount(str);
+	char* cstr = new char(str.size()+1);
+	memset(cstr, 0, str.size()+1);
+	str.copy(cstr, str.size()+1, 0);
+	
+	ResourceCountLable.title = cstr;
+
+	//ResourceCountLable.title=(char*)"ResourceCount\n";
+}
+
 void AddUI() {
 	int ButtonWidth = 100;
 	int ButtonHeight = 50;
 	b.title = (char*)"ResourceCount";
 	b.setRect(GAME_SHOW_WIDTH, 0, ButtonWidth, ButtonHeight);
 	b.setForegroundColor({ 255,0,0 });
-	b.lpClickL = ResourceCount;
+	b.lpClickL = GetResourceCount;
 	AddButton(&b);
+
+	ResourceCountLable.setRect(GAME_SHOW_WIDTH+ButtonWidth, ButtonHeight, ButtonWidth*3, ButtonHeight*5);
+	ResourceCountLable.setForegroundColor({ 0,255,0 });
+	ResourceCountLable.setBackgroundColor(COLOR_BLACK);
+	AddLabel(&ResourceCountLable);
 
 	b2.title = (char*)"AddMoney";
 	b2.setRect(GAME_SHOW_WIDTH, ButtonHeight, ButtonWidth, ButtonHeight);
@@ -294,6 +313,8 @@ void AddUI() {
 	b9.setBackgroundColor(COLOR_BLACK);
 	b9.lpClickL = SetAField;
 	AddButton(&b9);
+
+	
 }
 
 //≤‚ ‘ «Î±£¡Ù------°˝------
@@ -377,7 +398,8 @@ int main()
 		{
 			DayTimeNow = 0;
 			cout << "Day Out!" << endl;
-			ResourceCount();
+			string str;
+			ResourceCount(str);
 		}
 		DayTimeNowRate = DayTimeNow / (float)DayTime;
 		start = stop;
@@ -490,7 +512,8 @@ void KeyControl()
 		{
 			if (pressL == false)
 			{
-				ResourceCount();
+				string str;
+				ResourceCount(str);
 			}
 			pressL = true;
 		}

@@ -301,6 +301,91 @@ void AddField(int x, int y)
 	NowFieldSum++;
 }
 
+void ResourceCount(string& Str)
+{
+	int moneyCount = 0;
+	int riceCount = 0;
+	int woodCount = 0;
+	int FinishHouseCount = 0;
+	int UnFinishHouseCount = 0;
+
+	for (int i = 0; i < NowHouseSum; i++)
+	{
+		if (house[i].isUsed == true)
+		{
+			riceCount += house[i].StoneRiceSum;
+			woodCount += house[i].StoneWoodSum;
+		}
+	}
+
+	for (int i = 0; i < NowFarmerSum; i++)
+	{
+		moneyCount += farmer[i].money;
+	}
+	for (int i = 0; i < NowBuilderSum; i++)
+	{
+		moneyCount += builder[i].money;
+	}
+	moneyCount += king.money;
+
+	for (int i = 0; i < NowHouseSum; i++)
+	{
+		if (house[i].buildTime == HouseRequireBuildTime)
+		{
+			FinishHouseCount++;
+		}
+		else
+		{
+			UnFinishHouseCount++;
+		}
+	}
+
+	char  tempStr[100];
+
+	Str += "ResourceCount\n"; 
+	sprintf(tempStr, "money %d/nrice %d/nhouse %d/nUnfinish house %d/n", moneyCount,riceCount,woodCount,FinishHouseCount,UnFinishHouseCount);
+	Str += tempStr;
+
+
+
+	cout << "Farmer:" << endl;
+	cout << "id\tsex\tmoney\tage\trice\twFood\twSex\tisMarry\tHouseId\toHouseSum" << endl;
+	for (int i = 0; i < NowFarmerSum; i++)
+	{
+		if (farmer[i].isDead == false)
+		{
+			cout << farmer[i].id << "\t" << ((farmer[i].Sex == 1) ? "man" : "woman") << "\t" << farmer[i].money << "\t" << farmer[i].age << "\t" << farmer[i].belongHouse->StoneRiceSum
+				<< "\t" << farmer[i].wantFoodLevel << "\t" << farmer[i].wantSexLevel << "\t" << farmer[i].isMarriage << "\t" << farmer[i].belongHouse->id << "\t" << farmer[i].NowOwnHouseSum << endl;
+
+		}
+	}
+	cout << "Builder:" << endl;
+	cout << "id\tsex\tmoney\tage\trice\tHouse\tWood\twFood\twSex\tisMarry\tHouseId\toHouseSum" << endl;
+	for (int i = 0; i < NowBuilderSum; i++)
+	{
+		if (builder[i].isDead == false)
+		{
+			cout << builder[i].id << "\t" << ((builder[i].Sex == 1) ? "man" : "woman") << "\t" << builder[i].money << "\t" << builder[i].age << "\t" << builder[i].belongHouse->StoneRiceSum
+				<< "\t" << builder[i].OwnHouseCount << "\t" << builder[i].belongHouse->StoneWoodSum << "\t" << builder[i].wantFoodLevel << "\t" << builder[i].wantSexLevel << "\t" << builder[i].isMarriage << "\t" << builder[i].belongHouse->id << "\t" << builder[i].NowOwnHouseSum << endl;
+
+		}
+	}
+	cout << "Child:" << endl;
+	cout << "id\tsex\tage\trice\twFood\tHouseId" << endl;
+	for (int i = 0; i < NowChildSum; i++)
+	{
+		if (child[i].isDead == false)
+		{
+			cout << child[i].id << "\t" << ((child[i].Sex == 1) ? "man" : "woman") << "\t" << child[i].age << "\t" << child[i].belongHouse->StoneRiceSum << "\t" << child[i].wantFoodLevel << "\t" << child[i].belongHouse->id << endl;
+
+		}
+	}
+	cout << "King:" << endl;
+	cout << "sex\tmoney\tage\tHouse\tRice\twFood" << endl;
+	cout << king.Sex << "\t" << king.money << "\t" << king.age << "\t" << king.HaveEmptyHouseSum << "\t" << king.belongHouse->StoneRiceSum << "\t" << king.wantFoodLevel << endl;
+	cout << "==================" << endl;
+
+}
 
 void ResourceCount()//对村民拥有的资源进行统计
 {
