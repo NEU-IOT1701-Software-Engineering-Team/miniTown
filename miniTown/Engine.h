@@ -8,6 +8,7 @@
 #include <vector>
 #include <list>
 #include <mutex>
+#include <string>
 #include <algorithm>
 #include <Digitalv.h>
 #include "Debug.h"
@@ -18,7 +19,7 @@ class Object;
 class Color;
 class Picture;
 
-extern const char* title;
+extern const char* WindowTitle;
 extern  int nScreenWidth;
 extern  int nScreenHeight;
 extern BYTE screen_keys[512];
@@ -202,6 +203,18 @@ struct Point {
 	void operator+(struct Point p2) {
 		this->x += p2.x;
 		this->y += p2.y;
+	}
+	void operator-(struct Point p2) {
+		this->x -= p2.x;
+		this->y -= p2.y;
+	}
+	void operator-(RECT rect) {
+		this->x -= rect.left;
+		this->y -= rect.top;
+	}
+	void operator+(RECT rect) {
+		this->x += rect.left;
+		this->y += rect.top;
 	}
 	struct Point& operator+=(const struct Point& p2) {
 		//很迷
@@ -711,15 +724,15 @@ void AddDrawObject(Object* object);
 //Return Value:
 //	NONE
 void RemoveDrawObecjt(Object* object);
-void freeSomethingForEngine();
 
 
-struct Button
-{
 #define DEFAULT_BC			COLOR_WHITE
 #define DEFAULT_FC			COLOR_BLACK
 #define DEFAULT_FOCUS_BC	{201,218,248}
 #define DEFAULT_DOWN_BC		{109,158,235}
+//UI 按钮
+struct Button
+{
 	char* title;
 	RECT rect;
 	Color currentBackgroundColor;
@@ -811,7 +824,16 @@ struct Button
 	RECT getRect() {
 		return rect;
 	}
-	
+
+	//判断被点击的点是否再rect内
+	bool operator==(Point point) {
+		return point.x <= rect.right && point.x >= rect.left && point.y <= rect.bottom && point.y >= rect.top;
+	}
+
+private:
+	Color foregroundColor;
+	Color backgroundColor;
+
 	inline void _initALL() {
 		memset(this, 0, sizeof(*this));
 		currentBackgroundColor = DEFAULT_BC;
@@ -822,17 +844,6 @@ struct Button
 		enabled = true;
 		isVisible = true;
 	}
-
-	//判断被点击的点是否再rect内
-	bool operator==(Point point) {
-		return point.x <= rect.right && point.x >= rect.left && point.y <= rect.bottom && point.y >= rect.top;
-	}
-
-
-private:
-	
-	Color foregroundColor;
-	Color backgroundColor;
 };
 typedef struct Button Button;
 
@@ -851,3 +862,337 @@ void AddButton(Button* button);
 //Return Value:
 //	NONE
 void RemoveButton(Button* button);
+
+
+//UI 标签
+struct Label {
+	char* title;
+	RECT rect;
+	Color currentBackgroundColor;
+	//暂时不需要响应事件
+
+	bool enabled;//是否可用
+	bool isVisible;//是否可见
+
+	//Description:
+	//	默认构造函数。
+	//Paramter: 
+	//	NONE
+	//Return Value:
+	//	NONE
+	struct Label() {
+		_initALL();
+	}
+	
+	//Description:
+	//	默认构造函数。
+	//Paramter: 
+	//	char* tTitle 标签标题
+	//	RECT tRect 标签大小以及位置
+	//Return Value:
+	//	NONE
+	struct Label(char* tTitle, RECT tRect) {
+		_initALL();
+		title = tTitle;
+		rect = tRect;
+	}
+
+	//Description:
+	//	默认构造函数。
+	//Paramter: 
+	//	char* tTitle 标签标题
+	//	int x, int y 标签位置
+	//	int width, int height 标签大小
+	//Return Value:
+	//	NONE
+	struct Label(char* tTitle, int x, int y, int width, int height) {
+		_initALL();
+		title = tTitle;
+		rect = { x,y,x + width,y + height };
+	}
+
+	//Description:
+	//	默认构造函数。
+	//Paramter: 
+	//	char* tTitle 标签标题
+	//	RECT tRect 标签大小以及位置
+	//	Color tBackgroundColor 背景色
+	//	Color tForegroundColor 前景色（文字颜色）
+	//Return Value:
+	//	NONE
+	struct Label(char* tTitle, RECT tRect, Color tBackgroundColor, Color tForegroundColor) {
+		_initALL();
+		title = tTitle;
+		rect = tRect;
+		backgroundColor = tBackgroundColor;
+		currentBackgroundColor = tBackgroundColor;
+		foregroundColor = tForegroundColor;
+	}
+
+	//Description:
+	//	默认构造函数。
+	//Paramter: 
+	//	char* tTitle 标签标题
+	//	int x, int y 标签位置
+	//	int width, int height 标签大小
+	//	Color tBackgroundColor 背景色
+	//	Color tForegroundColor 前景色（文字颜色）
+	//Return Value:
+	//	NONE
+	struct Label(char* tTitle, int x, int y, int width, int height, Color tBackgroundColor, Color tForegroundColor) {
+		_initALL();
+		title = tTitle;
+		rect = { x,y,x + width,y + height };
+		backgroundColor = tBackgroundColor;
+		currentBackgroundColor = tBackgroundColor;
+		foregroundColor = tForegroundColor;
+	}
+
+	//Description:
+	//	设置背景颜色。
+	//Paramter: 
+	//	Color color 背景颜色
+	//Return Value:
+	//	NONE
+	void setBackgroundColor(Color color) {
+		backgroundColor = color;
+		currentBackgroundColor = color;
+	}
+
+	//Description:
+	//	设置背景颜色。
+	//Paramter: 
+	//	BYTE r, BYTE g, BYTE b 背景颜色
+	//Return Value:
+	//	NONE
+	void setBackgroundColor(BYTE r, BYTE g, BYTE b) {
+		backgroundColor = { r,g,b };
+		currentBackgroundColor = { r,g,b };
+	}
+
+	//Description:
+	//	获取背景颜色。
+	//Paramter: 
+	//	NONE
+	//Return Value:
+	//	Color 背景颜色
+	Color getBackgroundColor() {
+		return backgroundColor;
+	}
+
+	//Description:
+	//	获取前景颜色。
+	//Paramter: 
+	//	NONE
+	//Return Value:
+	//	Color 前景颜色
+	void setForegroundColor(Color color) {
+		foregroundColor = color;
+	}
+
+	//Description:
+	//	设置前景颜色。
+	//Paramter: 
+	//	BYTE r, BYTE g, BYTE b 颜色
+	//Return Value:
+	//	NONE
+	void setForegroundColor(BYTE r, BYTE g, BYTE b) {
+		foregroundColor = { r,g,b };
+	}
+
+	//Description:
+	//	获取前景颜色。
+	//Paramter: 
+	//	NONE
+	//Return Value:
+	//	Color 前景颜色
+	Color getForegroundColor() {
+		return foregroundColor;
+	}
+
+	void setRect(RECT tRect) {
+		rect = tRect;
+	}
+	void setRect(Point point) {
+		rect = { point.x,point.y, rect.right ,rect.bottom };
+	}
+	void setRect(int width, int height) {
+		rect = { rect.left,rect.top,rect.left + width,rect.top + height };
+	}
+	void setRect(int x, int y, int width, int height) {
+		rect = { x,y,x + width,y + height };
+	}
+
+	Point getPoint() {
+		return Point(rect.left, rect.top);
+	}
+	RECT getRect() {
+		return rect;
+	}
+private:
+	Color foregroundColor;
+	Color backgroundColor;
+
+	inline void _initALL() {
+		memset(this, 0, sizeof(*this));
+		currentBackgroundColor = DEFAULT_BC;
+		backgroundColor = DEFAULT_BC;
+		enabled = true;
+		isVisible = true;
+	}
+};
+typedef struct Label Label;
+
+//Description:
+//	增加一个标签对象,如果该对象已被加入，则不会重复加入.
+//Paramter: 
+//	Label* label 将要加入对象的地址
+//Return Value:
+//	NONE
+void AddLabel(Label* label);
+
+//Description:
+//	从标签对象列表中删掉一个对象。
+//Paramter: 
+//	Label* label 将要删除的对象地址
+//Return Value:
+//	NONE
+void RemoveLabel(Label* label);
+
+
+//UI 编辑框
+struct EditBox : public Label
+{
+	std::string text;
+	int nPosCaret;//光标位置
+	Point pointCaret;//光标坐标
+	bool isShowCaret;//是否显示光标
+	int sumFPS;//光标闪烁
+	bool stateCaret;//光标当前状态
+	
+	//Description:
+	//	默认构造函数。
+	//Paramter: 
+	//	NONE
+	//Return Value:
+	//	NONE
+	EditBox() {
+		_initAll();
+	}
+
+	//Description:
+	//	获取编辑框内容 返回指向字符串的首地址
+	//Paramter: 
+	//	NONE
+	//Return Value:
+	//	const char *
+	const char * getText() {
+		return text.c_str();
+	}
+
+	//Description:
+	//	获取编辑框内容 通过参数返回指向字符串的首地址
+	//Paramter: 
+	//	char ** pValue
+	//Return Value:
+	//	int 字符串长度
+	int getText(char ** pValue) {
+		*pValue = (char*)text.c_str();
+		return text.length();
+	}
+
+	//Description:
+	//	获取编辑框内容 事先已分配好地址
+	//Paramter: 
+	//	char* value 分配的首地址
+	//	int length 分配的长度
+	//Return Value:
+	//	int 实际复制字符串长度
+	int getText(char* value, int length) {
+		if (length >= text.length()) {
+			//传入地址的长度足够
+			memcpy(value, text.c_str(), text.length() *sizeof(char));
+			return  text.length();
+		}
+		else {
+			//不足
+			memcpy(value, text.c_str(), length * sizeof(char));
+			return  length;
+		}
+		
+	}
+
+	//Description:
+	//	获取编辑框内容长度
+	//Paramter: 
+	//	NONE
+	//Return Value:
+	//	int 长度
+	int getLength() {
+		return  text.length();
+	}
+
+	//Description:
+	//	清空编辑框内容
+	//Paramter: 
+	//	NONE
+	//Return Value:
+	//	NONE
+	void clear() {
+		text.clear();
+		nPosCaret = 0;
+		pointCaret.x = 0;
+	}
+
+
+	void setText(char* str) {
+		text.clear();
+		text.insert(0,str);
+	}
+	void moveCaret(int nOff) {
+		nPosCaret += nOff;
+		if (nPosCaret < 0) {
+			nPosCaret = 0;
+			pointCaret.x =0;
+		}
+		else if(nPosCaret>text.length()){
+			nPosCaret = text.length();
+			pointCaret.x = text.length() * 4;
+		}
+		else {
+			pointCaret.x += 4 * nOff;
+		}
+	}
+
+	//判断被点击的点是否再rect内
+	bool operator==(Point point) {
+		return point.x <= rect.right && point.x >= rect.left && point.y <= rect.bottom && point.y >= rect.top;
+	}
+private:
+	void _initAll() {
+		nPosCaret = 0;
+		sumFPS = 0;
+		isShowCaret = false;
+		stateCaret = false;
+	}
+};
+typedef struct EditBox EditBox;
+
+//Description:
+//	增加一个编辑框对象,如果该对象已被加入，则不会重复加入.
+//Paramter: 
+//	EditBox* editBox 将要加入对象的地址
+//Return Value:
+//	NONE
+void AddEditBox(EditBox* editBox);
+
+//Description:
+//	从编辑框对象列表中删掉一个对象。
+//Paramter: 
+//	EditBox* editBox 将要删除的对象地址
+//Return Value:
+//	NONE
+void RemoveEditBox(EditBox* editBox);
+
+
+void freeSomethingForEngine();
