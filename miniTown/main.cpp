@@ -296,35 +296,35 @@ void AddUI() {
 	AddButton(&b9);
 }
 
-//≤‚ ‘UI «Î±£¡Ù------------
+//≤‚ ‘ «Î±£¡Ù------°˝------
 EditBox editBox;
 Label lb2;
 void EBChange() {
 	MessageBox(NULL, TEXT(editBox.getText()), TEXT("Ã· æ"), 0);
 }
-//≤‚ ‘UI «Î±£¡Ù------------
+//≤‚ ‘ «Î±£¡Ù------°¸------
 int main()
 {
-	
-	if (SoundOn)
-	{
-		player.playSoundLoop("sound/01 Bloom.mp3", BackgroundMusicVolume);
-	}
-
-
+	//≤‚ ‘ «Î±£¡Ù------°˝------
 	lb2.title = (char*)"id\tsex\n0\tman";
 	lb2.setRect(400, 400, 80, 40);
-	lb2.setForegroundColor(  { 0,255,0 });
-	lb2.setBackgroundColor( COLOR_BLACK);
+	lb2.setForegroundColor({ 0,255,0 });
+	lb2.setBackgroundColor(COLOR_BLACK);
 	//b2.lpClickL = func;
 	AddLabel(&lb2);
 
-	
+
 	editBox.setRect(300, 300, 100, 25);
 	editBox.setText((char*)"Hell");
 	editBox.lpValueChange = EBChange;
 	AddEditBox(&editBox);
 
+	//≤‚ ‘  «Î±£¡Ù------°¸------
+
+	if (SoundOn)
+	{
+		player.playSoundLoop("sound/01 Bloom.mp3", BackgroundMusicVolume);
+	}
 
 	AddUI();
 
