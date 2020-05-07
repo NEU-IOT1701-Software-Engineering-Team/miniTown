@@ -144,16 +144,8 @@ void initObject()
 
 }
 
-Label lb2;
-EditBox editBox;
-EditBox editBox2;
-void func(void) {
-	//MessageBox(NULL, TEXT("Button is click!"), TEXT("ÌבÊ¾"), 0);
-	lb2.rect.left+=25;
-	lb2.rect.right += 25;
-	lb2.rect.top+=25;
-	lb2.rect.bottom += 25;
-}
+
+
 
 
 Button b;
@@ -165,6 +157,12 @@ Button b6;
 Button b7;
 Button b8;
 Button b9;
+Label lb2;
+Label lb3;
+
+EditBox ricePriceEditBox;
+EditBox housePriceEditBox;
+EditBox FirstPayHousePriceEditBox;
 
 void MakeMoney()
 {
@@ -252,12 +250,24 @@ void AddUI() {
 	b4.lpClickL = SetRicePrice;
 	AddButton(&b4);
 
+	ricePriceEditBox.setRect(GAME_SHOW_WIDTH+ButtonWidth, ButtonHeight * 3, ButtonWidth, ButtonHeight);
+	char strRicePrice[20];
+	_itoa(RicePrice, strRicePrice, 10);
+	ricePriceEditBox.setText(strRicePrice);
+	AddEditBox(&ricePriceEditBox);
+
 	b5.title = (char*)"SetHousePrice";
 	b5.setRect(GAME_SHOW_WIDTH, ButtonHeight * 4, ButtonWidth, ButtonHeight);
 	b5.setForegroundColor({ 255,0,0 });
 	b5.setBackgroundColor(COLOR_BLACK);
 	b5.lpClickL = SetHousePrice;
 	AddButton(&b5);
+
+	housePriceEditBox.setRect(GAME_SHOW_WIDTH + ButtonWidth, ButtonHeight * 4, ButtonWidth, ButtonHeight);
+	char strHousePrice[20];
+	_itoa(HousePrice, strHousePrice, 10);
+	housePriceEditBox.setText(strHousePrice);
+	AddEditBox(&housePriceEditBox);
 
 	b6.title = (char*)"DestoryMoney";
 	b6.setRect(GAME_SHOW_WIDTH, ButtonHeight * 5, ButtonWidth, ButtonHeight);
@@ -287,6 +297,18 @@ void AddUI() {
 	b9.setBackgroundColor(COLOR_BLACK);
 	b9.lpClickL = SetAField;
 	AddButton(&b9);
+
+	lb2.title = (char*)"Label";
+	lb2.setRect(400, 400, 80, 40);
+	lb2.setForegroundColor({ 0,255,0 });
+	lb2.setBackgroundColor(COLOR_BLACK);
+	//b2.lpClickL = func;
+	AddLabel(&lb2);
+
+
+
+
+	
 }
 int main()
 {
@@ -376,7 +398,9 @@ int main()
 			sprintf_s(title, "FPS %d ", frame);
 			SetWindowText(hWnd, title);
 			LastFPS = frame;
+			lb2.title = title;
 			frame = 0;
+
 			//cout << "run time:" << runtime << endl;
 		}
 		else
