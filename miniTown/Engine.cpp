@@ -948,7 +948,8 @@ void Draw() {
 		for (int i = 0; i < listLabel.size(); ++i) {
 			DrawRect(listLabel[i]->rect, listLabel[i]->currentBackgroundColor);
 			COLORREF nOldTextColor = SetTextColor(hMemDC, listLabel[i]->getForegroundColor().getColorRef());
-			DrawText(hMemDC, listLabel[i]->title, -1, &listLabel[i]->rect, DT_VCENTER | DT_CENTER | DT_SINGLELINE);
+			//DrawTextEx(hMemDC, listLabel[i]->title, -1, &listLabel[i]->rect, DT_CENTER, NULL);
+			DrawText(hMemDC, listLabel[i]->title, -1, &listLabel[i]->rect, DT_CENTER | DT_EXPANDTABS );
 			SetTextColor(hMemDC, nOldTextColor);
 		}
 	}
@@ -1110,7 +1111,7 @@ void AddEditBox(EditBox* editBox)
 {
 	bool isExist = false;
 	for (int i = 0; i < listEditBox.size(); ++i) {
-		if (listEditBox[i] = editBox) {
+		if (listEditBox[i] == editBox) {
 			isExist = true;
 			break;
 		}
@@ -1166,7 +1167,7 @@ static LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 		//遍历EditBox
 		for (int i = 0; i < listEditBox.size(); ++i) {
 			if (listEditBox[i]->isShowCaret) {//寻找鼠标点击的点所在的EditBox
-				break;//不再响应热键消息
+				return 0;//不再响应热键消息
 			}
 		}
 
@@ -1206,8 +1207,26 @@ static LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 					break;
 				}
 				default:
-					listEditBox[i]->text.insert(listEditBox[i]->nPosCaret, 1, (char)wParam);
-					listEditBox[i]->moveCaret(1);
+					switch (listEditBox[i]->getInputType())
+					{
+					case EB_IT_TEXT: {
+						//文本类型
+						if (wParam <= 'Z' && wParam >= 'A') {
+							listEditBox[i]->text.insert(listEditBox[i]->nPosCaret, 1, (char)wParam);
+							listEditBox[i]->moveCaret(1);
+						}
+					}
+					case EB_IT_NUMBER: {
+						//数字类型
+						if (wParam <= '9' && wParam >= '0') {
+							listEditBox[i]->text.insert(listEditBox[i]->nPosCaret, 1, (char)wParam);
+							listEditBox[i]->moveCaret(1);
+						}
+					}
+					default:
+						break;
+					}
+					
 				}
 				//break;//不再响应热键消息
 
@@ -1234,6 +1253,7 @@ static LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 				//listEditBox[i]->isShowCaret = true;//显示光标
 
 				ReleaseDC(hWnd, hDC);
+				return 0;//不再响应热键消息
 			}
 		}
 		

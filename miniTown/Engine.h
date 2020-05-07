@@ -1075,7 +1075,11 @@ struct EditBox : public Label
 	bool isShowCaret;//是否显示光标
 	int sumFPS;//光标闪烁
 	bool stateCaret;//光标当前状态
-	
+#define EB_IT_TEXT		0
+#define EB_IT_NUMBER	1
+
+#define EB_IT_RANGE		2//不使用
+	int inputType;
 	//Description:
 	//	默认构造函数。
 	//Paramter: 
@@ -1084,6 +1088,28 @@ struct EditBox : public Label
 	//	NONE
 	EditBox() {
 		_initAll();
+	}
+
+	//Description:
+	//	设置编辑框输入类型
+	//Paramter: 
+	//	int tInputType 详见EB_IT_
+	//Return Value:
+	//	NONE
+	void setInputType(int tInputType) {
+		if (tInputType < EB_IT_RANGE) {
+			inputType = tInputType;
+		}
+	}
+
+	//Description:
+	//	获取编辑框输入类型
+	//Paramter: 
+	//	NONE
+	//Return Value:
+	//	int 详见EB_IT_
+	int getInputType() {
+		return inputType;
 	}
 
 	//Description:
@@ -1156,20 +1182,6 @@ struct EditBox : public Label
 		text.insert(0,str);
 	}
 	void moveCaret(int nOff) {
-		/*
-		nPosCaret += nOff;
-		if (nPosCaret < 0) {
-			nPosCaret = 0;
-			pointCaret.x =0;
-		}
-		else if(nPosCaret>text.length()){
-			nPosCaret = text.length();
-			pointCaret.x = text.length() * 4;
-		}
-		else {
-			pointCaret.x += 4 * nOff;
-		}
-		*/
 		nPosCaret += nOff;
 		if (nPosCaret < 0) {
 			nPosCaret = 0;
@@ -1177,10 +1189,7 @@ struct EditBox : public Label
 		}
 		else if (nPosCaret > text.length()) {
 			nPosCaret = text.length();
-			//pointCaret.x = text.length() * 4;
-		}
-		else {
-			//pointCaret.x += 4 * nOff;
+			
 		}
 	}
 
@@ -1194,6 +1203,7 @@ private:
 		sumFPS = 0;
 		isShowCaret = false;
 		stateCaret = false;
+		inputType = EB_IT_TEXT;
 	}
 };
 typedef struct EditBox EditBox;

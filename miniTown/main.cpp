@@ -146,6 +146,7 @@ void initObject()
 
 Label lb2;
 EditBox editBox;
+EditBox editBox2;
 void func(void) {
 	//MessageBox(NULL, TEXT("Button is click!"), TEXT("ÌבÊ¾"), 0);
 	lb2.rect.left+=25;
@@ -294,7 +295,7 @@ int main()
 	}
 
 
-	lb2.title = (char*)"Label";
+	lb2.title = (char*)"id\tsex\n0\tman";
 	lb2.setRect(400, 400, 80, 40);
 	lb2.setForegroundColor(  { 0,255,0 });
 	lb2.setBackgroundColor( COLOR_BLACK);
@@ -305,6 +306,10 @@ int main()
 	editBox.setRect(300, 300, 100, 25);
 	editBox.setText((char*)"Hell");
 	AddEditBox(&editBox);
+
+	editBox2.setRect(300, 150, 100, 25);
+	editBox2.setText((char*)"H123l");
+	AddEditBox(&editBox2);
 
 	AddUI();
 
