@@ -13,20 +13,8 @@
 链接：https://pan.baidu.com/s/1GydhPQrYO6-XnfmptvwuRw 
 提取码：9chq
 
-
+## DownLoad
+发行版本 [miniTown_Release_v1.zip](https://github.com/NEU-IOT1701-Software-Engineering-Team/miniTown/files/4599521/miniTown_Release_v1.zip)
 
 ## How to play
-控制村长移动 w/s/a/d 
-
-增加村长金钱 m 跳至命令行输入金额 
-
-删除村长金钱 n 跳至命令行输入金额 
-
-设置房子（house）的价格 h 跳至命令行输入金额 
-
-设置水稻（rice）的价格 r 跳至命令行输入金额 
-
-设置盖房子的标志 b  
-
-显示村庄信息 l 
-
+w/s/a/d 控制村长移动，右边的按钮或者快捷键来进行更高级的操作
