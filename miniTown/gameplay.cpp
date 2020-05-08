@@ -343,7 +343,7 @@ void ResourceCount(string& Str)
 	char  tempStr[200] = { 0 };
 
 	Str += "ResourceCount\n"; 
-	sprintf(tempStr, "money %d rice %d house %d Unfinish house %d\n", moneyCount,riceCount,woodCount,FinishHouseCount,UnFinishHouseCount);
+	sprintf(tempStr, "money %d rice %d wood %d house %d unfinish house %d\n", moneyCount,riceCount,woodCount,FinishHouseCount,UnFinishHouseCount);
 	Str += tempStr;
 
 
@@ -356,7 +356,6 @@ void ResourceCount(string& Str)
 			sprintf(tempStr, "%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n", farmer[i].id, farmer[i].Sex, farmer[i].money, farmer[i].age, farmer[i].belongHouse->StoneRiceSum,
 				farmer[i].wantFoodLevel, farmer[i].wantSexLevel, farmer[i].isMarriage, farmer[i].NowOwnHouseSum);
 			Str += tempStr;
-			std::cout << 233 << std::endl;
 		}
 	}
 	Str+= "Builder:\nid\tsex\tmoney\tage\trice\tHouse\tWood\twFood\twSex\tisMarry\toHouseSum\n";

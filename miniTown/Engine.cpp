@@ -67,7 +67,7 @@ void RemoveDrawObecjt(Object* object)
 inline void DrawPoint(int nPos, BYTE r, BYTE g, BYTE b, BYTE a = 0) {
 
 
-	buffer[nPos] = ((buffer[nPos] * a) >> 8) + ((b * (255 - a)) >> 8);;
+	buffer[nPos] = ((buffer[nPos] * a) >> 8) + ((b * (255 - a)) >> 8);
 	buffer[nPos + 1] = ((buffer[nPos + 1] * a) >> 8) + ((g * (255 - a)) >> 8);
 	buffer[nPos + 2] =((buffer[nPos+2] * a) >> 8) + ((r * (255 - a)) >> 8);
 }
@@ -423,7 +423,7 @@ inline void DrawObject(Object* obj) {
 void Draw() {
 	void getMessage();
 
-	DrawRect(0, 0, nScreenWidth, nScreenHeight, 192, 224, 0);
+	DrawRect(0, 0, GAME_SHOW_WIDTH, GAME_SHOW_HEIGHT, 192, 224, 0);
 
 	//DrawLine(300, 300, 0, 0, 255, 0, 0);
 	//DrawLine(300, 300, 600, 0, 255, 0, 0);

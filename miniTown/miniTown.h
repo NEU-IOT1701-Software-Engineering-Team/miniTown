@@ -401,7 +401,7 @@ extern int FirstPayHousePrice; //盖房子预先给木匠的定金
 
 const float GrowRiceTime = 25;
 const float AgeAddEveryDay = 1;
-const float GrownUpAge = 5; //小孩到成年的年龄
+const float GrownUpAge = 15; //小孩到成年的年龄
 const int FieldProduceRiceSum = 4;
 const int MaxWantFoodLevel = 5;
 const int HouseRequireBuildTime = 15; 
