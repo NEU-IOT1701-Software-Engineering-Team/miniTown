@@ -56,7 +56,15 @@ void Draw();
 const int MaxDrawObjectSum = 100000;
 //extern Object* drawList[MaxDrawObjectSum];
 extern int drawSum;
-extern Player player;
+//extern Player player;
+extern Musci MusciBackground;
+extern Musci MusciGetRice1;
+//Musci MusciGetRice2("sound/getRice.mp3", SoundVolume);
+//Musci MusciGetRice3("sound/getRice.mp3", SoundVolume);
+extern Musci MusciGetWood1;
+//Musci MusciGetWood2("sound/getWood.mp3", SoundVolume);
+//Musci MusciGetWood3("sound/getWood.mp3", SoundVolume);
+
 
 //void AddDrawObject(Object* object);
 //void RemoveDrawObecjt(Object* object);

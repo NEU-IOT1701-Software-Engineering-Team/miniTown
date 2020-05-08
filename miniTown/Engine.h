@@ -4,16 +4,12 @@
 
 #include <Windows.h>
 #include <cstdlib>
-#include <mmsystem.h>
 #include <vector>
 #include <list>
-#include <mutex>
 #include <string>
 #include <algorithm>
-#include <Digitalv.h>
 #include "Debug.h"
-extern int frame; //当前的帧率
-#pragma comment(lib, "WINMM.LIB")
+#include "Player.h"
 
 struct Point;
 class Object;
@@ -31,167 +27,6 @@ extern int drawSum;
 
 constexpr auto PI = 3.1415926;
 
-class Player {
-public:
-	Player();
-	~Player();
-
-	//存储播放信息
-	struct _Sound {
-		HANDLE hThread;
-		MCI_OPEN_PARMS MciOpen;
-		MCI_PLAY_PARMS MciPlay;
-		MCI_STATUS_PARMS MciStatus;
-		//MCI_SET_PARMS MciSet;
-		MCI_DGV_SETAUDIO_PARMS MciSetAudio;
-		DWORD nLength;//音效长度 单位ms
-		bool isStop;//是否停止播放
-		unsigned short volume;//音量0-1000
-		char* szFileName;
-		time_t id;
-		struct _Sound() {
-			memset(this, 0, sizeof(struct _Sound));
-		}
-		//推荐使用
-		bool operator==(int hThread) {
-			return this->hThread == (HANDLE)hThread;
-		}
-		bool operator==(struct _Sound* pSound) {
-			//return this->hThread == pSound->hThread;
-			return this->id == pSound->id;
-		}
-		bool operator==(time_t id) {
-			return this->id == id;
-		}
-		void stop() {
-			isStop = true;
-		}
-	};
-	typedef struct _Sound _Sound;
-
-	//Player所用到的消息结构体
-	//用于主线程与Player的消息传递
-	struct _MSG
-	{
-#define PLAYER_MSG_PLAY		0x00
-#define PLAYER_MSG_LOOP		0x01
-#define PLAYER_MSG_STOP		0x02
-#define PLAYER_MSG_STOPALL	0x03
-#define PLAYER_MSG_EXIT		0xff
-		BYTE type;
-		char* szFileName;
-		unsigned short volume;
-		Player::_Sound* pSound;
-		struct _MSG() {
-			memset(this, 0, sizeof(struct _MSG));
-		}
-		struct _MSG& operator=(struct _MSG srcMsg) {
-			this->type = srcMsg.type;
-			this->szFileName = srcMsg.szFileName;
-			this->volume = srcMsg.volume;
-			this->pSound = srcMsg.pSound;
-			return *this;
-		}
-
-	};
-	typedef struct _MSG _MSG;
-
-	//Description:
-	//	播放音效,仅播放一次.
-	//Paramter: 
-	//	const char* szFileNameTemp 要播放的文件名，文件名中不能有空格，如果有空格必须使用双引号
-	//	unsigned short volume=800 音量数值[0,1000]，wav格式不支持设置音量
-	//Return Value:
-	//	-1		创建线程失败
-	//	非负数	线程int类型的线程句柄，使用时请强转为HANDLE
-	static void playSound(const char* szFileNameTemp, unsigned short volume = 800);
-
-	//Description:
-	//	播放音效,仅播放一次
-	//Paramter: 
-	//	char * szFileNameTemp 要播放的文件名，文件名中不能有空格，如果有空格必须使用双引号
-	//	unsigned short volume=800 音量数值[0,1000]，wav格式不支持设置音量
-	//Return Value:
-	//	-1		创建线程失败
-	//	非负数	线程int类型的线程句柄，使用时请强转为HANDLE
-	static void playSound(char* szFileNameTemp, unsigned short volume = 800);
-
-	//Description:
-	//	播放音效,循环播放
-	//Paramter: 
-	//	const char* szFileNameTemp 要播放的文件名，文件名中不能有空格，如果有空格必须使用双引号
-	//	unsigned short volume=800 音量数值[0,1000]，wav格式不支持设置音量
-	//Return Value:
-	//	-1		创建线程失败
-	//	非负数	线程int类型的线程句柄，使用时请强转为HANDLE.
-	static void playSoundLoop(const char* szFileNameTemp, unsigned short volume = 800);
-
-	//Description:
-	//	播放音效,循环播放
-	//Paramter: 
-	//	char* szFileNameTemp 要播放的文件名，文件名中不能有空格，如果有空格必须使用双引号
-	//	unsigned short volume=800 音量数值[0,1000]，wav格式不支持设置音量
-	//Return Value:
-	//	-1		创建线程失败
-	//	非负数	线程int类型的线程句柄，使用时请强转为HANDLE.
-	static void playSoundLoop(char* szFileNameTemp, unsigned short volume = 800);
-
-	//Description:
-	//	通过文件名终止循环播放(不推荐)
-	//Paramter: 
-	//	const char* szTargetFileName 要停播的音效文件名，文件名中不能有空格，如果有空格必须使用双引号
-	//Return Value:
-	//	NONE
-	//static void stopPlay(const char* szTargetFileName);
-
-	//Description:
-	//	通过文件名终止循环播放(不推荐)
-	//Paramter: 
-	//	char* szTargetFileName 要停播的音效文件名，文件名中不能有空格，如果有空格必须使用双引号
-	//Return Value:
-	//	NONE
-	//static void stopPlay(char* szTargetFileName);
-
-	//Description:
-	//	通过线程句柄终止循环播放(推荐),在循环播放时会返回一个线程句柄
-	//Paramter: 
-	//	int hThread 要停播的线程句柄
-	//Return Value:
-	//	NONE
-	static void stopPlay(int hThread);
-
-	//Description:
-	//	通过存储播放信息指针终止播放
-	//Paramter: 
-	//	Player::_Sound* pSound 存储播放信息指针
-	//Return Value:
-	//	NONE
-	static void stopPlay(Player::_Sound* pSound);
-
-	//Description:
-	//	停止播放所有音效
-	//Paramter: 
-	//	NONE
-	//Return Value:
-	//	NONE
-	static void stopPlayAll();
-	static void _StaticDestruct();
-private:
-
-
-
-	static HANDLE _hThread;
-	static DWORD WINAPI _Run(LPVOID lpParameter);
-	static void _StaticStructure();
-	//static void _StaticDestruct();
-	static DWORD WINAPI _Play(LPVOID lpParameter);
-	static DWORD WINAPI _PlayLoop(LPVOID lpParameter);
-
-	static void _clearPlayList();
-	static Player::_Sound* _MyMalloc();
-	static void _MyFree(Player::_Sound* ptr);
-	static void _print(Player::_Sound* pSound, _In_z_ _Printf_format_string_ char const* const _Format, ...);
-};
 
 struct Point {
 	int x;
