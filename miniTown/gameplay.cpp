@@ -353,7 +353,7 @@ void ResourceCount(string& Str)
 	{
 		if (farmer[i].isDead == false)
 		{
-			sprintf(tempStr, "%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n", farmer[i].id, farmer[i].Sex, farmer[i].money, farmer[i].age, farmer[i].belongHouse->StoneRiceSum,
+			sprintf(tempStr, "%d\t%d\t%d\t%.1f\t%d\t%d\t%.1f\t%d\t%d\n", farmer[i].id, farmer[i].Sex, farmer[i].money, farmer[i].age, farmer[i].belongHouse->StoneRiceSum,
 				farmer[i].wantFoodLevel, farmer[i].wantSexLevel, farmer[i].isMarriage, farmer[i].NowOwnHouseSum);
 			Str += tempStr;
 		}
@@ -364,7 +364,7 @@ void ResourceCount(string& Str)
 		if (builder[i].isDead == false)
 		{
 
-			sprintf(tempStr, "%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n", builder[i].id, builder[i].Sex, builder[i].money, builder[i].age, builder[i].belongHouse->StoneRiceSum
+			sprintf(tempStr, "%d\t%d\t%d\t%.1f\t%d\t%d\t%d\t%d\t%.1f\t%d\t%d\n", builder[i].id, builder[i].Sex, builder[i].money, builder[i].age, builder[i].belongHouse->StoneRiceSum
 				, builder[i].OwnHouseCount, builder[i].belongHouse->StoneWoodSum, builder[i].wantFoodLevel, builder[i].wantSexLevel, builder[i].isMarriage, builder[i].NowOwnHouseSum);
 			Str += tempStr;
 		}
@@ -375,12 +375,12 @@ void ResourceCount(string& Str)
 		if (child[i].isDead == false)
 		{
 			
-			sprintf(tempStr, "%d\t%d\t%d\t%d\t%d\t%d\n", child[i].id, child[i].Sex, child[i].age, child[i].belongHouse->StoneRiceSum, child[i].wantFoodLevel, child[i].belongHouse->id);
+			sprintf(tempStr, "%d\t%d\t%.1f\t%d\t%d\t%d\n", child[i].id, child[i].Sex, child[i].age, child[i].belongHouse->StoneRiceSum, child[i].wantFoodLevel, child[i].belongHouse->id);
 			Str += tempStr;
 		}
 	}
 	Str += "King:\nsex\tmoney\tage\tHouse\tRice\twFood\n";
-	sprintf(tempStr, "%d\t%d\t%d\t%d\t%d\t%d\n", king.Sex, king.money, king.age, king.HaveEmptyHouseSum, king.belongHouse->StoneRiceSum, king.wantFoodLevel);
+	sprintf(tempStr, "%d\t%d\t%.1f\t%d\t%d\t%d\n", king.Sex, king.money, king.age, king.HaveEmptyHouseSum, king.belongHouse->StoneRiceSum, king.wantFoodLevel);
 	Str += tempStr;
 }
 

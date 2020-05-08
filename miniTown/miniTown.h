@@ -85,7 +85,7 @@ const int MaxChildSum = 1000;
 const int MaxTreeSum = 1000;
 const int MaxRiceSum = 10000;
 const int MaxWoodSum = 10000;
-const int MaxObjectSum = 1000;
+const int MaxObjectSum = 10000;
 const int MaxOwnHouseSum = 1000;
 
 
