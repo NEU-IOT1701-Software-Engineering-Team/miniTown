@@ -321,7 +321,7 @@ void AddUI() {
 	b7.lpClickL = SetUnFinishHouseMark;
 	AddButton(&b7);
 
-	b8.title = (char*)"SetTree[S]";
+	b8.title = (char*)"SetTree[T]";
 	b8.setRect(GAME_SHOW_WIDTH+ButtonWidth*1, ButtonHeight * 9, ButtonWidth, ButtonHeight);
 	b8.setForegroundColor({ 255,0,0 });
 	b8.setBackgroundColor(COLOR_BLACK);
@@ -432,7 +432,7 @@ int main()
 
 	//cin >> timeScale;
 
-	
+	hint();
 	while (1)
 	{
 
