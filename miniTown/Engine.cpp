@@ -63,16 +63,20 @@ void RemoveDrawObecjt(Object* object)
 }
 
 
-//base
+//base 
 inline void DrawPoint(int nPos, BYTE r, BYTE g, BYTE b, BYTE a = 0) {
-
-
-	buffer[nPos] = ((buffer[nPos] * a) >> 8) + ((b * (255 - a)) >> 8);
-	buffer[nPos + 1] = ((buffer[nPos + 1] * a) >> 8) + ((g * (255 - a)) >> 8);
-	buffer[nPos + 2] =((buffer[nPos+2] * a) >> 8) + ((r * (255 - a)) >> 8);
+	if (nPos < 0 || nPos >= nScreenHeight * nScreenWidth * 4) {
+		return;
+	}
+	buffer[nPos++] = ((buffer[nPos] * a) >> 8) + ((b * (255 - a)) >> 8);
+	buffer[nPos++] = ((buffer[nPos] * a) >> 8) + ((g * (255 - a)) >> 8);
+	buffer[nPos] = ((buffer[nPos] * a) >> 8) + ((r * (255 - a)) >> 8);
 }
 
 inline void DrawPoint(int nPos, Color c) {
+	if (nPos < 0 || nPos >= nScreenHeight * nScreenWidth * 4) {
+		return;
+	}
 	DrawPoint(nPos, c.r, c.g, c.b, c.a);
 }
 
