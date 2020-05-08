@@ -66,7 +66,8 @@ void Farmer::GrowRice()
 
 		if (SoundOn)
 		{
-			player.playSound("sound/getRice.mp3", SoundVolume);
+			//player.playSound("sound/getRice.mp3", SoundVolume);
+			MusciGetRice1.play();
 		}
 		
 		for (int i = 0; i < FieldProduceRiceSum; i++)
@@ -275,7 +276,8 @@ void Builder::CutTree()
 
 		if (SoundOn)
 		{
-			player.playSound("sound/getWood.mp3", SoundVolume);
+			//player.playSound("sound/getWood.mp3", SoundVolume);
+			MusciGetWood1.play();
 		}
 		
 		std::cout << "Builder No." << this->id << " take wood!" << std:: endl;

@@ -128,11 +128,15 @@
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="gameplay.cpp" />
+    <ClCompile Include="Music.cpp" />
+    <ClCompile Include="Player.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Debug.h" />
     <ClInclude Include="Engine.h" />
     <ClInclude Include="miniTown.h" />
+    <ClInclude Include="Music.h" />
+    <ClInclude Include="Player.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="pic\background.bmp" />
