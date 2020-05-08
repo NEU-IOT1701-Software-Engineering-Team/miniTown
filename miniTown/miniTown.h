@@ -33,7 +33,7 @@ const bool DebugShowGrowTimeFlag = false;  //输出田和树木的生长、砍伐时间
 //用于显示窗体的全局变量
 const int GAME_SHOW_WIDTH = 600; //游戏显示界面宽度
 const int GAME_SHOW_HEIGHT = 600; //游戏显示界面高度
-const int SCREEN_WIDTH = 1000;  //游戏窗体宽度
+const int SCREEN_WIDTH = 1300;  //游戏窗体宽度
 const int SCREEN_HEIGHT = 600; //游戏窗体高度
 
 const int bits = 24;

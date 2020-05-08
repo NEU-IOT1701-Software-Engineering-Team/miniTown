@@ -325,6 +325,7 @@ DWORD WINAPI Player::_Play(LPVOID lpParameter) {
 		return -1;
 	}
 
+
 	//打开操作要和其他操作在同一线程.
 	DWORD ret = mciSendCommand(0, MCI_OPEN,
 		MCI_OPEN_ELEMENT, (DWORD_PTR)&pSound->MciOpen);//打开一个设备 准备播放该音效

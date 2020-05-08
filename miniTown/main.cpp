@@ -158,42 +158,44 @@ Button b7;
 Button b8;
 Button b9;
 Label lb3;
-Label ResourceCountLable;
+Label ResourceCountLabel;
+Label HintLabel;
 
 EditBox ricePriceEditBox;
 EditBox housePriceEditBox;
 EditBox FirstPayHousePriceEditBox;
+EditBox MoneyEditBox;
+
+
 
 void MakeMoney()
 {
-	cout << "Enter Sum of the Money Add:";
-	int sum;
-	cin >> sum;
-	king.MakeMoney(sum);
+	int price;
+	price = atoi(MoneyEditBox.getText());
+	king.MakeMoney(price);
 }
 
 void SetRicePrice()
 {
-	cout << "Enter Rice Price:";
+
 	int price;
-	cin >> price;
+	price =atoi(ricePriceEditBox.getText());
 	king.SetRicePrice(price);
 }
 
 void SetHousePrice()
 {
-	cout << "Enter House Price:";
 	int price;
-	cin >> price;
+
+	price = atoi(housePriceEditBox.getText());
 	king.SetHousePrice(price);
 }
 
 void DestoryMoney()
 {
-	cout << "Enter Sum of the Money Destory:";
-	int sum;
-	cin >> sum;
-	king.DestoryMoney(sum);
+	int price;
+	price = atoi(MoneyEditBox.getText());
+	king.DestoryMoney(price);
 }
 
 void Eat()
@@ -227,96 +229,99 @@ void GetResourceCount()
 	//memset(cstr, 0, str.size()+1);
 	//str.copy(cstr, str.size()+1, 0);
 	
-	ResourceCountLable.title = str.c_str();
-	//ResourceCountLable.setTitle(str.c_str());//推荐使用这种写法
+	ResourceCountLabel.setTitle(str.c_str());
+	//ResourceCountLabel.setTitle(str.c_str());//推荐使用这种写法
 
-	//ResourceCountLable.title=(char*)"ResourceCount\n";
+	//ResourceCountLabel.title=(char*)"ResourceCount\n";
 }
 
 void AddUI() {
 	int ButtonWidth = 100;
 	int ButtonHeight = 50;
-	b.title = (char*)"ResourceCount";
-	b.setRect(GAME_SHOW_WIDTH, 0, ButtonWidth, ButtonHeight);
-	b.setForegroundColor({ 255,0,0 });
-	b.lpClickL = GetResourceCount;
-	AddButton(&b);
 
-	ResourceCountLable.setRect(GAME_SHOW_WIDTH+ButtonWidth, ButtonHeight, ButtonWidth*3, ButtonHeight*5);
-	ResourceCountLable.setForegroundColor({ 0,255,0 });
-	ResourceCountLable.setBackgroundColor(COLOR_BLACK);
-	AddLabel(&ResourceCountLable);
+	ResourceCountLabel.setRect(GAME_SHOW_WIDTH, 0, ButtonWidth*7, ButtonHeight*6);
+	ResourceCountLabel.setForegroundColor({ 0,255,0 });
+	ResourceCountLabel.setBackgroundColor(COLOR_BLACK);
+	AddLabel(&ResourceCountLabel);
+
+	b6.title = (char*)"DestoryMoney";
+	b6.setRect(GAME_SHOW_WIDTH, ButtonHeight * 6, ButtonWidth, ButtonHeight);
+	b6.setForegroundColor({ 255,0,0 });
+	b6.setBackgroundColor(COLOR_BLACK);
+	b6.lpClickL = DestoryMoney;
+	AddButton(&b6);
 
 	b2.title = (char*)"AddMoney";
-	b2.setRect(GAME_SHOW_WIDTH, ButtonHeight, ButtonWidth, ButtonHeight);
-	b2.setForegroundColor({ 0,255,0 });
+	b2.setRect(GAME_SHOW_WIDTH+ButtonWidth, ButtonHeight*6, ButtonWidth, ButtonHeight);
+	b2.setForegroundColor({ 255,0,0 });
 	b2.setBackgroundColor(COLOR_BLACK);
 	b2.lpClickL = MakeMoney;
 	AddButton(&b2);
 
-	b3.title = (char*)"Eat";
-	b3.setRect(GAME_SHOW_WIDTH, ButtonHeight * 2, ButtonWidth, ButtonHeight);
-	b3.setForegroundColor({ 255,0,0 });
-	b2.setBackgroundColor(COLOR_BLACK);
-	b3.lpClickL = Eat;
-	AddButton(&b3);
+	MoneyEditBox.setRect(GAME_SHOW_WIDTH + ButtonWidth * 2, ButtonHeight * 6, ButtonWidth, ButtonHeight);
+	MoneyEditBox.setText("0");
+	AddEditBox(&MoneyEditBox);
 
 	b4.title = (char*)"SetRicePrice";
-	b4.setRect(GAME_SHOW_WIDTH, ButtonHeight * 3, ButtonWidth, ButtonHeight);
+	b4.setRect(GAME_SHOW_WIDTH +ButtonWidth*3, ButtonHeight * 6, ButtonWidth, ButtonHeight);
 	b4.setForegroundColor({ 255,0,0 });
 	b4.setBackgroundColor(COLOR_BLACK);
 	b4.lpClickL = SetRicePrice;
 	AddButton(&b4);
 
-	ricePriceEditBox.setRect(GAME_SHOW_WIDTH+ButtonWidth, ButtonHeight * 3, ButtonWidth, ButtonHeight);
+	ricePriceEditBox.setRect(GAME_SHOW_WIDTH+ButtonWidth*4, ButtonHeight * 6, ButtonWidth, ButtonHeight);
 	char strRicePrice[20];
 	_itoa(RicePrice, strRicePrice, 10);
 	ricePriceEditBox.setText(strRicePrice);
 	AddEditBox(&ricePriceEditBox);
 
 	b5.title = (char*)"SetHousePrice";
-	b5.setRect(GAME_SHOW_WIDTH, ButtonHeight * 4, ButtonWidth, ButtonHeight);
+	b5.setRect(GAME_SHOW_WIDTH+ButtonWidth*5, ButtonHeight * 6, ButtonWidth, ButtonHeight);
 	b5.setForegroundColor({ 255,0,0 });
 	b5.setBackgroundColor(COLOR_BLACK);
 	b5.lpClickL = SetHousePrice;
 	AddButton(&b5);
 
-	housePriceEditBox.setRect(GAME_SHOW_WIDTH + ButtonWidth, ButtonHeight * 4, ButtonWidth, ButtonHeight);
+	housePriceEditBox.setRect(GAME_SHOW_WIDTH + ButtonWidth*6, ButtonHeight * 6, ButtonWidth, ButtonHeight);
 	char strHousePrice[20];
 	_itoa(HousePrice, strHousePrice, 10);
 	housePriceEditBox.setText(strHousePrice);
 	AddEditBox(&housePriceEditBox);
 
-	b6.title = (char*)"DestoryMoney";
-	b6.setRect(GAME_SHOW_WIDTH, ButtonHeight * 5, ButtonWidth, ButtonHeight);
-	b6.setForegroundColor({ 255,0,0 });
-	b6.setBackgroundColor(COLOR_BLACK);
-	b6.lpClickL = DestoryMoney;
-	AddButton(&b6);
+
 
 
 	b7.title = (char*)"SetUnFinishHouseMark";
-	b7.setRect(GAME_SHOW_WIDTH, ButtonHeight * 6, ButtonWidth, ButtonHeight);
+	b7.setRect(GAME_SHOW_WIDTH, ButtonHeight * 7, ButtonWidth, ButtonHeight);
 	b7.setForegroundColor({ 255,0,0 });
 	b7.setBackgroundColor(COLOR_BLACK);
 	b7.lpClickL = SetUnFinishHouseMark;
 	AddButton(&b7);
 
 	b8.title = (char*)"SetATree";
-	b8.setRect(GAME_SHOW_WIDTH, ButtonHeight * 7, ButtonWidth, ButtonHeight);
+	b8.setRect(GAME_SHOW_WIDTH+ButtonWidth*1, ButtonHeight * 7, ButtonWidth, ButtonHeight);
 	b8.setForegroundColor({ 255,0,0 });
 	b8.setBackgroundColor(COLOR_BLACK);
 	b8.lpClickL = SetATree;
 	AddButton(&b8);
 
 	b9.title = (char*)"SetAField";
-	b9.setRect(GAME_SHOW_WIDTH, ButtonHeight * 8, ButtonWidth, ButtonHeight);
+	b9.setRect(GAME_SHOW_WIDTH+ButtonWidth*2, ButtonHeight * 7, ButtonWidth, ButtonHeight);
 	b9.setForegroundColor({ 255,0,0 });
 	b9.setBackgroundColor(COLOR_BLACK);
 	b9.lpClickL = SetAField;
 	AddButton(&b9);
+	b3.title = (char*)"Eat";
+	b3.setRect(GAME_SHOW_WIDTH + ButtonWidth *3, ButtonHeight * 7, ButtonWidth, ButtonHeight);
+	b3.setForegroundColor({ 255,0,0 });
+	b2.setBackgroundColor(COLOR_BLACK);
+	b3.lpClickL = Eat;
+	AddButton(&b3);
 
-	
+	HintLabel.setRect(GAME_SHOW_WIDTH, ButtonHeight * 8, ButtonWidth, ButtonHeight*6);
+	HintLabel.setForegroundColor({ 255,0,0 });
+	HintLabel.setBackgroundColor(COLOR_BLACK);
+	AddLabel(&HintLabel);
 }
 
 //测试 请保留------↓------
@@ -418,7 +423,9 @@ int main()
 			LastFPS = frame;
 			lb2.title = title;
 			frame = 0;
-
+			string str;
+			ResourceCount(str);
+			ResourceCountLabel.title = str;
 			//cout << "run time:" << runtime << endl;
 		}
 		else
@@ -470,7 +477,7 @@ void KeyControl()
 		}
 		if (screen_keys['S'])
 		{
-			if (king.DrawObject->y + king.DrawObject->pic->getHeight() < SCREEN_HEIGHT)
+			if (king.DrawObject->y + king.DrawObject->pic->getHeight() < GAME_SHOW_HEIGHT)
 			{
 				king.DrawObject->y += (float)timeScale * speed * FrameTime;
 				king.isMove = true;
@@ -487,7 +494,7 @@ void KeyControl()
 		}
 		if (screen_keys['D'])
 		{
-			if (king.DrawObject->x + king.DrawObject->pic->getWidth() < SCREEN_WIDTH)
+			if (king.DrawObject->x + king.DrawObject->pic->getWidth() < GAME_SHOW_WIDTH)
 			{
 				king.DrawObject->x += (float)timeScale * speed * FrameTime;
 				king.isMove = true;
@@ -516,6 +523,7 @@ void KeyControl()
 			{
 				string str;
 				ResourceCount(str);
+				ResourceCountLabel.title = str;
 			}
 			pressL = true;
 		}

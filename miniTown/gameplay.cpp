@@ -340,51 +340,49 @@ void ResourceCount(string& Str)
 		}
 	}
 
-	char  tempStr[100];
+	char  tempStr[200] = { 0 };
 
 	Str += "ResourceCount\n"; 
-	sprintf(tempStr, "money %d/nrice %d/nhouse %d/nUnfinish house %d/n", moneyCount,riceCount,woodCount,FinishHouseCount,UnFinishHouseCount);
+	sprintf(tempStr, "money %d rice %d house %d Unfinish house %d\n", moneyCount,riceCount,woodCount,FinishHouseCount,UnFinishHouseCount);
 	Str += tempStr;
 
 
 
-	cout << "Farmer:" << endl;
-	cout << "id\tsex\tmoney\tage\trice\twFood\twSex\tisMarry\tHouseId\toHouseSum" << endl;
+	Str +="Farmer:\nid\tsex\tmoney\tage\trice\twFood\twSex\tisMarry\toHouseSum\n";
 	for (int i = 0; i < NowFarmerSum; i++)
 	{
 		if (farmer[i].isDead == false)
 		{
-			cout << farmer[i].id << "\t" << ((farmer[i].Sex == 1) ? "man" : "woman") << "\t" << farmer[i].money << "\t" << farmer[i].age << "\t" << farmer[i].belongHouse->StoneRiceSum
-				<< "\t" << farmer[i].wantFoodLevel << "\t" << farmer[i].wantSexLevel << "\t" << farmer[i].isMarriage << "\t" << farmer[i].belongHouse->id << "\t" << farmer[i].NowOwnHouseSum << endl;
-
+			sprintf(tempStr, "%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n", farmer[i].id, farmer[i].Sex, farmer[i].money, farmer[i].age, farmer[i].belongHouse->StoneRiceSum,
+				farmer[i].wantFoodLevel, farmer[i].wantSexLevel, farmer[i].isMarriage, farmer[i].NowOwnHouseSum);
+			Str += tempStr;
+			std::cout << 233 << std::endl;
 		}
 	}
-	cout << "Builder:" << endl;
-	cout << "id\tsex\tmoney\tage\trice\tHouse\tWood\twFood\twSex\tisMarry\tHouseId\toHouseSum" << endl;
+	Str+= "Builder:\nid\tsex\tmoney\tage\trice\tHouse\tWood\twFood\twSex\tisMarry\toHouseSum\n";
 	for (int i = 0; i < NowBuilderSum; i++)
 	{
 		if (builder[i].isDead == false)
 		{
-			cout << builder[i].id << "\t" << ((builder[i].Sex == 1) ? "man" : "woman") << "\t" << builder[i].money << "\t" << builder[i].age << "\t" << builder[i].belongHouse->StoneRiceSum
-				<< "\t" << builder[i].OwnHouseCount << "\t" << builder[i].belongHouse->StoneWoodSum << "\t" << builder[i].wantFoodLevel << "\t" << builder[i].wantSexLevel << "\t" << builder[i].isMarriage << "\t" << builder[i].belongHouse->id << "\t" << builder[i].NowOwnHouseSum << endl;
 
+			sprintf(tempStr, "%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n", builder[i].id, builder[i].Sex, builder[i].money, builder[i].age, builder[i].belongHouse->StoneRiceSum
+				, builder[i].OwnHouseCount, builder[i].belongHouse->StoneWoodSum, builder[i].wantFoodLevel, builder[i].wantSexLevel, builder[i].isMarriage, builder[i].NowOwnHouseSum);
+			Str += tempStr;
 		}
 	}
-	cout << "Child:" << endl;
-	cout << "id\tsex\tage\trice\twFood\tHouseId" << endl;
+	Str += "Child:\nid\tsex\tage\trice\twFood\tHouseId\n";
 	for (int i = 0; i < NowChildSum; i++)
 	{
 		if (child[i].isDead == false)
 		{
-			cout << child[i].id << "\t" << ((child[i].Sex == 1) ? "man" : "woman") << "\t" << child[i].age << "\t" << child[i].belongHouse->StoneRiceSum << "\t" << child[i].wantFoodLevel << "\t" << child[i].belongHouse->id << endl;
-
+			
+			sprintf(tempStr, "%d\t%d\t%d\t%d\t%d\t%d\n", child[i].id, child[i].Sex, child[i].age, child[i].belongHouse->StoneRiceSum, child[i].wantFoodLevel, child[i].belongHouse->id);
+			Str += tempStr;
 		}
 	}
-	cout << "King:" << endl;
-	cout << "sex\tmoney\tage\tHouse\tRice\twFood" << endl;
-	cout << king.Sex << "\t" << king.money << "\t" << king.age << "\t" << king.HaveEmptyHouseSum << "\t" << king.belongHouse->StoneRiceSum << "\t" << king.wantFoodLevel << endl;
-	cout << "==================" << endl;
-
+	Str += "King:\nsex\tmoney\tage\tHouse\tRice\twFood\n";
+	sprintf(tempStr, "%d\t%d\t%d\t%d\t%d\t%d\n", king.Sex, king.money, king.age, king.HaveEmptyHouseSum, king.belongHouse->StoneRiceSum, king.wantFoodLevel);
+	Str += tempStr;
 }
 
 void ResourceCount()//对村民拥有的资源进行统计
