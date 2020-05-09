@@ -539,6 +539,9 @@ void freeSomethingForEngine() {
 //UI Button
 
 void Button:: Draw(HDC hMemDC) {
+	if (!isVisible) {
+		return;
+	}
 	int nOldBkMode = SetBkMode(hMemDC, TRANSPARENT);//绘制字体时设置透明
 	DrawRect(rect, currentBackgroundColor);//绘制背景
 	DrawEdge(hMemDC, &rect, EDGE_ETCHED, BF_RECT);//传统按钮风格
@@ -587,6 +590,9 @@ void RemoveButton(Button* button)
 //UI Label
 
 void Label::Draw(HDC hMemDC) {
+	if (!isVisible) {
+		return;
+	}
 	int nOldBkMode = SetBkMode(hMemDC, TRANSPARENT);//绘制字体时设置透明
 	DrawRect(rect, currentBackgroundColor);
 	COLORREF nOldTextColor = SetTextColor(hMemDC, getForegroundColor().getColorRef());
@@ -636,6 +642,9 @@ void RemoveLabel(Label* label)
 //UI EditBox
 
 void EditBox::Draw(HDC hMemDC) {
+	if (!isVisible) {
+		return;
+	}
 	int nOldBkMode = SetBkMode(hMemDC, TRANSPARENT);//绘制字体时设置透明
 	DrawRect(rect, currentBackgroundColor);
 	DrawEdge(hMemDC, &rect, EDGE_SUNKEN, BF_RECT);//传统编辑框风格
