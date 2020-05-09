@@ -538,6 +538,13 @@ void Builder::AI()
 										isTryFeedChild = true;
 									}
 								}
+								else
+								{
+									if (familyTree->child0List[i]->belongHouse->StoneRiceSum > 0)
+									{
+										isTryFeedChild = true;
+									}
+								}
 							}
 							break;
 						}
@@ -1002,6 +1009,7 @@ void Farmer::AI()
 								}
 								else
 								{
+									
 									WalkTo(familyTree->child0List[Child0Now]->belongHouse->DrawObject);
 									if (IsMoreCloseTo(this->DrawObject, familyTree->child0List[Child0Now]->belongHouse->DrawObject) == true)
 									{
@@ -1011,6 +1019,13 @@ void Farmer::AI()
 										}
 
 										if (TakeOnThingSum == 0)
+										{
+											isTryFeedChild = true;
+										}
+									}
+									else
+									{
+										if (familyTree->child0List[Child0Now]->belongHouse->StoneRiceSum > 0)
 										{
 											isTryFeedChild = true;
 										}

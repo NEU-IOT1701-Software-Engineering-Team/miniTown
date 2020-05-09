@@ -161,6 +161,7 @@ Button b10;
 Label lb3;
 Label ResourceCountLabel;
 Label HintLabel;
+Label WarningLabel;
 
 EditBox ricePriceEditBox;
 EditBox housePriceEditBox;
@@ -352,6 +353,15 @@ void AddUI() {
 	HintLabel.setForegroundColor({ 255,255,255 });
 	HintLabel.setBackgroundColor(COLOR_BLACK);
 	AddLabel(&HintLabel);
+
+	WarningLabel.setRect(GAME_SHOW_HEIGHT - ButtonWidth*2, ButtonHeight * 10, ButtonWidth*2, ButtonHeight);
+	WarningLabel.setForegroundColor(COLOR_WHITE);
+	WarningLabel.setBackgroundColor(255,0,0);
+	WarningLabel.setTitle("危险：村长饥饿度高！");
+	WarningLabel.isVisible = false;
+	AddLabel(&WarningLabel);
+
+
 }
 
 Player player;
@@ -435,7 +445,14 @@ int main()
 	hint();
 	while (1)
 	{
-
+		if (king.wantFoodLevel > 4)
+		{
+			WarningLabel.isVisible = true;
+		}
+		else
+		{
+			WarningLabel.isVisible = false;
+		}
 		KeyControl();
 		//MsgGet();加入到了Draw()
 		Draw();
