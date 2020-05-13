@@ -30,10 +30,7 @@
     <ClInclude Include="Engine.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Music.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Player.h">
+    <ClInclude Include="SoundManager.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -53,10 +50,7 @@
     <ClCompile Include="Engine.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Player.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Music.cpp">
+    <ClCompile Include="SoundManager.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

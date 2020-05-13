@@ -70,6 +70,13 @@ int frame = 0; //÷°¬ 
 int BackgroundMusicVolume=300;
 int SoundVolume=600;
 
+
+SoundManager soundManager;
+Sound backgroundSound = Sound("sound/01 Bloom.mp3", backgroundMusic);
+Sound makeDealSound = Sound("sound/makeDeal.mp3", soundEffect);
+Sound getRiceSound = Sound("sound/getRice.mp3", soundEffect);
+Sound getWoodSound = Sound("sound/getWood.mp3", soundEffect);
+
 void initLoadPic()
 {
 	picLand.loadImage("pic/land.bmp");
@@ -364,21 +371,6 @@ void AddUI() {
 
 }
 
-Player player;
-Musci MusciBackground("sound/01 Bloom.mp3", BackgroundMusicVolume);
-Musci MusciGetRice1("sound/getRice.mp3", SoundVolume);
-//Musci MusciGetRice2("sound/getRice.mp3", SoundVolume);
-//Musci MusciGetRice3("sound/getRice.mp3", SoundVolume);
-Musci MusciGetWood1("sound/getWood.mp3", SoundVolume);
-//Musci MusciGetWood2("sound/getWood.mp3", SoundVolume);
-//Musci MusciGetWood3("sound/getWood.mp3", SoundVolume);
-void LoadMusic() {
-	MusciBackground.isLoop = true;
-	player.addMusci(&MusciBackground);
-	player.addMusci(&MusciGetRice1);
-	player.addMusci(&MusciGetWood1);
-}
-
 
 //≤‚ ‘ «Î±£¡Ù------°˝------
 /*
@@ -413,12 +405,11 @@ int main()
 
 	//≤‚ ‘  «Î±£¡Ù------°¸------
 
-	LoadMusic();
 
 	if (SoundOn)
 	{
 		//player.playSoundLoop("sound/01 Bloom.mp3", BackgroundMusicVolume);
-		MusciBackground.play();
+		soundManager.playSound(backgroundSound);
 	}
 
 	AddUI();

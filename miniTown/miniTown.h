@@ -17,6 +17,7 @@
 #include<string>
 #include"Debug.h"
 #include"Engine.h"
+#include"SoundManager.h"
 
 using namespace std;
 
@@ -57,13 +58,12 @@ const int MaxDrawObjectSum = 100000;
 //extern Object* drawList[MaxDrawObjectSum];
 extern int drawSum;
 //extern Player player;
-extern Musci MusciBackground;
-extern Musci MusciGetRice1;
-//Musci MusciGetRice2("sound/getRice.mp3", SoundVolume);
-//Musci MusciGetRice3("sound/getRice.mp3", SoundVolume);
-extern Musci MusciGetWood1;
-//Musci MusciGetWood2("sound/getWood.mp3", SoundVolume);
-//Musci MusciGetWood3("sound/getWood.mp3", SoundVolume);
+
+extern SoundManager soundManager;
+extern Sound backgroundSound;
+extern Sound getRiceSound;
+extern Sound makeDealSound;
+extern Sound getWoodSound;
 
 
 //void AddDrawObject(Object* object);

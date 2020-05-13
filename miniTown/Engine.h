@@ -9,7 +9,6 @@
 #include <string>
 #include <algorithm>
 #include "Debug.h"
-#include "Player.h"
 
 struct Point;
 class Object;

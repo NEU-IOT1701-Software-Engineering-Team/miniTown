@@ -64,7 +64,7 @@ void RemoveDrawObecjt(Object* object)
 
 
 //base 
-inline void DrawPoint(int nPos, BYTE r, BYTE g, BYTE b, BYTE a = 0) {
+inline void DrawPoint(int nPos, BYTE r, BYTE g, BYTE b, BYTE a) {
 	if (nPos < 0 || nPos >= nScreenHeight * nScreenWidth * 4) {
 		return;
 	}
@@ -80,7 +80,7 @@ inline void DrawPoint(int nPos, Color c) {
 	DrawPoint(nPos, c.r, c.g, c.b, c.a);
 }
 
-inline void DrawPoint(int x, int y, BYTE r, BYTE g, BYTE b, BYTE a = 0) {
+inline void DrawPoint(int x, int y, BYTE r, BYTE g, BYTE b, BYTE a ) {
 	if (x > nScreenWidth || x<0 || y>nScreenHeight || y < 0) {
 		return;
 	}
@@ -144,7 +144,7 @@ inline void DrawRect(int x, int y, int width, int height, BYTE r, BYTE g, BYTE b
 	for (int i = 0; i < height; ++i) {
 		int posBuffer = (nScreenWidth * (y + i) + x) * 4;//计算每行的起点
 		for (int j = 0; j < width; ++j) {
-			DrawPoint(posBuffer, r, g, b);
+			DrawPoint(posBuffer, r, g, b,a);
 			posBuffer += 4;
 		}
 	}
@@ -163,13 +163,13 @@ inline void DrawRect(RECT rect, Color color) {
 inline void DrawPic(int x, int y, Picture* pic, RECT rect) {
 	int xBuffer = 0, yBuffer = 0;
 	int xPic, yPic;
-
+	BYTE a = 0;
 	for (yPic = rect.top; yPic < rect.bottom; ++yPic) {
 		int posBuffer = (nScreenWidth * (y + yBuffer++) + x) * 4;
 		for (xPic = rect.left; xPic < rect.right; ++xPic) {
 			int posPic = pic->getWidth() * yPic + xPic;
 
-			DrawPoint(posBuffer, pic->pChannelR[posPic], pic->pChannelG[posPic], pic->pChannelB[posPic]);
+			DrawPoint(posBuffer, pic->pChannelR[posPic], pic->pChannelG[posPic], pic->pChannelB[posPic],a);
 
 			posBuffer += 4;
 			++posPic;
@@ -480,11 +480,13 @@ void Draw() {
 		DrawObject(drawList[i].pObject);
 	}
 
+	
 	//绘制UI
 	/*
 	for (int i = 0; i < listBaseUI.size(); ++i) {
 		listBaseUI[i]->Draw();
 	}*/  //暂不成熟
+	
 	for (int i = 0; i < listButton.size(); ++i) {
 		listButton[i]->Draw(hMemDC);
 	}
@@ -494,7 +496,7 @@ void Draw() {
 	for (int i = 0; i < listEditBox.size(); ++i) {
 		listEditBox[i]->Draw(hMemDC);
 	}
-
+	
 
 	//从内存设备拷贝到窗口
 	HDC hDC = GetDC(hWnd);
