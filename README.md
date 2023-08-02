@@ -5,6 +5,9 @@
 村庄模拟
 2D 种田游戏
 
+游戏截图
+![ingame](https://github.com/NEU-IOT1701-Software-Engineering-Team/miniTown/assets/22091612/7c57f5af-90ec-4763-a287-02f12af34484)
+
  
 主程序使用git管理  
 
